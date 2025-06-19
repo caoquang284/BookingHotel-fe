@@ -5,6 +5,9 @@ import { getAllRoomTypes } from "../services/apis/roomType";
 import { getAllFloors } from "../services/apis/floor";
 import type { ResponseRoomDTO } from "../types/index.ts";
 
+const formatVND = (amount: number) =>
+  amount.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+
 const BookingPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -22,6 +25,16 @@ const BookingPage: React.FC = () => {
     email: "",
     phone: "",
   });
+  const [showQRDialog, setShowQRDialog] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  const [isGeneratingQR, setIsGeneratingQR] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "qr" | null>(
+    null
+  );
+  const [canConfirmPayment, setCanConfirmPayment] = useState(false);
+  const [isLoadingPayment, setIsLoadingPayment] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   useEffect(() => {
     const fetchRoom = async () => {
@@ -54,28 +67,81 @@ const BookingPage: React.FC = () => {
     };
     fetchRoom();
   }, [roomId]);
+  const generateQRCode = async (amount: number) => {
+    try {
+      setIsGeneratingQR(true);
+      const accountNo = "5622889955"; // Xác nhận tài khoản thuộc MBBank
+      const accountName = "KHACH SAN 5 SAO"; // Không dấu, in hoa, khớp với ngân hàng
+      const acqId = "970418"; // MBBank
+      const transferContent = `Thanh toan tien phong #${roomId}`.slice(0, 50); // Giới hạn 50 ký tự
+
+      // Kiểm tra amount hợp lệ
+      if (!Number.isInteger(amount) || amount <= 0) {
+        throw new Error("Số tiền phải là số nguyên lớn hơn 0");
+      }
+
+      // Tạo payload
+      const payload = {
+        accountNo: accountNo.trim(),
+        accountName: accountName.trim(),
+        acqId,
+        amount,
+        addInfo: transferContent,
+        format: "text", // Hoặc "qr_only" nếu cần
+        template: "compact2", // Thử template khác nếu compact không hoạt động
+      };
+
+      console.log("VietQR Payload:", payload);
+
+      const response = await fetch("https://api.vietqr.io/v2/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-client-id": "658ae10f-8dbf-44bf-b943-31745299dd84",
+          "x-api-key": "f1ac89af-9c63-48bb-9a09-9c635411954e",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`VietQR API error: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log("VietQR Response:", data);
+
+      if (data.code === "00" && data.data?.qrDataURL) {
+        console.log("QR Code URL:", data.data.qrDataURL);
+        setQrCodeUrl(data.data.qrDataURL);
+      } else {
+        throw new Error(`VietQR API failed: ${data.desc || "Unknown error"}`);
+      }
+    } catch (error) {
+      console.error("generateQRCode - Error:", {});
+      alert(`Lỗi khi tạo mã QR: ${error}`);
+      throw error;
+    } finally {
+      setIsGeneratingQR(false);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setCustomerInfo((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!customerInfo.fullName || !customerInfo.email || !customerInfo.phone) {
       alert("Vui lòng điền đầy đủ thông tin");
       return;
     }
-    // Chuyển hướng đến trang xác nhận với thông tin
-    navigate("/booking-confirmation", {
-      state: {
-        room,
-        checkIn,
-        checkOut,
-        guests,
-        customerInfo,
-      },
-    });
+    setPaymentMethod("qr"); // hoặc "cash" nếu muốn mặc định tiền mặt
+    setShowPaymentModal(true);
+
+    // Nếu mặc định là QR thì tạo mã QR luôn
+    await generateQRCode(Number(room?.roomTypePrice));
   };
 
   if (loading) return <p className="text-center py-12">Đang tải...</p>;
@@ -159,6 +225,154 @@ const BookingPage: React.FC = () => {
           </button>
         </form>
       </div>
+
+      {showPaymentModal && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white shadow-xl rounded-lg w-full max-w-md p-6 relative">
+            <button
+              onClick={() => {
+                setShowPaymentModal(false);
+                setPaymentMethod(null);
+                setQrCodeUrl("");
+                setCanConfirmPayment(false);
+                setIsLoadingPayment(false);
+                setIsProcessingPayment(false);
+              }}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+            >
+              <svg
+                className="h-6 w-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+
+            <h3 className="text-xl font-semibold text-[#001F3F] mb-4">
+              {paymentMethod === "cash"
+                ? "Thanh toán tiền mặt"
+                : "Thanh toán QR"}
+            </h3>
+
+            <div className="space-y-4">
+              <p className="text-gray-600">
+                Số tiền cần thanh toán:{" "}
+                <span className="font-semibold text-[#001F3F]">
+                  {formatVND(Number(room.roomTypePrice))}
+                </span>
+              </p>
+
+              {paymentMethod === "qr" && qrCodeUrl && (
+                <div className="flex flex-col items-center space-y-4">
+                  <img
+                    src={qrCodeUrl}
+                    alt="QR Code"
+                    className="w-64 h-64 object-contain"
+                  />
+                  <p className="text-sm text-gray-500 text-center">
+                    Quét mã QR để thanh toán
+                  </p>
+                </div>
+              )}
+
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  onClick={() => {
+                    setShowPaymentModal(false);
+                    setPaymentMethod(null);
+                    setQrCodeUrl("");
+                    setCanConfirmPayment(false);
+                    setIsLoadingPayment(false);
+                    setIsProcessingPayment(false);
+                  }}
+                  disabled={isProcessingPayment}
+                  className="px-4 py-2 bg-gray-100 text-[#001F3F] rounded hover:bg-gray-200 transition-colors duration-300 disabled:opacity-50"
+                >
+                  Hủy
+                </button>
+                <button
+                  disabled={true}
+                  className="px-4 py-2 text-white rounded transition-all duration-300 flex items-center bg-blue-500 disabled:opacity-100"
+                >
+                  {isLoadingPayment ? (
+                    <div className="flex items-center">
+                      <svg
+                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Đang xử lý thanh toán...
+                    </div>
+                  ) : isProcessingPayment ? (
+                    <div className="flex items-center">
+                      <svg
+                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Đang hoàn tất thanh toán...
+                    </div>
+                  ) : (
+                    <span className="flex items-center">
+                      <svg
+                        className="w-5 h-5 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                      Xác nhận thanh toán
+                    </span>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

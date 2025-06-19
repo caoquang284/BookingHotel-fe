@@ -3,8 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { getRoomsByState } from "../services/apis/room";
 import { getAllRoomTypes } from "../services/apis/roomType";
 import { getAllFloors } from "../services/apis/floor";
+import { getAllBookingConfirmationForms } from "../services/apis/bookingconfirm";
 import type { ResponseRoomDTO, ResponseRoomTypeDTO } from "../types/index.ts";
 import { RoomStates } from "../types/index.ts";
+import type {
+  BookingConfirmationFormDTO,
+  ResponseBookingConfirmationFormDTO,
+} from "../types";
 
 // Định nghĩa interface cho payload phân trang
 interface PaginatedResponse {
@@ -31,16 +36,23 @@ const BookingBox: React.FC<{
   onSearch: (params: {
     checkIn: string;
     checkOut: string;
-    guests: number;
+    roomTypeId: number;
   }) => void;
-}> = ({ onSearch }) => {
+  roomTypes: ResponseRoomTypeDTO[];
+}> = ({ onSearch, roomTypes }) => {
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
-  const [guests, setGuests] = useState(1);
+  const [roomTypeId, setRoomTypeId] = useState<number>(
+    roomTypes.length > 0 ? roomTypes[0].id : 1
+  );
+
+  useEffect(() => {
+    if (roomTypes.length > 0) setRoomTypeId(roomTypes[0].id);
+  }, [roomTypes]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSearch({ checkIn, checkOut, guests });
+    onSearch({ checkIn, checkOut, roomTypeId });
   };
 
   return (
@@ -75,16 +87,17 @@ const BookingBox: React.FC<{
         </div>
         <div>
           <label className="block text-base font-semibold text-gray-700 mb-2">
-            Số khách
+            Loại phòng
           </label>
           <select
-            value={guests}
-            onChange={(e) => setGuests(parseInt(e.target.value))}
+            value={roomTypeId}
+            onChange={(e) => setRoomTypeId(Number(e.target.value))}
             className="mt-1 block w-full rounded-lg border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 text-lg py-3 px-4"
+            required
           >
-            {[1, 2, 3, 4, 5].map((num) => (
-              <option key={num} value={num}>
-                {num} khách
+            {roomTypes.map((rt) => (
+              <option key={rt.id} value={rt.id}>
+                {rt.name}
               </option>
             ))}
           </select>
@@ -101,6 +114,7 @@ const BookingBox: React.FC<{
     </div>
   );
 };
+
 const imageLinks = [
   "https://xuonggooccho.com/ckfinder/userfiles/files/anh-phong-ngu.jpg",
   "https://noithattrevietnam.com/uploaded/2019/12/1-thiet-ke-phong-ngu-khach-san%20%281%29.jpg",
@@ -115,7 +129,22 @@ const RoomCard: React.FC<{
   checkIn?: string;
   checkOut?: string;
   guests?: number;
-}> = ({ room, checkIn, checkOut, guests }) => {
+  setSelectedRoomId: (id: number) => void;
+  setShowDateModal: (show: boolean) => void;
+  setModalCheckIn: (val: string) => void;
+  setModalCheckOut: (val: string) => void;
+  setModalGuests: (val: number) => void;
+}> = ({
+  room,
+  checkIn,
+  checkOut,
+  guests,
+  setSelectedRoomId,
+  setShowDateModal,
+  setModalCheckIn,
+  setModalCheckOut,
+  setModalGuests,
+}) => {
   const navigate = useNavigate();
   const randomImage = imageLinks[Math.floor(Math.random() * imageLinks.length)];
   return (
@@ -142,19 +171,13 @@ const RoomCard: React.FC<{
         </p>
         <div className="mt-4 flex space-x-4">
           <button
-            onClick={() => navigate(`/room/${room.id}`)}
-            className="flex-1 bg-indigo-600 text-white text-base py-2 px-4 rounded-md hover:bg-indigo-700"
-          >
-            Xem chi tiết
-          </button>
-          <button
-            onClick={() =>
-              navigate(
-                `/booking?roomId=${room.id}&checkIn=${checkIn || ""}&checkOut=${
-                  checkOut || ""
-                }&guests=${guests || 1}`
-              )
-            }
+            onClick={() => {
+              setSelectedRoomId(room.id);
+              setShowDateModal(true);
+              setModalCheckIn("");
+              setModalCheckOut("");
+              setModalGuests(1);
+            }}
             className="flex-1 bg-green-600 text-white text-base py-2 px-4 rounded-md hover:bg-green-700"
           >
             Đặt phòng
@@ -173,54 +196,98 @@ const Home: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [checkIn, setCheckIn] = useState<string>("");
   const [checkOut, setCheckOut] = useState<string>("");
-  const [guests, setGuests] = useState<number>(1);
+  const [roomTypeId, setRoomTypeId] = useState(1);
   const sliderRef = useRef<HTMLDivElement>(null);
+  const [showDateModal, setShowDateModal] = useState(false);
+  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
+  const [modalCheckIn, setModalCheckIn] = useState("");
+  const [modalCheckOut, setModalCheckOut] = useState("");
+  const [modalGuests, setModalGuests] = useState(1);
+  const [roomTypes, setRoomTypes] = useState<ResponseRoomTypeDTO[]>([]);
+  const [selectedRoomType, setSelectedRoomType] = useState<number | null>(null);
+  const [modalRoomType, setModalRoomType] = useState<number | null>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [roomsResponse, roomTypesData, floorsData] = await Promise.all([
+  const fetchData = async (
+    checkInDate?: string,
+    checkOutDate?: string,
+    roomTypeId?: number
+  ) => {
+    try {
+      setLoading(true);
+      const [roomsResponse, roomTypesData, floorsData, bookingForms] =
+        await Promise.all([
           getRoomsByState(RoomStates.READY_TO_SERVE),
           getAllRoomTypes(),
           getAllFloors(),
+          getAllBookingConfirmationForms(),
         ]);
-        const roomsData = (roomsResponse as unknown as PaginatedResponse)
-          .content;
-        console.log("Rooms fetched:", roomsData.length);
-        const mappedRooms = roomsData.map((room) => {
-          const roomType = roomTypesData.find(
-            (rt) => rt.id === room.roomTypeId
-          );
-          const floor = floorsData.find((f) => f.id === room.floorId);
-          return {
-            ...room,
-            roomType,
-            roomTypeName: roomType?.name || "Không xác định",
-            roomTypePrice: roomType?.price || 0,
-            floorName: floor?.name || "Không xác định",
-          };
-        });
-        setRooms(mappedRooms);
-        setLoading(false);
-      } catch (err) {
-        console.error("Error fetching data:", err);
-        setError("Không thể tải dữ liệu");
-        setLoading(false);
+      const roomsData = (roomsResponse as unknown as PaginatedResponse).content;
+      console.log("Rooms fetched:", roomsData.length);
+      const mappedRooms = roomsData.map((room) => {
+        const roomType = roomTypesData.find((rt) => rt.id === room.roomTypeId);
+        const floor = floorsData.find((f) => f.id === room.floorId);
+        return {
+          ...room,
+          roomType,
+          roomTypeName: roomType?.name || "Không xác định",
+          roomTypePrice: roomType?.price || 0,
+          floorName: floor?.name || "Không xác định",
+        };
+      });
+
+      // Lọc phòng dựa trên khoảng thời gian booking
+      const availableRooms = mappedRooms.filter((room) => {
+        if (!checkInDate || !checkOutDate) return true; // Nếu không có ngày, hiển thị tất cả
+        const checkInDateObj = new Date(checkInDate);
+        const checkOutDateObj = new Date(checkOutDate);
+        return !bookingForms.some(
+          (form: ResponseBookingConfirmationFormDTO) => {
+            const bookingDateObj = new Date(form.bookingDate);
+            const endDate = new Date(bookingDateObj);
+            endDate.setDate(bookingDateObj.getDate() + form.rentalDays);
+            return (
+              room.id === form.roomId &&
+              ((checkInDateObj >= bookingDateObj && checkInDateObj < endDate) ||
+                (checkOutDateObj > bookingDateObj &&
+                  checkOutDateObj <= endDate) ||
+                (checkInDateObj <= bookingDateObj &&
+                  checkOutDateObj >= endDate))
+            );
+          }
+        );
+      });
+
+      let filteredRooms = availableRooms;
+      if (roomTypeId) {
+        filteredRooms = filteredRooms.filter(
+          (room) => room.roomTypeId === roomTypeId
+        );
       }
-    };
+      setRooms(filteredRooms);
+      setLoading(false);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+      setError("Không thể tải dữ liệu");
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
+    getAllRoomTypes().then(setRoomTypes);
   }, []);
 
   const handleSearch = (params: {
     checkIn: string;
     checkOut: string;
-    guests: number;
+    roomTypeId: number;
   }) => {
     setCheckIn(params.checkIn);
     setCheckOut(params.checkOut);
-    setGuests(params.guests);
+    setSelectedRoomType(params.roomTypeId);
+    fetchData(params.checkIn, params.checkOut, params.roomTypeId);
     navigate(
-      `/rooms?checkIn=${params.checkIn}&checkOut=${params.checkOut}&guests=${params.guests}`
+      `/rooms?checkIn=${params.checkIn}&checkOut=${params.checkOut}&roomTypeId=${params.roomTypeId}`
     );
   };
 
@@ -249,7 +316,7 @@ const Home: React.FC = () => {
           Rong chơi bốn phương, giá vẫn yêu thương
         </h1>
       </div>
-      <BookingBox onSearch={handleSearch} />
+      <BookingBox onSearch={handleSearch} roomTypes={roomTypes} />
       <div className="max-w-7xl mx-auto py-12 px-4">
         <h2 className="text-2xl font-bold text-left mb-8">
           Các phòng đang có sẵn
@@ -265,7 +332,7 @@ const Home: React.FC = () => {
             className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow rounded-full p-2"
             style={{ display: rooms.length > 2 ? "block" : "none" }}
           >
-            &#8592;
+            ←
           </button>
           <div
             ref={sliderRef}
@@ -282,7 +349,12 @@ const Home: React.FC = () => {
                   room={room}
                   checkIn={checkIn}
                   checkOut={checkOut}
-                  guests={guests}
+                  guests={modalGuests}
+                  setSelectedRoomId={setSelectedRoomId}
+                  setShowDateModal={setShowDateModal}
+                  setModalCheckIn={setModalCheckIn}
+                  setModalCheckOut={setModalCheckOut}
+                  setModalGuests={setModalGuests}
                 />
               </div>
             ))}
@@ -292,10 +364,66 @@ const Home: React.FC = () => {
             className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow rounded-full p-2"
             style={{ display: rooms.length > 2 ? "block" : "none" }}
           >
-            &#8594;
+            →
           </button>
         </div>
       </div>
+      {showDateModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm relative">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-black"
+              onClick={() => setShowDateModal(false)}
+            >
+              &times;
+            </button>
+            <h3 className="text-lg font-bold mb-4 text-center">
+              Chọn ngày nhận và trả phòng
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Ngày đến
+                </label>
+                <input
+                  type="date"
+                  value={modalCheckIn}
+                  onChange={(e) => setModalCheckIn(e.target.value)}
+                  className="w-full border rounded px-2 py-1"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Ngày đi
+                </label>
+                <input
+                  type="date"
+                  value={modalCheckOut}
+                  onChange={(e) => setModalCheckOut(e.target.value)}
+                  className="w-full border rounded px-2 py-1"
+                />
+              </div>
+
+              <button
+                className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+                onClick={() => {
+                  if (!modalCheckIn || !modalCheckOut) {
+                    alert("Vui lòng chọn ngày đến, ngày đi!");
+                    return;
+                  }
+                  setShowDateModal(false);
+                  setSelectedRoomType(modalRoomType);
+                  navigate(
+                    `/booking?roomId=${selectedRoomId}&checkIn=${modalCheckIn}&checkOut=${modalCheckOut}`
+                  );
+                }}
+              >
+                Xác nhận
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

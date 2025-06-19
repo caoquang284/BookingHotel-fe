@@ -1,9 +1,9 @@
-export interface Root<T> {
+export interface PaginatedResponseDTO<T> {
     _embedded: T[];
-    page: Page;
+    page: PageDTO;
 }
 
-export interface Page {
+export interface PageDTO {
     size: number;
     totalElements: number;
     totalPages: number;
