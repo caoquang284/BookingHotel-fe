@@ -3,7 +3,7 @@ import type {
     ResponseRoomTypeDTO,
 } from '../../types';
 
-const BASE_URL = 'http://localhost:9090/api/room-type';
+const BASE_URL = 'http://localhost:8081/api/room-type';
 
 export async function getAllRoomTypes(): Promise<ResponseRoomTypeDTO[]> {
     const response = await fetch(`${BASE_URL}`, {

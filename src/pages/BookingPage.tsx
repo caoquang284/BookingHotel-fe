@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { getRoomById } from "../services/apis/room";
 import { getAllRoomTypes } from "../services/apis/roomType";
 import { getAllFloors } from "../services/apis/floor";
+import { getGuestByAccountId } from "../services/apis/guest";
+import { useAuth } from "../contexts/AuthContext";
 import type { ResponseRoomDTO } from "../types/index.ts";
 
 const formatVND = (amount: number) =>
@@ -11,6 +13,7 @@ const formatVND = (amount: number) =>
 const BookingPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   const queryParams = new URLSearchParams(location.search);
   const roomId = queryParams.get("roomId");
   const checkIn = queryParams.get("checkIn") || "";
@@ -25,19 +28,13 @@ const BookingPage: React.FC = () => {
     email: "",
     phone: "",
   });
-  const [showQRDialog, setShowQRDialog] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "qr" | null>(null);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [isGeneratingQR, setIsGeneratingQR] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "qr" | null>(
-    null
-  );
-  const [canConfirmPayment, setCanConfirmPayment] = useState(false);
-  const [isLoadingPayment, setIsLoadingPayment] = useState(false);
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   useEffect(() => {
-    const fetchRoom = async () => {
+    const fetchData = async () => {
       if (!roomId) {
         setError("Không tìm thấy phòng");
         setLoading(false);
@@ -56,42 +53,53 @@ const BookingPage: React.FC = () => {
         setRoom({
           ...roomData,
           roomTypeName: roomType?.name || "Không xác định",
+          roomTypePrice: roomType?.price || 0,
           floorName: floor?.name || "Không xác định",
         });
+
+        // Lấy thông tin khách hàng nếu đã đăng nhập
+        if (user) {
+          const guestInfo = await getGuestByAccountId(user.id);
+          if (guestInfo) {
+            setCustomerInfo({
+              fullName: guestInfo.name || "",
+              email: guestInfo.email || "",
+              phone: guestInfo.phoneNumber || "",
+            });
+          }
+        }
+
         setLoading(false);
       } catch (err) {
-        console.error("Error fetching room:", err);
-        setError("Không thể tải thông tin phòng");
+        console.error("Error fetching data:", err);
+        setError("Không thể tải thông tin");
         setLoading(false);
       }
     };
-    fetchRoom();
-  }, [roomId]);
+    fetchData();
+  }, [roomId, user]);
+
   const generateQRCode = async (amount: number) => {
     try {
       setIsGeneratingQR(true);
-      const accountNo = "5622889955"; // Xác nhận tài khoản thuộc MBBank
-      const accountName = "KHACH SAN 5 SAO"; // Không dấu, in hoa, khớp với ngân hàng
-      const acqId = "970418"; // MBBank
-      const transferContent = `Thanh toan tien phong #${roomId}`.slice(0, 50); // Giới hạn 50 ký tự
+      const accountNo = "5622889955";
+      const accountName = "KHACH SAN 5 SAO";
+      const acqId = "970418";
+      const transferContent = `Thanh toan tien phong #${roomId}`.slice(0, 50);
 
-      // Kiểm tra amount hợp lệ
       if (!Number.isInteger(amount) || amount <= 0) {
         throw new Error("Số tiền phải là số nguyên lớn hơn 0");
       }
 
-      // Tạo payload
       const payload = {
         accountNo: accountNo.trim(),
         accountName: accountName.trim(),
         acqId,
         amount,
         addInfo: transferContent,
-        format: "text", // Hoặc "qr_only" nếu cần
-        template: "compact2", // Thử template khác nếu compact không hoạt động
+        format: "text",
+        template: "compact2",
       };
-
-      console.log("VietQR Payload:", payload);
 
       const response = await fetch("https://api.vietqr.io/v2/generate", {
         method: "POST",
@@ -109,16 +117,13 @@ const BookingPage: React.FC = () => {
       }
 
       const data = await response.json();
-      console.log("VietQR Response:", data);
-
       if (data.code === "00" && data.data?.qrDataURL) {
-        console.log("QR Code URL:", data.data.qrDataURL);
         setQrCodeUrl(data.data.qrDataURL);
       } else {
         throw new Error(`VietQR API failed: ${data.desc || "Unknown error"}`);
       }
     } catch (error) {
-      console.error("generateQRCode - Error:", {});
+      console.error("generateQRCode - Error:", error);
       alert(`Lỗi khi tạo mã QR: ${error}`);
       throw error;
     } finally {
@@ -137,232 +142,150 @@ const BookingPage: React.FC = () => {
       alert("Vui lòng điền đầy đủ thông tin");
       return;
     }
-    setPaymentMethod("qr"); // hoặc "cash" nếu muốn mặc định tiền mặt
+    setPaymentMethod("qr");
     setShowPaymentModal(true);
-
-    // Nếu mặc định là QR thì tạo mã QR luôn
     await generateQRCode(Number(room?.roomTypePrice));
   };
 
-  if (loading) return <p className="text-center py-12">Đang tải...</p>;
-  if (error) return <p className="text-center py-12 text-red-600">{error}</p>;
-  if (!room) return <p className="text-center py-12">Không tìm thấy phòng</p>;
+  if (loading) return <div className="flex justify-center items-center h-screen"><div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div></div>;
+  if (error) return <div className="text-center py-12 text-red-600 text-xl font-semibold">{error}</div>;
+  if (!room) return <div className="text-center py-12 text-gray-600 text-xl font-semibold">Không tìm thấy phòng</div>;
 
   return (
-    <div className="max-w-3xl mx-auto py-12 px-4">
-      <h2 className="text-3xl font-bold text-center mb-8">Đặt phòng</h2>
-      <div className="bg-white shadow-lg rounded-lg p-6">
-        <h3 className="text-xl font-semibold mb-4">Thông tin phòng</h3>
-        <div className="mb-6">
-          <p>
-            <strong>Tên phòng:</strong> {room.name}
-          </p>
-          <p>
-            <strong>Loại phòng:</strong> {room.roomTypeName}
-          </p>
-          <p>
-            <strong>Tầng:</strong> {room.floorName}
-          </p>
-          <p>
-            <strong>Ghi chú:</strong> {room.note || "Không có ghi chú"}
-          </p>
-          <p>
-            <strong>Ngày đến:</strong> {checkIn || "Chưa chọn"}
-          </p>
-          <p>
-            <strong>Ngày đi:</strong> {checkOut || "Chưa chọn"}
-          </p>
-          <p>
-            <strong>Số khách:</strong> {guests}
-          </p>
+    <div className="min-h-screen bg-gray-100 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-3xl font-extrabold text-gray-900 text-center mb-8">Đặt Phòng Khách Sạn</h2>
+        <div className="bg-white shadow-2xl rounded-2xl overflow-hidden">
+          <div className="p-8">
+            <h3 className="text-2xl font-bold text-gray-800 mb-6">Thông tin phòng</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="space-y-3">
+                <p className="text-gray-600"><span className="font-semibold">Tên phòng:</span> {room.name}</p>
+                <p className="text-gray-600"><span className="font-semibold">Loại phòng:</span> {room.roomTypeName}</p>
+                <p className="text-gray-600"><span className="font-semibold">Tầng:</span> {room.floorName}</p>
+                <p className="text-gray-600"><span className="font-semibold">Ghi chú:</span> {room.note || "Không có ghi chú"}</p>
+              </div>
+              <div className="space-y-3">
+                <p className="text-gray-600"><span className="font-semibold">Ngày đến:</span> {checkIn || "Chưa chọn"}</p>
+                <p className="text-gray-600"><span className="font-semibold">Ngày đi:</span> {checkOut || "Chưa chọn"}</p>
+                <p className="text-gray-600"><span className="font-semibold">Số khách:</span> {guests}</p>
+                <p className="text-gray-600"><span className="font-semibold">Giá:</span> {formatVND(Number(room.roomTypePrice))}</p>
+              </div>
+            </div>
+
+            <h3 className="text-2xl font-bold text-gray-800 mb-6">Thông tin khách hàng</h3>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
+                <input
+                  type="text"
+                  name="fullName"
+                  value={customerInfo.fullName}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-300"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={customerInfo.email}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-300"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={customerInfo.phone}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-300"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 font-semibold"
+              >
+                Xác nhận đặt phòng
+              </button>
+            </form>
+          </div>
         </div>
-        <h3 className="text-xl font-semibold mb-4">Thông tin khách hàng</h3>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Họ và tên
-            </label>
-            <input
-              type="text"
-              name="fullName"
-              value={customerInfo.fullName}
-              onChange={handleInputChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={customerInfo.email}
-              onChange={handleInputChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Số điện thoại
-            </label>
-            <input
-              type="tel"
-              name="phone"
-              value={customerInfo.phone}
-              onChange={handleInputChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700"
-          >
-            Xác nhận
-          </button>
-        </form>
       </div>
 
       {showPaymentModal && (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-[60] p-4">
-          <div className="bg-white shadow-xl rounded-lg w-full max-w-md p-6 relative">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000] p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 relative">
             <button
               onClick={() => {
                 setShowPaymentModal(false);
                 setPaymentMethod(null);
-                setQrCodeUrl("");
-                setCanConfirmPayment(false);
-                setIsLoadingPayment(false);
-                setIsProcessingPayment(false);
+                setQrCodeUrl(null);
               }}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition duration-300"
             >
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M6 18L18 6M6 6l12 12"
-                />
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
 
-            <h3 className="text-xl font-semibold text-[#001F3F] mb-4">
-              {paymentMethod === "cash"
-                ? "Thanh toán tiền mặt"
-                : "Thanh toán QR"}
+            <h3 className="text-2xl font-bold text-gray-800 mb-6">
+              {paymentMethod === "cash" ? "Thanh toán tiền mặt" : "Thanh toán QR"}
             </h3>
 
-            <div className="space-y-4">
-              <p className="text-gray-600">
-                Số tiền cần thanh toán:{" "}
-                <span className="font-semibold text-[#001F3F]">
-                  {formatVND(Number(room.roomTypePrice))}
-                </span>
+            <div className="space-y-6">
+              <p className="text-gray-600 text-lg">
+                Số tiền cần thanh toán: <span className="font-bold text-blue-600">{formatVND(Number(room.roomTypePrice))}</span>
               </p>
 
-              {paymentMethod === "qr" && qrCodeUrl && (
+              {paymentMethod === "qr" && (
                 <div className="flex flex-col items-center space-y-4">
-                  <img
-                    src={qrCodeUrl}
-                    alt="QR Code"
-                    className="w-64 h-64 object-contain"
-                  />
-                  <p className="text-sm text-gray-500 text-center">
-                    Quét mã QR để thanh toán
-                  </p>
+                  {isGeneratingQR ? (
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
+                  ) : qrCodeUrl ? (
+                    <>
+                      <img src={qrCodeUrl} alt="QR Code" className="w-64 h-64 object-contain rounded-lg shadow-md" />
+                      <p className="text-sm text-gray-500 text-center">Vui lòng quét mã QR để thực hiện thanh toán</p>
+                    </>
+                  ) : (
+                    <p className="text-red-600">Đang tạo mã QR...</p>
+                  )}
                 </div>
               )}
 
-              <div className="flex justify-end space-x-3 mt-6">
+              <div className="flex justify-end space-x-4 mt-8">
                 <button
                   onClick={() => {
                     setShowPaymentModal(false);
                     setPaymentMethod(null);
-                    setQrCodeUrl("");
-                    setCanConfirmPayment(false);
-                    setIsLoadingPayment(false);
-                    setIsProcessingPayment(false);
+                    setQrCodeUrl(null);
                   }}
-                  disabled={isProcessingPayment}
-                  className="px-4 py-2 bg-gray-100 text-[#001F3F] rounded hover:bg-gray-200 transition-colors duration-300 disabled:opacity-50"
+                  className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition duration-300"
                 >
                   Hủy
                 </button>
                 <button
-                  disabled={true}
-                  className="px-4 py-2 text-white rounded transition-all duration-300 flex items-center bg-blue-500 disabled:opacity-100"
+                  disabled={isGeneratingQR || !qrCodeUrl}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300 disabled:opacity-50 flex items-center"
                 >
-                  {isLoadingPayment ? (
+                  {isGeneratingQR ? (
                     <div className="flex items-center">
-                      <svg
-                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      Đang xử lý thanh toán...
-                    </div>
-                  ) : isProcessingPayment ? (
-                    <div className="flex items-center">
-                      <svg
-                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      Đang hoàn tất thanh toán...
+                      Đang xử lý...
                     </div>
                   ) : (
                     <span className="flex items-center">
-                      <svg
-                        className="w-5 h-5 mr-2"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M5 13l4 4L19 7"
-                        />
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                       </svg>
                       Xác nhận thanh toán
                     </span>

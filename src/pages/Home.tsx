@@ -4,6 +4,7 @@ import { getRoomsByState } from "../services/apis/room";
 import { getAllRoomTypes } from "../services/apis/roomType";
 import { getAllFloors } from "../services/apis/floor";
 import { getAllBookingConfirmationForms } from "../services/apis/bookingconfirm";
+import { useAuth } from "../contexts/AuthContext";
 import type { ResponseRoomDTO, ResponseRoomTypeDTO } from "../types/index.ts";
 import { RoomStates } from "../types/index.ts";
 import type {
@@ -146,7 +147,32 @@ const RoomCard: React.FC<{
   setModalGuests,
 }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const randomImage = imageLinks[Math.floor(Math.random() * imageLinks.length)];
+
+  const handleBookingClick = () => {
+    if (!user) {
+      // Nếu chưa đăng nhập, lưu thông tin phòng và điều hướng đến trang đăng nhập
+      localStorage.setItem(
+        "bookingRedirect",
+        JSON.stringify({
+          roomId: room.id,
+          checkIn: checkIn || "",
+          checkOut: checkOut || "",
+          guests: guests || 1,
+        })
+      );
+      navigate("/login");
+    } else {
+      // Nếu đã đăng nhập, mở modal chọn ngày
+      setSelectedRoomId(room.id);
+      setShowDateModal(true);
+      setModalCheckIn("");
+      setModalCheckOut("");
+      setModalGuests(1);
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden w-full max-w-xs mx-auto">
       <img
@@ -171,13 +197,7 @@ const RoomCard: React.FC<{
         </p>
         <div className="mt-4 flex space-x-4">
           <button
-            onClick={() => {
-              setSelectedRoomId(room.id);
-              setShowDateModal(true);
-              setModalCheckIn("");
-              setModalCheckOut("");
-              setModalGuests(1);
-            }}
+            onClick={handleBookingClick}
             className="flex-1 bg-green-600 text-white text-base py-2 px-4 rounded-md hover:bg-green-700"
           >
             Đặt phòng
@@ -237,7 +257,7 @@ const Home: React.FC = () => {
 
       // Lọc phòng dựa trên khoảng thời gian booking
       const availableRooms = mappedRooms.filter((room) => {
-        if (!checkInDate || !checkOutDate) return true; // Nếu không có ngày, hiển thị tất cả
+        if (!checkInDate || !checkOutDate) return true;
         const checkInDateObj = new Date(checkInDate);
         const checkOutDateObj = new Date(checkOutDate);
         return !bookingForms.some(
@@ -375,7 +395,7 @@ const Home: React.FC = () => {
               className="absolute top-2 right-2 text-gray-500 hover:text-black"
               onClick={() => setShowDateModal(false)}
             >
-              &times;
+              ×
             </button>
             <h3 className="text-lg font-bold mb-4 text-center">
               Chọn ngày nhận và trả phòng
@@ -403,7 +423,6 @@ const Home: React.FC = () => {
                   className="w-full border rounded px-2 py-1"
                 />
               </div>
-
               <button
                 className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
                 onClick={() => {
@@ -414,7 +433,7 @@ const Home: React.FC = () => {
                   setShowDateModal(false);
                   setSelectedRoomType(modalRoomType);
                   navigate(
-                    `/booking?roomId=${selectedRoomId}&checkIn=${modalCheckIn}&checkOut=${modalCheckOut}`
+                    `/booking?roomId=${selectedRoomId}&checkIn=${modalCheckIn}&checkOut=${modalCheckOut}&guests=${modalGuests}`
                   );
                 }}
               >
