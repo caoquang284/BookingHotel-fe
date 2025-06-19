@@ -41,13 +41,23 @@ const RoomCard: React.FC<{
   room: ResponseRoomDTO;
   checkIn?: string;
   checkOut?: string;
-  guests?: number;
-}> = ({ room, checkIn, checkOut, guests }) => {
+}> = ({ room, checkIn, checkOut }) => {
   const navigate = useNavigate();
-  const originalPrice = room.roomTypePrice ? room.roomTypePrice * 1.35 : 0; // Giả định giá gốc là 135% giá hiện tại
+  const originalPrice = room.roomTypePrice ? room.roomTypePrice * 1.35 : 0;
   const randomImage = imageLinks[Math.floor(Math.random() * imageLinks.length)];
+
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden w-full flex h-64">
+    <button
+      type="button"
+      onClick={() => {
+        navigate(
+          `/booking?roomId=${room.id}&checkIn=${checkIn || ""}&checkOut=${
+            checkOut || ""
+          }`
+        );
+      }}
+      className="bg-white rounded-lg shadow-md overflow-hidden w-full flex h-64 text-left hover:ring-2 hover:ring-blue-400 transition"
+    >
       <img
         src={randomImage}
         alt={room.name}
@@ -101,7 +111,6 @@ const RoomCard: React.FC<{
             Ghi chú: {room.note || "Không có ghi chú"}
           </p>
         </div>
-        {/* Giá ở góc phải dưới */}
         <div className="absolute right-2 bottom-2 text-right">
           <p className="text-red-500 font-bold text-lg line-through italic">
             {originalPrice.toLocaleString("vi-VN")} VNĐ/đêm
@@ -111,7 +120,7 @@ const RoomCard: React.FC<{
           </p>
         </div>
       </div>
-    </div>
+    </button>
   );
 };
 
@@ -214,7 +223,6 @@ const Rooms: React.FC = () => {
             room={room}
             checkIn={checkIn}
             checkOut={checkOut}
-            guests={roomTypeId}
           />
         ))}
       </div>
