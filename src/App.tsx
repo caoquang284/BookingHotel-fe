@@ -5,6 +5,7 @@ import BookingHistory from "./pages/BookingHistory";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Rooms from "./pages/Rooms";
+import BookingPage from "./pages/BookingPage";
 import { AuthProvider } from "./contexts/AuthContext";
 
 const router = createBrowserRouter([
@@ -17,6 +18,8 @@ const router = createBrowserRouter([
       },
       { path: "/booking-history", element: <BookingHistory /> },
       { path: "/rooms", element: <Rooms /> },
+      { path: "/booking", element: <BookingPage /> },
+
       { path: "/login", element: <Login /> },
       { path: "/register", element: <Register /> },
     ],
@@ -24,9 +27,11 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  return (<AuthProvider>
-    <RouterProvider router={router} />
-    </AuthProvider>);
+  return (
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
+  );
 }
 
 export default App;

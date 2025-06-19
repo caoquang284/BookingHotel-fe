@@ -68,6 +68,8 @@ export interface BookingConfirmationFormDTO {
     bookingGuestId: number;
     bookingState: BookingState;
     roomId: number;
+    bookingDate: string,
+    rentalDays: number
 }
 
 export interface ResponseBookingConfirmationFormDTO {
@@ -82,6 +84,8 @@ export interface ResponseBookingConfirmationFormDTO {
     roomId: number;
     roomName: string;
     roomTypeName: string;
+    bookingDate: string;
+    rentalDays: number
 }
 
 export interface FloorDTO {
@@ -320,12 +324,13 @@ export interface ResponseRevenueReportDetailDTO {
     roomTypeName: string;
 }
 
-export type RoomState = 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE';
+export type RoomState = 'BEING_CLEANED' | 'BOOKED' | 'READY_TO_SERVE' | 'UNDER_RENOVATION';
 
 export const RoomStates = {
-    AVAILABLE: 'AVAILABLE',
-    OCCUPIED: 'OCCUPIED',
-    MAINTENANCE: 'MAINTENANCE',
+    BEING_CLEANED: 'BEING_CLEANED',
+    BOOKED: 'BOOKED',
+    READY_TO_SERVE: 'READY_TO_SERVE',
+    UNDER_RENOVATION: 'UNDER_RENOVATION',
 } as const;
 
 
@@ -344,6 +349,7 @@ export interface ResponseRoomDTO {
     roomState: RoomState;
     roomTypeId: number;
     roomTypeName: string;
+    roomTypePrice: number;
     floorId: number;
     floorName: string;
     bookingConfirmationFormIds: number[];
