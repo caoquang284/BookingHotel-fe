@@ -320,12 +320,13 @@ export interface ResponseRevenueReportDetailDTO {
     roomTypeName: string;
 }
 
-export type RoomState = 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE';
+export type RoomState = 'BEING_CLEANED' | 'BOOKED' | 'READY_TO_SERVE' | 'UNDER_RENOVATION';
 
 export const RoomStates = {
-    AVAILABLE: 'AVAILABLE',
-    OCCUPIED: 'OCCUPIED',
-    MAINTENANCE: 'MAINTENANCE',
+    BEING_CLEANED: 'BEING_CLEANED',
+    BOOKED: 'BOOKED',
+    READY_TO_SERVE: 'READY_TO_SERVE',
+    UNDER_RENOVATION: 'UNDER_RENOVATION',
 } as const;
 
 

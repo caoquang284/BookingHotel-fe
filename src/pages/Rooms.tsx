@@ -1,56 +1,27 @@
-// RoomsPage.tsx
-import React from "react";
-import { useLocation } from "react-router-dom";
-
-// Mock data cho các phòng
-const suggestedRooms = [
-  {
-    id: 1,
-    name: "Phòng Deluxe",
-    price: 1000000,
-    image: "https://placehold.co/400x300",
-    description: "Phòng sang trọng với view biển",
-  },
-  {
-    id: 2,
-    name: "Phòng Suite",
-    price: 1500000,
-    image: "https://placehold.co/400x300",
-    description: "Phòng rộng rãi với ban công",
-  },
-  {
-    id: 3,
-    name: "Phòng Standard",
-    price: 800000,
-    image: "https://placehold.co/400x300",
-    description: "Phòng tiện nghi giá hợp lý",
-  },
-];
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { getAllRooms } from "../services/apis/room";
+import { getAllRoomTypes } from "../services/apis/roomType";
+import { getAllFloors } from "../services/apis/floor";
+import type { ResponseRoomDTO } from "../types/index.ts";
 
 // Component cho thẻ phòng
-const RoomCard: React.FC<{
-  room: {
-    id: number;
-    name: string;
-    price: number;
-    image: string;
-    description: string;
-  };
-}> = ({ room }) => {
+const RoomCard: React.FC<{ room: ResponseRoomDTO }> = ({ room }) => {
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden">
+    <div className="bg-white rounded-lg shadow-md overflow-hidden w-full max-w-xs mx-auto">
       <img
-        src={room.image}
+        src="https://placehold.co/300x200"
         alt={room.name}
-        className="w-full h-48 object-cover"
+        className="w-full h-32 object-cover"
       />
-      <div className="p-4">
-        <h3 className="text-lg font-semibold">{room.name}</h3>
-        <p className="text-gray-600">{room.description}</p>
-        <p className="text-indigo-600 font-bold mt-2">
-          {room.price.toLocaleString()} VND/đêm
+      <div className="p-3">
+        <h3 className="text-base font-semibold truncate">{room.name}</h3>
+        <p className="text-gray-600 text-sm">Loại phòng: {room.roomTypeName}</p>
+        <p className="text-gray-600 text-sm">Tầng: {room.floorName}</p>
+        <p className="text-gray-600 text-sm truncate">
+          Ghi chú: {room.note || "Không có ghi chú"}
         </p>
-        <button className="mt-4 bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">
+        <button className="mt-2 w-full bg-indigo-600 text-white text-sm py-1 px-2 rounded-md hover:bg-indigo-700">
           Xem chi tiết
         </button>
       </div>
@@ -65,14 +36,55 @@ const RoomsPage: React.FC = () => {
   const checkOut = queryParams.get("checkOut");
   const guests = queryParams.get("guests");
 
+  const [rooms, setRooms] = useState<ResponseRoomDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [roomsData, roomTypesData, floorsData] = await Promise.all([
+          getAllRooms(),
+          getAllRoomTypes(),
+          getAllFloors(),
+        ]);
+
+        // Ánh xạ dữ liệu phòng với tên loại phòng và tên tầng
+        const mappedRooms = roomsData.map((room) => {
+          const roomType = roomTypesData.find(
+            (rt) => rt.id === room.roomTypeId
+          );
+          const floor = floorsData.find((f) => f.id === room.floorId);
+          return {
+            ...room,
+            roomTypeName: roomType?.name || "Không xác định",
+            floorName: floor?.name || "Không xác định",
+          };
+        });
+
+        setRooms(mappedRooms);
+        setLoading(false);
+      } catch (err) {
+        setError("Không thể tải dữ liệu");
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
   return (
     <div className="max-w-7xl mx-auto py-12 px-4">
       <h2 className="text-3xl font-bold text-center mb-8">Danh sách phòng</h2>
       <p className="text-center text-gray-600 mb-8">
         Kết quả tìm kiếm: {checkIn} đến {checkOut}, {guests} khách
       </p>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {suggestedRooms.map((room) => (
+      {loading && <p className="text-center">Đang tải...</p>}
+      {error && <p className="text-center text-red-600">{error}</p>}
+      {!loading && !error && rooms.length === 0 && (
+        <p className="text-center">Không có phòng nào</p>
+      )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        {rooms.map((room) => (
           <RoomCard key={room.id} room={room} />
         ))}
       </div>

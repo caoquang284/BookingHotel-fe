@@ -1,30 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getRoomsByState } from "../services/apis/room";
+import { getAllRoomTypes } from "../services/apis/roomType";
+import { getAllFloors } from "../services/apis/floor";
+import type { ResponseRoomDTO } from "../types/index.ts";
+import { RoomStates } from "../types/index.ts";
 
-// Mock data cho các phòng gợi ý
-const suggestedRooms = [
-  {
-    id: 1,
-    name: "Phòng 101",
-    type: "Deluxe",
-    floor: 1,
-    note: "View biển, có ban công",
-  },
-  {
-    id: 2,
-    name: "Phòng 202",
-    type: "Suite",
-    floor: 2,
-    note: "Phòng rộng, có bồn tắm",
-  },
-  {
-    id: 3,
-    name: "Phòng 305",
-    type: "Standard",
-    floor: 3,
-    note: "Gần thang máy, tiện di chuyển",
-  },
-];
+// Định nghĩa interface cho payload phân trang
+interface PaginatedResponse {
+  content: ResponseRoomDTO[];
+  empty: boolean;
+  first: boolean;
+  last: boolean;
+  number: number;
+  numberOfElements: number;
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: { empty: boolean; sorted: boolean; unsorted: boolean };
+    offset: number;
+  };
+  size: number;
+  sort: { empty: boolean; sorted: boolean; unsorted: boolean };
+  totalElements: number;
+  totalPages: number;
+}
 
 // Component cho box đặt phòng
 const BookingBox: React.FC<{
@@ -103,20 +103,30 @@ const BookingBox: React.FC<{
 };
 
 // Component cho thẻ phòng
-const RoomCard: React.FC<{
-  room: { id: number; name: string; type: string; floor: number; note: string };
-}> = ({ room }) => {
+const RoomCard: React.FC<{ room: ResponseRoomDTO }> = ({ room }) => {
   const navigate = useNavigate();
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      <div className="p-4">
-        <h3 className="text-lg font-semibold">{room.name}</h3>
-        <p className="text-gray-600">Loại phòng: {room.type}</p>
-        <p className="text-gray-600">Tầng: {room.floor}</p>
-        <p className="text-gray-600">Ghi chú: {room.note}</p>
+    <div className="bg-white rounded-lg shadow-md overflow-hidden w-full max-w-xs mx-auto">
+      <img
+        src="https://xuonggooccho.com/ckfinder/userfiles/files/anh-phong-ngu.jpg"
+        alt={room.name}
+        className="w-full h-52 object-cover"
+        onError={() => console.error("Image failed to load for", room.name)}
+      />
+      <div className="p-8">
+        <p className="text-2xl font-semibold truncate">
+          Tên phòng: {room.name}
+        </p>
+        <p className="text-gray-600 text-base">
+          Loại phòng: {room.roomTypeName}
+        </p>
+        <p className="text-gray-600 text-base">Tầng: {room.floorName}</p>
+        <p className="text-gray-600 text-base truncate">
+          Ghi chú: {room.note || "Không có ghi chú"}
+        </p>
         <button
           onClick={() => navigate(`/room/${room.id}`)}
-          className="mt-4 bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700"
+          className="mt-4 w-full bg-indigo-600 text-white text-base py-2 px-4 rounded-md hover:bg-indigo-700"
         >
           Xem chi tiết
         </button>
@@ -125,16 +135,51 @@ const RoomCard: React.FC<{
   );
 };
 
-// Component chính cho trang Dashboard
-const DashboardPage: React.FC = () => {
+// Component chính cho trang Home
+const Home: React.FC = () => {
   const navigate = useNavigate();
+  const [rooms, setRooms] = useState<ResponseRoomDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [roomsResponse, roomTypesData, floorsData] = await Promise.all([
+          getRoomsByState(RoomStates.READY_TO_SERVE), // Chỉ lấy phòng READY_TO_SERVE
+          getAllRoomTypes(),
+          getAllFloors(),
+        ]);
+        const roomsData = (roomsResponse as unknown as PaginatedResponse)
+          .content; // Lấy mảng phòng từ content
+        console.log("Rooms fetched:", roomsData.length); // Kiểm tra số phòng
+        const mappedRooms = roomsData.map((room) => {
+          const roomType = roomTypesData.find(
+            (rt) => rt.id === room.roomTypeId
+          );
+          const floor = floorsData.find((f) => f.id === room.floorId);
+          return {
+            ...room,
+            roomTypeName: roomType?.name || "Không xác định",
+            floorName: floor?.name || "Không xác định",
+          };
+        });
+        setRooms(mappedRooms);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError("Không thể tải dữ liệu");
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const handleSearch = (params: {
     checkIn: string;
     checkOut: string;
     guests: number;
   }) => {
-    // Chuyển hướng đến trang danh sách phòng với query params
     navigate(
       `/rooms?checkIn=${params.checkIn}&checkOut=${params.checkOut}&guests=${params.guests}`
     );
@@ -152,9 +197,16 @@ const DashboardPage: React.FC = () => {
       </div>
       <BookingBox onSearch={handleSearch} />
       <div className="max-w-7xl mx-auto py-12 px-4">
-        <h2 className="text-3xl font-bold text-center mb-8">Phòng gợi ý</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {suggestedRooms.map((room) => (
+        <h2 className="text-3xl font-bold text-center mb-8">
+          Các phòng đang có sẵn
+        </h2>
+        {loading && <p className="text-center">Đang tải...</p>}
+        {error && <p className="text-center text-red-600">{error}</p>}
+        {!loading && !error && rooms.length === 0 && (
+          <p className="text-center">Không có phòng nào sẵn sàng</p>
+        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {rooms.slice(0, 5).map((room) => (
             <RoomCard key={room.id} room={room} />
           ))}
         </div>
@@ -163,4 +215,4 @@ const DashboardPage: React.FC = () => {
   );
 };
 
-export default DashboardPage;
+export default Home;
