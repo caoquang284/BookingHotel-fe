@@ -56,6 +56,7 @@ const BookingPage: React.FC = () => {
         setRoom({
           ...roomData,
           roomTypeName: roomType?.name || "Không xác định",
+          roomTypePrice: roomType?.price || 0,
           floorName: floor?.name || "Không xác định",
         });
         setLoading(false);
