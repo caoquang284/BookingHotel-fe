@@ -68,6 +68,8 @@ export interface BookingConfirmationFormDTO {
     bookingGuestId: number;
     bookingState: BookingState;
     roomId: number;
+    bookingDate: string,
+    rentalDays: number
 }
 
 export interface ResponseBookingConfirmationFormDTO {
@@ -82,6 +84,8 @@ export interface ResponseBookingConfirmationFormDTO {
     roomId: number;
     roomName: string;
     roomTypeName: string;
+    bookingDate: string;
+    rentalDays: number
 }
 
 export interface FloorDTO {
@@ -429,4 +433,25 @@ export interface ResponseVariableDTO {
     name: string;
     value: number;
     description?: string;
+}
+
+export interface RegisterGuestDTO {
+  name: string;
+  sex: Sex;
+  age: number;
+  identificationNumber: string;
+  phoneNumber: string;
+  email: string;
+  account: AccountDTO;
+}
+
+export interface DuplicateCheckDTO {
+  identificationNumber: string;
+  phoneNumber: string;
+  email: string;
+}
+
+export interface DuplicateCheckResponse {
+  isDuplicate: boolean;
+  fields: string[];
 }

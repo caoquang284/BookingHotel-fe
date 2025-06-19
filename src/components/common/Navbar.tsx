@@ -1,25 +1,61 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 
-const Navbar = () => {
+interface NavItem {
+  path: string;
+  label: string;
+  className?: string;
+}
+
+interface AuthItemLink extends NavItem {
+  path: string;
+}
+
+interface AuthItemButton {
+  action: () => void;
+  label: string;
+  className: string;
+}
+
+type AuthItem = AuthItemLink | AuthItemButton;
+
+const Navbar: React.FC = () => {
   const location = useLocation();
+  const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const navItems = [
-    { path: "/", label: "Trang chủ" },
-    { path: "/booking-history", label: "Lịch sử đặt phòng" },
-    { path: "/dashboard", label: "Quản lý" },
-    { path: "/profile", label: "Hồ sơ" },
-  ];
-
-  const authItems = [
-    { path: "/login", label: "Đăng nhập" },
-    { path: "/register", label: "Đăng ký" },
-  ];
+  const handleLogout = () => {
+    logout();
+    window.location.href = "/"; 
+  };
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
+
+  // Các mục menu (hiển thị khi đã đăng nhập)
+  const navItems: NavItem[] = [
+    { path: "/", label: "Trang chủ" },
+    ...(user
+      ? [
+          { path: "/booking-history", label: "Lịch sử đặt phòng" },
+        ]
+      : []),
+  ];
+
+  const authItems: AuthItem[] = user
+    ? [
+        {
+          action: handleLogout,
+          label: "Đăng xuất",
+          className: "from-black to-gray-700 hover:from-red-700 hover:to-red-800",
+        },
+      ]
+    : [
+        { path: "/login", label: "Đăng nhập", className: "from-black to-gray-700" },
+        { path: "/register", label: "Đăng ký", className: "from-blue-700 to-blue-800" },
+      ];
 
   return (
     <nav className="bg-white text-black px-4 sm:px-6 py-4 shadow-md">
@@ -30,8 +66,8 @@ const Navbar = () => {
             <Link
               key={item.path}
               to={item.path}
-              className={`hover:text-gray-600 transition-colors ${
-                location.pathname === item.path ? "font-bold text-blue-600" : ""
+              className={`hover:text-gray-800 transition-colors ${
+                location.pathname === item.path ? "font-bold text-blue-800" : ""
               }`}
             >
               {item.label}
@@ -39,19 +75,25 @@ const Navbar = () => {
           ))}
         </div>
         <div className="hidden sm:flex items-center gap-4">
-          {authItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`px-5 py-2 rounded-full font-semibold shadow hover:scale-105 transition-transform ${
-                item.label === "Đăng nhập"
-                  ? "bg-gradient-to-r from-black to-gray-700 text-white"
-                  : "bg-gradient-to-r from-blue-600 to-blue-800 text-white"
-              }`}
-            >
-              {item.label}
-            </Link>
-          ))}
+          {authItems.map((item) =>
+            "path" in item ? (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`px-5 py-2 rounded-full font-semibold shadow hover:scale-105 transition-transform bg-gradient-to-r ${item.className} text-white`}
+              >
+                {item.label}
+              </Link>
+            ) : (
+              <button
+                key={item.label}
+                onClick={item.action}
+                className={`px-5 py-2 rounded-full font-semibold shadow hover:scale-105 transition-transform bg-gradient-to-r ${item.className} text-white`}
+              >
+                {item.label}
+              </button>
+            )
+          )}
         </div>
         <div className="sm:hidden">
           <button
@@ -96,20 +138,36 @@ const Navbar = () => {
                 {item.label}
               </Link>
             ))}
-            {authItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`py-2 px-4 text-sm font-medium hover:bg-gray-100 rounded-md transition-colors ${
-                  location.pathname === item.path
-                    ? "font-bold text-blue-600"
-                    : ""
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
+            {authItems.map((item) =>
+              "path" in item ? (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`py-2 px-4 text-sm font-medium hover:bg-gray-100 rounded-md transition-colors ${
+                    location.pathname === item.path
+                      ? "font-bold text-blue-600"
+                      : ""
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <button
+                  key={item.label}
+                  onClick={() => {
+                    item.action();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`py-2 px-4 text-sm font-medium bg-${item.className} text-white rounded-md hover:bg-${item.className.replace(
+                    "600",
+                    "700"
+                  )} transition-colors`}
+                >
+                  {item.label}
+                </button>
+              )
+            )}
           </div>
         </div>
       )}
