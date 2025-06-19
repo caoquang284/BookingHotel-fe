@@ -5,7 +5,7 @@ import type {
     RefreshResultDTO,
 } from '../../types';
 
-const BASE_URL = 'http://localhost:9090/api/authentication';
+const BASE_URL = 'http://localhost:8081/api/authentication';
 
 export async function login(data: LoginDTO): Promise<ResponseLoginDTO> {
     const response = await fetch(`${BASE_URL}/login`, {
