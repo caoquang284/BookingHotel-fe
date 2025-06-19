@@ -428,3 +428,24 @@ export interface ResponseVariableDTO {
     value: number;
     description?: string;
 }
+
+export interface RegisterGuestDTO {
+  name: string;
+  sex: Sex;
+  age: number;
+  identificationNumber: string;
+  phoneNumber: string;
+  email: string;
+  account: AccountDTO;
+}
+
+export interface DuplicateCheckDTO {
+  identificationNumber: string;
+  phoneNumber: string;
+  email: string;
+}
+
+export interface DuplicateCheckResponse {
+  isDuplicate: boolean;
+  fields: string[];
+}

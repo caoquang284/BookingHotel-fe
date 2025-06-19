@@ -1,9 +1,294 @@
-import React from 'react'
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { registerGuest } from "../services/apis/register";
+import { type GuestDTO, type AccountDTO, type Sex } from "../types";
 
 function Register() {
+  const navigate = useNavigate();
+  const [step, setStep] = useState(1);
+  const [guestInfo, setGuestInfo] = useState<GuestDTO>({
+    name: "",
+    sex: "MALE",
+    age: 0,
+    identificationNumber: "",
+    phoneNumber: "",
+    email: "",
+    accountId: 0,
+  });
+  const [accountInfo, setAccountInfo] = useState<AccountDTO>({
+    username: "",
+    password: "",
+    userRoleId: 2,
+  });
+  const [error, setError] = useState<string>("");
+
+  const validateGuestInfo = (): string | null => {
+    if (!/^[0-9]\d{11}$/.test(guestInfo.identificationNumber)) {
+      return "Số CCCD phải là 12 chữ số!";
+    }
+    if (!/^\d{10,11}$/.test(guestInfo.phoneNumber)) {
+      return "Số điện thoại phải có 10 hoặc 11 chữ số!";
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestInfo.email)) {
+      return "Email không hợp lệ!";
+    }
+    if (guestInfo.age < 18) {
+      return "Tuổi phải lớn hơn hoặc bằng 18!";
+    }
+    if (!guestInfo.name.trim()) {
+      return "Họ và tên không được để trống!";
+    }
+    return null;
+  };
+
+  const validateAccountInfo = (): string | null => {
+    if (!/^[a-zA-Z0-9]{6,20}$/.test(accountInfo.username)) {
+      return "Tên đăng nhập phải từ 6-20 ký tự, chỉ chứa chữ và số!";
+    }
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/.test(accountInfo.password)) {
+      return "Mật khẩu phải có ít nhất 8 ký tự, chứa chữ hoa, chữ thường và số!";
+    }
+    return null;
+  };
+
+  const handleGuestInfoSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    const validationError = validateGuestInfo();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    setStep(2);
+  };
+
+  const handleAccountSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    const validationError = validateAccountInfo();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    try {
+      await registerGuest({
+        ...guestInfo,
+        accountId: null,
+        username: accountInfo.username,
+        password: accountInfo.password,
+        userRoleId: accountInfo.userRoleId,
+      });
+      alert("Đăng ký thành công!");
+      navigate("/login");
+    } catch (err: any) {
+      setError(err.message || "Đăng ký thất bại! Vui lòng kiểm tra thông tin.");
+      console.error("Error registering:", err);
+    }
+  };
+
   return (
-    <div>Register</div>
-  )
+    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 overflow-hidden">
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute w-64 h-64 bg-indigo-200 opacity-20 rounded-full blur-3xl animate-pulse top-20 left-20"></div>
+        <div className="absolute w-80 h-80 bg-pink-200 opacity-20 rounded-full blur-3xl animate-pulse bottom-20 right-20"></div>
+      </div>
+
+      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-4xl z-10">
+        <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
+          {step === 1 ? "Thông tin cá nhân" : "Tạo tài khoản"}
+        </h2>
+        {error && (
+          <p className="text-red-500 text-center mb-4 bg-red-50 p-3 rounded-lg">{error}</p>
+        )}
+
+        {step === 1 ? (
+          <form onSubmit={handleGuestInfoSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Họ và tên</label>
+              <div className="flex items-center">
+                <span className="absolute left-3 text-gray-400">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                  </svg>
+                </span>
+                <input
+                  type="text"
+                  value={guestInfo.name}
+                  onChange={(e) => setGuestInfo({ ...guestInfo, name: e.target.value })}
+                  className="pl-10 pr-4 py-3 w-full rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-300"
+                  placeholder="Họ và tên"
+                  required
+                  aria-label="Họ và tên"
+                />
+              </div>
+            </div>
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Giới tính</label>
+              <div className="flex items-center">
+                <span className="absolute left-3 text-gray-400">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path>
+                  </svg>
+                </span>
+                <select
+                  value={guestInfo.sex}
+                  onChange={(e) => setGuestInfo({ ...guestInfo, sex: e.target.value as Sex })}
+                  className="pl-10 pr-4 py-3 w-full rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-300"
+                  required
+                  aria-label="Giới tính"
+                >
+                  <option value="MALE">Nam</option>
+                  <option value="FEMALE">Nữ</option>
+                  <option value="OTHER">Khác</option>
+                </select>
+              </div>
+            </div>
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Tuổi</label>
+              <div className="flex items-center">
+                <span className="absolute left-3 text-gray-400">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                </span>
+                <input
+                  type="number"
+                  value={guestInfo.age}
+                  onChange={(e) => setGuestInfo({ ...guestInfo, age: parseInt(e.target.value) })}
+                  className="pl-10 pr-4 py-3 w-full rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-300"
+                  placeholder="Tuổi"
+                  required
+                  min="18"
+                  aria-label="Tuổi"
+                />
+              </div>
+            </div>
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">CCCD</label>
+              <div className="flex items-center">
+                <span className="absolute left-3 text-gray-400">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                  </svg>
+                </span>
+                <input
+                  type="text"
+                  value={guestInfo.identificationNumber}
+                  onChange={(e) => setGuestInfo({ ...guestInfo, identificationNumber: e.target.value })}
+                  className="pl-10 pr-4 py-3 w-full rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-300"
+                  placeholder="Số CCCD"
+                  required
+                  aria-label="Số CCCD"
+                />
+              </div>
+            </div>
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Số điện thoại</label>
+              <div className="flex items-center">
+                <span className="absolute left-3 text-gray-400">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                  </svg>
+                </span>
+                <input
+                  type="text"
+                  value={guestInfo.phoneNumber}
+                  onChange={(e) => setGuestInfo({ ...guestInfo, phoneNumber: e.target.value })}
+                  className="pl-10 pr-4 py-3 w-full rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-300"
+                  placeholder="Số điện thoại"
+                  required
+                  aria-label="Số điện thoại"
+                />
+              </div>
+            </div>
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+              <div className="flex items-center">
+                <span className="absolute left-3 text-gray-400">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                  </svg>
+                </span>
+                <input
+                  type="email"
+                  value={guestInfo.email}
+                  onChange={(e) => setGuestInfo({ ...guestInfo, email: e.target.value })}
+                  className="pl-10 pr-4 py-3 w-full rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-300"
+                  placeholder="Email"
+                  required
+                  aria-label="Email"
+                />
+              </div>
+            </div>
+            <div className="md:col-span-2 flex justify-end space-x-4">
+              <button
+                type="submit"
+                className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold py-3 px-6 rounded-lg hover:from-indigo-600 hover:to-purple-600 transition duration-300"
+              >
+                Tiếp tục
+              </button>
+            </div>
+          </form>
+        ) : (
+          <form onSubmit={handleAccountSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Tên đăng nhập</label>
+              <div className="flex items-center">
+                <span className="absolute left-3 text-gray-400">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                  </svg>
+                </span>
+                <input
+                  type="text"
+                  value={accountInfo.username}
+                  onChange={(e) => setAccountInfo({ ...accountInfo, username: e.target.value })}
+                  className="pl-10 pr-4 py-3 w-full rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-300"
+                  placeholder="Tên đăng nhập"
+                  required
+                  aria-label="Tên đăng nhập"
+                />
+              </div>
+            </div>
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Mật khẩu</label>
+              <div className="flex items-center">
+                <span className="absolute left-3 text-gray-400">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 11c0-1.104-.896-2-2-2s-2 .896-2 2m0-4c0-1.104-.896-2-2-2s-2 .896-2 2m6 4c0-1.104-.896-2-2-2s-2 .896-2 2"></path>
+                  </svg>
+                </span>
+                <input
+                  type="password"
+                  value={accountInfo.password}
+                  onChange={(e) => setAccountInfo({ ...accountInfo, password: e.target.value })}
+                  className="pl-10 pr-4 py-3 w-full rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-300"
+                  placeholder="Mật khẩu"
+                  required
+                  aria-label="Mật khẩu"
+                />
+              </div>
+            </div>
+            <div className="md:col-span-2 flex justify-end space-x-4">
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-lg hover:bg-gray-300 transition duration-300"
+              >
+                Quay lại
+              </button>
+              <button
+                type="submit"
+                className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold py-3 px-6 rounded-lg hover:from-indigo-600 hover:to-purple-600 transition duration-300"
+              >
+                Đăng ký
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
 }
 
-export default Register
+export default Register;
