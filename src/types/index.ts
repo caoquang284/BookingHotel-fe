@@ -345,6 +345,7 @@ export interface ResponseRoomDTO {
     roomState: RoomState;
     roomTypeId: number;
     roomTypeName: string;
+    roomTypePrice: number;
     floorId: number;
     floorName: string;
     bookingConfirmationFormIds: number[];

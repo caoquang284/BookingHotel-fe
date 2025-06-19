@@ -6,6 +6,7 @@ import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import Register from "./pages/Register";
 import Rooms from "./pages/Rooms";
+import BookingPage from "./pages/BookingPage";
 
 const router = createBrowserRouter([
   {
@@ -17,6 +18,8 @@ const router = createBrowserRouter([
       },
       { path: "/booking-history", element: <BookingHistory /> },
       { path: "/rooms", element: <Rooms /> },
+      { path: "/booking", element: <BookingPage /> },
+
       { path: "/login", element: <Login /> },
       { path: "/profile", element: <Profile /> },
       { path: "/register", element: <Register /> },
