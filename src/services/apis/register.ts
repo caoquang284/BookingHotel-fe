@@ -1,7 +1,7 @@
 // register.ts
 import type { GuestDTO, AccountDTO } from "../../types";
 
-const BASE_URL = "http://localhost:8081/api";
+const BASE_URL = "http://localhost:9090/api";
 
 export async function registerGuest(data: { guest: GuestDTO; account: AccountDTO }): Promise<void> {
   try {
