@@ -3,7 +3,11 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { getRoomsByState } from "../services/apis/room";
 import { getAllRoomTypes } from "../services/apis/roomType";
 import { getAllFloors } from "../services/apis/floor";
-import type { ResponseRoomDTO } from "../types/index.ts";
+import { getAllBookingConfirmationForms } from "../services/apis/bookingconfirm";
+import type {
+  ResponseRoomDTO,
+  ResponseBookingConfirmationFormDTO,
+} from "../types/index.ts";
 import { RoomStates } from "../types/index.ts";
 
 // Định nghĩa interface cho payload phân trang
@@ -117,7 +121,7 @@ const Rooms: React.FC = () => {
   const queryParams = new URLSearchParams(location.search);
   const checkIn = queryParams.get("checkIn") || "";
   const checkOut = queryParams.get("checkOut") || "";
-  const guests = parseInt(queryParams.get("guests") || "1");
+  const roomTypeId = Number(queryParams.get("roomTypeId") || "0");
 
   const [rooms, setRooms] = useState<ResponseRoomDTO[]>([]);
   const [loading, setLoading] = useState(true);
@@ -126,14 +130,15 @@ const Rooms: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [roomsResponse, roomTypesData, floorsData] = await Promise.all([
-          getRoomsByState(RoomStates.READY_TO_SERVE),
-          getAllRoomTypes(),
-          getAllFloors(),
-        ]);
+        const [roomsResponse, roomTypesData, floorsData, bookingForms] =
+          await Promise.all([
+            getRoomsByState(RoomStates.READY_TO_SERVE),
+            getAllRoomTypes(),
+            getAllFloors(),
+            getAllBookingConfirmationForms(),
+          ]);
         const roomsData = (roomsResponse as unknown as PaginatedResponse)
           .content;
-        console.log("Rooms fetched:", roomsData.length);
         const mappedRooms = roomsData.map((room) => {
           const roomType = roomTypesData.find(
             (rt) => rt.id === room.roomTypeId
@@ -146,7 +151,40 @@ const Rooms: React.FC = () => {
             roomTypePrice: roomType?.price || 0,
           };
         });
-        setRooms(mappedRooms);
+
+        // Lọc phòng theo loại phòng
+        let filteredRooms = mappedRooms;
+        if (roomTypeId) {
+          filteredRooms = filteredRooms.filter(
+            (room) => room.roomTypeId === roomTypeId
+          );
+        }
+
+        // Lọc phòng không bị trùng lịch
+        if (checkIn && checkOut) {
+          const checkInDate = new Date(checkIn);
+          const checkOutDate = new Date(checkOut);
+
+          filteredRooms = filteredRooms.filter((room) => {
+            // Tìm các booking của phòng này
+            const bookings = (
+              bookingForms as ResponseBookingConfirmationFormDTO[]
+            ).filter((form) => form.roomId === room.id);
+            console.log(bookings);
+            // Nếu không có booking nào trùng, phòng này hợp lệ
+            return !bookings.some((form) => {
+              const bookingStart = new Date(form.bookingDate);
+              const bookingEnd = new Date(form.bookingDate);
+              bookingEnd.setDate(bookingEnd.getDate() + form.rentalDays);
+              console.log(bookingStart, bookingEnd);
+              console.log(checkInDate, checkOutDate);
+              // Kiểm tra giao nhau
+              return checkInDate < bookingEnd && checkOutDate > bookingStart;
+            });
+          });
+        }
+
+        setRooms(filteredRooms);
         setLoading(false);
       } catch (err) {
         console.error("Error fetching data:", err);
@@ -155,14 +193,14 @@ const Rooms: React.FC = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [checkIn, checkOut, roomTypeId]);
 
   return (
     <div className="max-w-7xl mx-auto py-12 px-4">
       <h2 className="text-3xl font-bold text-center mb-8">Danh sách phòng</h2>
       <p className="text-center text-gray-600 mb-8">
         Kết quả tìm kiếm: {checkIn || "Chưa chọn"} đến {checkOut || "Chưa chọn"}
-        , {guests} khách
+        {roomTypeId ? `, loại phòng: ${roomTypeId}` : ""}
       </p>
       {loading && <p className="text-center">Đang tải...</p>}
       {error && <p className="text-center text-red-600">{error}</p>}
@@ -176,7 +214,7 @@ const Rooms: React.FC = () => {
             room={room}
             checkIn={checkIn}
             checkOut={checkOut}
-            guests={guests}
+            guests={roomTypeId}
           />
         ))}
       </div>
