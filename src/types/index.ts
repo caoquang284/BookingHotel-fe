@@ -68,6 +68,8 @@ export interface BookingConfirmationFormDTO {
     bookingGuestId: number;
     bookingState: BookingState;
     roomId: number;
+    bookingDate: string,
+    rentalDays: number
 }
 
 export interface ResponseBookingConfirmationFormDTO {
@@ -82,6 +84,8 @@ export interface ResponseBookingConfirmationFormDTO {
     roomId: number;
     roomName: string;
     roomTypeName: string;
+    bookingDate: string;
+    rentalDays: number
 }
 
 export interface FloorDTO {
