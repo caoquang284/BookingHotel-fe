@@ -320,13 +320,12 @@ export interface ResponseRevenueReportDetailDTO {
     roomTypeName: string;
 }
 
-export type RoomState = 'BEING_CLEANED' | 'BOOKED' | 'READY_TO_SERVE' | 'UNDER_RENOVATION';
+export type RoomState = 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE';
 
 export const RoomStates = {
-    BEING_CLEANED: 'BEING_CLEANED',
-    BOOKED: 'BOOKED',
-    READY_TO_SERVE: 'READY_TO_SERVE',
-    UNDER_RENOVATION: 'UNDER_RENOVATION',
+    AVAILABLE: 'AVAILABLE',
+    OCCUPIED: 'OCCUPIED',
+    MAINTENANCE: 'MAINTENANCE',
 } as const;
 
 
@@ -428,4 +427,25 @@ export interface ResponseVariableDTO {
     name: string;
     value: number;
     description?: string;
+}
+
+export interface RegisterGuestDTO {
+  name: string;
+  sex: Sex;
+  age: number;
+  identificationNumber: string;
+  phoneNumber: string;
+  email: string;
+  account: AccountDTO;
+}
+
+export interface DuplicateCheckDTO {
+  identificationNumber: string;
+  phoneNumber: string;
+  email: string;
+}
+
+export interface DuplicateCheckResponse {
+  isDuplicate: boolean;
+  fields: string[];
 }
