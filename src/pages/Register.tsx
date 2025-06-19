@@ -18,71 +18,126 @@ function Register() {
   const [accountInfo, setAccountInfo] = useState<AccountDTO>({
     username: "",
     password: "",
-    userRoleId: 2,
+    userRoleId: 5,
   });
-  const [error, setError] = useState<string>("");
+  const [errors, setErrors] = useState<{
+    name?: string;
+    sex?: string;
+    age?: string;
+    identificationNumber?: string;
+    phoneNumber?: string;
+    email?: string;
+    username?: string;
+    password?: string;
+  }>({});
 
-  const validateGuestInfo = (): string | null => {
-    if (!/^[0-9]\d{11}$/.test(guestInfo.identificationNumber)) {
-      return "Số CCCD phải là 12 chữ số!";
+  const validateGuestInfo = (): boolean => {
+    const newErrors: typeof errors = {};
+
+    if (!guestInfo.name.trim()) {
+      newErrors.name = "Họ và tên không được để trống!";
+    }
+    if (!/^[0-9]{12}$/.test(guestInfo.identificationNumber)) {
+      newErrors.identificationNumber = "Số CCCD phải là 12 chữ số!";
     }
     if (!/^\d{10,11}$/.test(guestInfo.phoneNumber)) {
-      return "Số điện thoại phải có 10 hoặc 11 chữ số!";
+      newErrors.phoneNumber = "Số điện thoại phải có 10 hoặc 11 chữ số!";
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestInfo.email)) {
-      return "Email không hợp lệ!";
+      newErrors.email = "Email không hợp lệ!";
     }
     if (guestInfo.age < 18) {
-      return "Tuổi phải lớn hơn hoặc bằng 18!";
+      newErrors.age = "Tuổi phải lớn hơn hoặc bằng 18!";
     }
-    if (!guestInfo.name.trim()) {
-      return "Họ và tên không được để trống!";
-    }
-    return null;
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const validateAccountInfo = (): string | null => {
+  const validateAccountInfo = (): boolean => {
+    const newErrors: typeof errors = {};
+
     if (!/^[a-zA-Z0-9]{6,20}$/.test(accountInfo.username)) {
-      return "Tên đăng nhập phải từ 6-20 ký tự, chỉ chứa chữ và số!";
+      newErrors.username = "Tên đăng nhập phải từ 6-20 ký tự, chỉ chứa chữ và số!";
     }
     if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/.test(accountInfo.password)) {
-      return "Mật khẩu phải có ít nhất 8 ký tự, chứa chữ hoa, chữ thường và số!";
+      newErrors.password = "Mật khẩu phải có ít nhất 8 ký tự, chứa chữ hoa, chữ thường và số!";
     }
-    return null;
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleInputChange = (field: keyof GuestDTO | keyof AccountDTO, value: string | number | Sex) => {
+    if (step === 1) {
+      setGuestInfo({ ...guestInfo, [field]: value });
+      const newErrors = { ...errors };
+      switch (field) {
+        case "name":
+          if (!String(value).trim()) newErrors.name = "Họ và tên không được để trống!";
+          else delete newErrors.name;
+          break;
+        case "identificationNumber":
+          if (!/^[0-9]{12}$/.test(String(value))) {
+            newErrors.identificationNumber = "Số CCCD phải là 12 chữ số!";
+          } else delete newErrors.identificationNumber;
+          break;
+        case "phoneNumber":
+          if (!/^\d{10,11}$/.test(String(value))) {
+            newErrors.phoneNumber = "Số điện thoại phải có 10 hoặc 11 chữ số!";
+          } else delete newErrors.phoneNumber;
+          break;
+        case "email":
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value))) {
+            newErrors.email = "Email không hợp lệ!";
+          } else delete newErrors.email;
+          break;
+        case "age":
+          if (Number(value) < 18) {
+            newErrors.age = "Tuổi phải lớn hơn hoặc bằng 18!";
+          } else delete newErrors.age;
+          break;
+      }
+      setErrors(newErrors);
+    } else {
+      setAccountInfo({ ...accountInfo, [field]: value });
+      const newErrors = { ...errors };
+      switch (field) {
+        case "username":
+          if (!/^[a-zA-Z0-9]{6,20}$/.test(String(value))) {
+            newErrors.username = "Tên đăng nhập phải từ 6-20 ký tự, chỉ chứa chữ và số!";
+          } else delete newErrors.username;
+          break;
+        case "password":
+          if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/.test(String(value))) {
+            newErrors.password = "Mật khẩu phải có ít nhất 8 ký tự, chứa chữ hoa, chữ thường và số!";
+          } else delete newErrors.password;
+          break;
+      }
+      setErrors(newErrors);
+    }
   };
 
   const handleGuestInfoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    const validationError = validateGuestInfo();
-    if (validationError) {
-      setError(validationError);
-      return;
+    if (validateGuestInfo()) {
+      setStep(2);
     }
-    setStep(2);
   };
 
   const handleAccountSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    const validationError = validateAccountInfo();
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
+    if (!validateAccountInfo()) return;
+
     try {
       await registerGuest({
-        ...guestInfo,
-        accountId: null,
-        username: accountInfo.username,
-        password: accountInfo.password,
-        userRoleId: accountInfo.userRoleId,
+        guest: guestInfo,
+        account: accountInfo,
       });
       alert("Đăng ký thành công!");
       navigate("/login");
     } catch (err: any) {
-      setError(err.message || "Đăng ký thất bại! Vui lòng kiểm tra thông tin.");
-      console.error("Error registering:", err);
+        alert("Đăng ký thất bại!");
     }
   };
 
@@ -97,9 +152,6 @@ function Register() {
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
           {step === 1 ? "Thông tin cá nhân" : "Tạo tài khoản"}
         </h2>
-        {error && (
-          <p className="text-red-500 text-center mb-4 bg-red-50 p-3 rounded-lg">{error}</p>
-        )}
 
         {step === 1 ? (
           <form onSubmit={handleGuestInfoSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -114,13 +166,14 @@ function Register() {
                 <input
                   type="text"
                   value={guestInfo.name}
-                  onChange={(e) => setGuestInfo({ ...guestInfo, name: e.target.value })}
-                  className="pl-10 pr-4 py-3 w-full rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-300"
+                  onChange={(e) => handleInputChange("name", e.target.value)}
+                  className={`pl-10 pr-4 py-3 w-full rounded-lg border ${errors.name ? "border-red-500" : "border-gray-200"} focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-300`}
                   placeholder="Họ và tên"
                   required
                   aria-label="Họ và tên"
                 />
               </div>
+              {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
             </div>
             <div className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-2">Giới tính</label>
@@ -132,7 +185,7 @@ function Register() {
                 </span>
                 <select
                   value={guestInfo.sex}
-                  onChange={(e) => setGuestInfo({ ...guestInfo, sex: e.target.value as Sex })}
+                  onChange={(e) => handleInputChange("sex", e.target.value as Sex)}
                   className="pl-10 pr-4 py-3 w-full rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-300"
                   required
                   aria-label="Giới tính"
@@ -154,14 +207,15 @@ function Register() {
                 <input
                   type="number"
                   value={guestInfo.age}
-                  onChange={(e) => setGuestInfo({ ...guestInfo, age: parseInt(e.target.value) })}
-                  className="pl-10 pr-4 py-3 w-full rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-300"
+                  onChange={(e) => handleInputChange("age", parseInt(e.target.value))}
+                  className={`pl-10 pr-4 py-3 w-full rounded-lg border ${errors.age ? "border-red-500" : "border-gray-200"} focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-300`}
                   placeholder="Tuổi"
                   required
                   min="18"
                   aria-label="Tuổi"
                 />
               </div>
+              {errors.age && <p className="text-red-500 text-sm mt-1">{errors.age}</p>}
             </div>
             <div className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-2">CCCD</label>
@@ -174,13 +228,14 @@ function Register() {
                 <input
                   type="text"
                   value={guestInfo.identificationNumber}
-                  onChange={(e) => setGuestInfo({ ...guestInfo, identificationNumber: e.target.value })}
-                  className="pl-10 pr-4 py-3 w-full rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-300"
+                  onChange={(e) => handleInputChange("identificationNumber", e.target.value)}
+                  className={`pl-10 pr-4 py-3 w-full rounded-lg border ${errors.identificationNumber ? "border-red-500" : "border-gray-200"} focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-300`}
                   placeholder="Số CCCD"
                   required
                   aria-label="Số CCCD"
                 />
               </div>
+              {errors.identificationNumber && <p className="text-red-500 text-sm mt-1">{errors.identificationNumber}</p>}
             </div>
             <div className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-2">Số điện thoại</label>
@@ -193,13 +248,14 @@ function Register() {
                 <input
                   type="text"
                   value={guestInfo.phoneNumber}
-                  onChange={(e) => setGuestInfo({ ...guestInfo, phoneNumber: e.target.value })}
-                  className="pl-10 pr-4 py-3 w-full rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-300"
+                  onChange={(e) => handleInputChange("phoneNumber", e.target.value)}
+                  className={`pl-10 pr-4 py-3 w-full rounded-lg border ${errors.phoneNumber ? "border-red-500" : "border-gray-200"} focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-300`}
                   placeholder="Số điện thoại"
                   required
                   aria-label="Số điện thoại"
                 />
               </div>
+              {errors.phoneNumber && <p className="text-red-500 text-sm mt-1">{errors.phoneNumber}</p>}
             </div>
             <div className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
@@ -212,13 +268,14 @@ function Register() {
                 <input
                   type="email"
                   value={guestInfo.email}
-                  onChange={(e) => setGuestInfo({ ...guestInfo, email: e.target.value })}
-                  className="pl-10 pr-4 py-3 w-full rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-300"
+                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  className={`pl-10 pr-4 py-3 w-full rounded-lg border ${errors.email ? "border-red-500" : "border-gray-200"} focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-300`}
                   placeholder="Email"
                   required
                   aria-label="Email"
                 />
               </div>
+              {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
             </div>
             <div className="md:col-span-2 flex justify-end space-x-4">
               <button
@@ -242,13 +299,14 @@ function Register() {
                 <input
                   type="text"
                   value={accountInfo.username}
-                  onChange={(e) => setAccountInfo({ ...accountInfo, username: e.target.value })}
-                  className="pl-10 pr-4 py-3 w-full rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-300"
+                  onChange={(e) => handleInputChange("username", e.target.value)}
+                  className={`pl-10 pr-4 py-3 w-full rounded-lg border ${errors.username ? "border-red-500" : "border-gray-200"} focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-300`}
                   placeholder="Tên đăng nhập"
                   required
                   aria-label="Tên đăng nhập"
                 />
               </div>
+              {errors.username && <p className="text-red-500 text-sm mt-1">{errors.username}</p>}
             </div>
             <div className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-2">Mật khẩu</label>
@@ -261,13 +319,14 @@ function Register() {
                 <input
                   type="password"
                   value={accountInfo.password}
-                  onChange={(e) => setAccountInfo({ ...accountInfo, password: e.target.value })}
-                  className="pl-10 pr-4 py-3 w-full rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-300"
+                  onChange={(e) => handleInputChange("password", e.target.value)}
+                  className={`pl-10 pr-4 py-3 w-full rounded-lg border ${errors.password ? "border-red-500" : "border-gray-200"} focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-300`}
                   placeholder="Mật khẩu"
                   required
                   aria-label="Mật khẩu"
                 />
               </div>
+              {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
             </div>
             <div className="md:col-span-2 flex justify-end space-x-4">
               <button
