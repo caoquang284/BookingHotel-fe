@@ -126,20 +126,30 @@ function Register() {
   };
 
   const handleAccountSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateAccountInfo()) return;
+  e.preventDefault();
+  if (!validateAccountInfo()) return;
 
-    try {
-      await registerGuest({
-        guest: guestInfo,
-        account: accountInfo,
-      });
-      alert("Đăng ký thành công!");
-      navigate("/login");
-    } catch (err: any) {
-        alert("Đăng ký thất bại!");
+  try {
+    await registerGuest({
+      guest: guestInfo,
+      account: accountInfo,
+    });
+    alert("Đăng ký thành công!");
+    navigate("/login");
+  } catch (err: any) {
+  const newErrors = { ...errors };
+
+  if (err.field) {
+    newErrors[err.field as keyof typeof newErrors] = err.message || "Thông tin không hợp lệ!";
+    if (["identificationNumber", "phoneNumber", "email", "name", "age", "sex"].includes(err.field)) {
+      setStep(1); 
     }
-  };
+    setErrors(newErrors);
+  } else {
+    alert(err.message || "Đăng ký thất bại!");
+  }
+}
+};
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 overflow-hidden">
