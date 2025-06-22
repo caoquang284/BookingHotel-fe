@@ -11,7 +11,7 @@ import type {
   BookingConfirmationFormDTO,
   ResponseBookingConfirmationFormDTO,
 } from "../types";
-
+import backgroundImage from "../assets/Image/pexels-pixabay-237272.jpg";
 // Định nghĩa interface cho payload phân trang
 interface PaginatedResponse {
   content: ResponseRoomDTO[];
@@ -326,17 +326,34 @@ const Home: React.FC = () => {
   return (
     <div>
       <div
-        className="bg-gray-800 h-96 flex items-center justify-center bg-cover bg-center"
+        className="relative w-full flex flex-col bg-center z-0"
         style={{
-          backgroundImage:
-            "url('https://bonifacio.fr/app/uploads/bonifacio/2023/12/thumbs/plage-santa-giulia-vue-aerienne-porto-vecchio-sud-corse-1920x960.jpg')",
+          backgroundImage: `url(${backgroundImage})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          minHeight: "100vh",
         }}
       >
-        <h1 className="text-5xl font-bold text-gray-100 text-center">
-          Rong chơi bốn phương, giá vẫn yêu thương
-        </h1>
+        {/* Overlay để làm tối nền ảnh */}
+
+        {/* Nội dung chính */}
+        <div className="relative z-10 text-left text-white px-4 py-16 pl-56 mt-64">
+          <span className="inline-block bg-green-200 bg-opacity-50 text-blue-800 text-2xl font-semibold px-3 py-2 rounded-full mb-6">
+            The Ultimate Hotel Experience
+          </span>
+          <h1 className="text-5xl md:text-6xl font-bold mb-6">
+            Rong chơi bốn phương, giá vẫn yêu thương
+          </h1>
+          <p className="text-lg md:text-xl mb-8 max-w-2xl">
+            Rong chơi bốn phương, giá vẫn yêu thương
+          </p>
+
+          {/* BookingBox được tích hợp */}
+          <div className="mt-32 pr-256">
+            <BookingBox onSearch={handleSearch} roomTypes={roomTypes} />
+          </div>
+        </div>
       </div>
-      <BookingBox onSearch={handleSearch} roomTypes={roomTypes} />
       <div className="max-w-7xl mx-auto py-12 px-4">
         <h2 className="text-2xl font-bold text-left mb-8">
           Các phòng đang có sẵn
