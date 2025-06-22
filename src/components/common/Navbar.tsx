@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import logo from "../../assets/Image/logo.png";
+
 interface NavItem {
   path: string;
   label: string;
@@ -24,6 +25,7 @@ const Navbar: React.FC = () => {
   const location = useLocation();
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -33,6 +35,14 @@ const Navbar: React.FC = () => {
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const navItems: NavItem[] = [
     { path: "/", label: "Trang chủ" },
@@ -64,12 +74,22 @@ const Navbar: React.FC = () => {
       ];
 
   return (
-    <nav className="bg-transparent text-white fixed w-full top-0 z-20 px-2 sm:px-4 py-4">
+    <nav
+      className={`fixed w-full top-0 z-30 px-2 sm:px-4 py-7 ${
+        isScrolled
+          ? "bg-white text-black shadow-md"
+          : "bg-transparent text-white"
+      } transition-all duration-300`}
+    >
       <div className="flex items-center justify-between">
-        <div className="flex items-center mt-8 pl-52">
+        <div className="flex items-center pl-52">
           <img src={logo} alt="Roomify Logo" className="h-10 w-auto mr-4" />
-          <div className="text-2xl md:text-3xl font-bold text-white ml-4">
-            Roomify
+          <div className="text-2xl md:text-4xl font-bold">
+            {isScrolled ? (
+              <span className="text-black">Roomify</span>
+            ) : (
+              <span className="text-white">Roomify</span>
+            )}
           </div>
         </div>
         <div className="hidden sm:flex flex-1 justify-center gap-6 font-medium">
@@ -77,31 +97,48 @@ const Navbar: React.FC = () => {
             <Link
               key={item.path}
               to={item.path}
-              className={`px-3 py-2 rounded-md transition-all duration-300 hover:scale-105 hover:shadow-[0_0_10px_rgba(255,255,255,0.5)] text-xl md:text-2xl ${
-                location.pathname === item.path ? "font-bold text-blue-300" : ""
+              className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 group ${
+                location.pathname === item.path
+                  ? isScrolled
+                    ? "font-bold text-blue-600"
+                    : "font-bold text-white"
+                  : ""
               }`}
             >
-              {item.label}
+              <span className="relative">
+                {item.label}
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full"></span>
+              </span>
             </Link>
           ))}
         </div>
-        <div className="hidden sm:flex items-center gap-4">
+        <div className="hidden sm:flex items-center gap-4 pr-52">
           {authItems.map((item) =>
             "path" in item ? (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`px-5 py-2 rounded-full font-semibold transition-all duration-300 hover:scale-105 hover:shadow-[0_0_10px_rgba(255,255,255,0.5)] bg-gradient-to-r ${item.className} text-white text-xl md:text-2xl`}
+                className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${
+                  item.className
+                } group ${isScrolled ? "text-black" : "text-white"} relative`}
               >
-                {item.label}
+                <span className="relative">
+                  {item.label}
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full"></span>
+                </span>
               </Link>
             ) : (
               <button
                 key={item.label}
                 onClick={item.action}
-                className={`px-5 py-2 rounded-full font-semibold transition-all duration-300 hover:scale-105 hover:shadow-[0_0_10px_rgba(255,255,255,0.5)] bg-gradient-to-r ${item.className} text-white text-xl md:text-2xl`}
+                className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${
+                  item.className
+                } group ${isScrolled ? "text-black" : "text-white"} relative`}
               >
-                {item.label}
+                <span className="relative">
+                  {item.label}
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full"></span>
+                </span>
               </button>
             )
           )}
@@ -109,7 +146,11 @@ const Navbar: React.FC = () => {
         <div className="sm:hidden">
           <button
             onClick={toggleMobileMenu}
-            className="p-2 text-white hover:text-gray-300 focus:outline-none"
+            className={`p-2 ${
+              isScrolled
+                ? "text-black hover:text-gray-600"
+                : "text-white hover:text-gray-300"
+            } focus:outline-none`}
           >
             <svg
               className="w-6 h-6"
@@ -133,20 +174,29 @@ const Navbar: React.FC = () => {
         </div>
       </div>
       {isMobileMenuOpen && (
-        <div className="sm:hidden bg-transparent mt-2 rounded-lg">
+        <div
+          className={`sm:hidden ${
+            isScrolled ? "bg-white text-black" : "bg-transparent text-white"
+          } mt-2 rounded-lg`}
+        >
           <div className="flex flex-col px-4 py-2">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 hover:scale-105 hover:shadow-[0_0_10px_rgba(255,255,255,0.5)] ${
+                className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 group ${
                   location.pathname === item.path
-                    ? "font-bold text-blue-300"
+                    ? isScrolled
+                      ? "font-bold text-blue-600"
+                      : "font-bold text-blue-300"
                     : ""
                 }`}
               >
-                {item.label}
+                <span className="relative">
+                  {item.label}
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full"></span>
+                </span>
               </Link>
             ))}
             {authItems.map((item) =>
@@ -155,9 +205,14 @@ const Navbar: React.FC = () => {
                   key={item.path}
                   to={item.path}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 hover:scale-105 hover:shadow-[0_0_10px_rgba(255,255,255,0.5)] bg-gradient-to-r ${item.className} text-white`}
+                  className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${
+                    item.className
+                  } group ${isScrolled ? "text-black" : "text-white"}`}
                 >
-                  {item.label}
+                  <span className="relative">
+                    {item.label}
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full"></span>
+                  </span>
                 </Link>
               ) : (
                 <button
@@ -166,9 +221,14 @@ const Navbar: React.FC = () => {
                     item.action();
                     setIsMobileMenuOpen(false);
                   }}
-                  className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 hover:scale-105 hover:shadow-[0_0_10px_rgba(255,255,255,0.5)] bg-gradient-to-r ${item.className} text-white`}
+                  className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${
+                    item.className
+                  } group ${isScrolled ? "text-black" : "text-white"}`}
                 >
-                  {item.label}
+                  <span className="relative">
+                    {item.label}
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full"></span>
+                  </span>
                 </button>
               )
             )}

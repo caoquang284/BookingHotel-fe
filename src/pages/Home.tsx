@@ -11,7 +11,7 @@ import type {
   BookingConfirmationFormDTO,
   ResponseBookingConfirmationFormDTO,
 } from "../types";
-import backgroundImage from "../assets/Image/pexels-pixabay-237272.jpg";
+import backgroundImage from "../assets/Image/bg.jpg";
 // Định nghĩa interface cho payload phân trang
 interface PaginatedResponse {
   content: ResponseRoomDTO[];
@@ -57,43 +57,43 @@ const BookingBox: React.FC<{
   };
 
   return (
-    <div className="bg-white shadow-2xl rounded-2xl p-10 max-w-4xl mx-auto -mt-24 relative z-10">
+    <div className="bg-white shadow-2xl rounded-2xl p-10 w-256 mx-auto -mt-24 relative z-10">
       <form
         onSubmit={handleSubmit}
-        className="grid grid-cols-1 md:grid-cols-4 gap-6"
+        className="grid grid-cols-1 md:grid-cols-4 gap-24"
       >
         <div>
-          <label className="block text-base font-semibold text-gray-700 mb-2">
+          <label className="block text-xl font-semibold text-gray-700 mb-2">
             Ngày đến
           </label>
           <input
             type="date"
             value={checkIn}
             onChange={(e) => setCheckIn(e.target.value)}
-            className="mt-1 block w-full rounded-lg border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 text-lg py-3 px-4"
+            className="text-black mt-1 block w-48 rounded-lg border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 text-xl py-3 px-4"
             required
           />
         </div>
         <div>
-          <label className="block text-base font-semibold text-gray-700 mb-2">
+          <label className="block text-xl font-semibold text-gray-700 mb-2">
             Ngày đi
           </label>
           <input
             type="date"
             value={checkOut}
             onChange={(e) => setCheckOut(e.target.value)}
-            className="mt-1 block w-full rounded-lg border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 text-lg py-3 px-4"
+            className="text-black mt-1 block w-48 rounded-lg border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 text-xl py-3 px-4"
             required
           />
         </div>
         <div>
-          <label className="block text-base font-semibold text-gray-700 mb-2">
+          <label className="block text-xl font-semibold text-gray-700 mb-2">
             Loại phòng
           </label>
           <select
             value={roomTypeId}
             onChange={(e) => setRoomTypeId(Number(e.target.value))}
-            className="mt-1 block w-full rounded-lg border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 text-lg py-3 px-4"
+            className="text-black mt-1 block w-48 rounded-lg border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 text-xl py-3 px-4"
             required
           >
             {roomTypes.map((rt) => (
@@ -174,31 +174,45 @@ const RoomCard: React.FC<{
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden w-full max-w-xs mx-auto">
+    <div className="bg-white rounded-lg shadow-md overflow-hidden w-full max-w-md mx-auto">
       <img
         src={randomImage}
         alt={room.name}
         className="w-full h-52 object-cover"
         onError={() => console.error("Image failed to load for", room.name)}
       />
-      <div className="p-8">
-        <p className="text-2xl font-semibold truncate">
-          Tên phòng: {room.name}
-        </p>
-        <p className="text-gray-600 text-base">
-          Loại phòng: {room.roomTypeName}
-        </p>
-        <p className="text-gray-600 text-base">Tầng: {room.floorName}</p>
-        <p className="text-gray-600 text-base">
-          Giá: {room.roomTypePrice?.toLocaleString("vi-VN")} VNĐ/đêm
-        </p>
-        <p className="text-gray-600 text-base truncate">
-          Ghi chú: {room.note || "Không có ghi chú"}
-        </p>
-        <div className="mt-4 flex space-x-4">
+      <div className="p-4">
+        <div className="flex justify-between items-center mb-2">
+          <div>
+            <p className="text-2xl font-semibold truncate">
+              Tên phòng: {room.name}
+            </p>
+            <p className="text-gray-600 text-base">
+              Loại phòng: {room.roomTypeName}
+            </p>
+          </div>
+          <div className="flex items-center mb-6">
+            {[...Array(Math.floor(Math.random() * 3) + 3)].map((_, i) => (
+              <span key={i} className="text-yellow-400 text-xl">
+                &#9733;
+              </span>
+            ))}
+          </div>
+        </div>
+        <div className="flex items-center space-x-2 mb-2">
+          <span className="text-gray-600">📝</span>
+          <p className="text-gray-600 text-base truncate">
+            {room.note || "Không có ghi chú"}
+          </p>
+        </div>
+        <div className="mt-4 flex justify-between items-center">
+          <p className="text-gray-600 text-2xl font-semibold">
+            {room.roomTypePrice?.toLocaleString("vi-VN")}VNĐ/
+            <span className="text-gray-600 text-base">đêm</span>
+          </p>
           <button
             onClick={handleBookingClick}
-            className="flex-1 bg-green-600 text-white text-base py-2 px-4 rounded-md hover:bg-green-700"
+            className="bg-transparent text-base py-2 px-4 rounded-md border border-transparent hover:border-gray-400 transition-all duration-200"
           >
             Đặt phòng
           </button>
@@ -217,7 +231,6 @@ const Home: React.FC = () => {
   const [checkIn, setCheckIn] = useState<string>("");
   const [checkOut, setCheckOut] = useState<string>("");
   const [roomTypeId, setRoomTypeId] = useState(1);
-  const sliderRef = useRef<HTMLDivElement>(null);
   const [showDateModal, setShowDateModal] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
   const [modalCheckIn, setModalCheckIn] = useState("");
@@ -311,22 +324,95 @@ const Home: React.FC = () => {
     );
   };
 
+  const sliderRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]); // Định nghĩa cardRefs với kiểu đúng
+
+  // Hàm cuộn trái với logic vòng lặp
   const scrollLeft = () => {
     if (sliderRef.current) {
-      sliderRef.current.scrollBy({ left: -300, behavior: "smooth" });
+      const slider = sliderRef.current;
+      const scrollWidth = slider.scrollWidth;
+      const clientWidth = slider.clientWidth;
+      const maxScroll = scrollWidth - clientWidth;
+      const currentScroll = slider.scrollLeft;
+
+      console.log("Scroll Left - Current:", currentScroll, "Max:", maxScroll); // Debug
+
+      if (currentScroll <= 0) {
+        // Cuộn về cuối
+        slider.scrollTo({ left: maxScroll, behavior: "smooth" });
+      } else {
+        // Cuộn bình thường
+        slider.scrollBy({ left: -320, behavior: "smooth" });
+      }
     }
   };
 
+  // Hàm cuộn phải với logic vòng lặp
   const scrollRight = () => {
     if (sliderRef.current) {
-      sliderRef.current.scrollBy({ left: 300, behavior: "smooth" });
+      const slider = sliderRef.current;
+      const scrollWidth = slider.scrollWidth;
+      const clientWidth = slider.clientWidth;
+      const maxScroll = scrollWidth - clientWidth;
+      const currentScroll = slider.scrollLeft;
+
+      console.log("Scroll Right - Current:", currentScroll, "Max:", maxScroll); // Debug
+
+      if (currentScroll >= maxScroll) {
+        // Cuộn về đầu
+        slider.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        // Cuộn bình thường
+        slider.scrollBy({ left: 320, behavior: "smooth" });
+      }
     }
   };
+
+  // Hiệu ứng zoom dựa trên vị trí cuộn
+  useEffect(() => {
+    const slider = sliderRef.current;
+    if (!slider) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const card = entry.target as HTMLDivElement;
+          if (entry.isIntersecting) {
+            card.style.width = "320px";
+            card.style.transform = "scale(1)";
+          } else {
+            card.style.width = "240px";
+            card.style.transform = "scale(0.75)";
+          }
+        });
+      },
+      {
+        root: slider,
+        threshold: 0.5,
+      }
+    );
+
+    cardRefs.current.forEach((card) => {
+      if (card) observer.observe(card);
+    });
+
+    return () => {
+      cardRefs.current.forEach((card) => {
+        if (card) observer.unobserve(card);
+      });
+    };
+  }, [rooms]);
+
+  // Khởi tạo cardRefs khi rooms thay đổi
+  useEffect(() => {
+    cardRefs.current = new Array(rooms.length).fill(null);
+  }, [rooms]);
 
   return (
     <div>
       <div
-        className="relative w-full flex flex-col bg-center z-0"
+        className="relative w-full flex flex-col bg-center"
         style={{
           backgroundImage: `url(${backgroundImage})`,
           backgroundSize: "cover",
@@ -335,27 +421,31 @@ const Home: React.FC = () => {
         }}
       >
         {/* Overlay để làm tối nền ảnh */}
+        {/* <div className="absolute inset-0 bg-black bg-opacity-30 z-0"></div> */}
 
         {/* Nội dung chính */}
-        <div className="relative z-10 text-left text-white px-4 py-16 pl-56 mt-64">
+        <div className="relative z-10 text-left text-white px-4 py-10 pl-56 mt-52">
           <span className="inline-block bg-green-200 bg-opacity-50 text-blue-800 text-2xl font-semibold px-3 py-2 rounded-full mb-6">
             The Ultimate Hotel Experience
           </span>
-          <h1 className="text-5xl md:text-6xl font-bold mb-6">
-            Rong chơi bốn phương, giá vẫn yêu thương
+          <h1 className="text-5xl text-yellow-500 italic md:text-6xl font-bold mb-6">
+            Rong chơi bốn phương,
+            <br />
+            giá vẫn yêu thương
           </h1>
-          <p className="text-lg md:text-xl mb-8 max-w-2xl">
-            Rong chơi bốn phương, giá vẫn yêu thương
+          <p className="text-lg md:text-xl mb-8 max-w-2xl font-semibold">
+            Sự sang trọng và tiện nghi vô song đang chờ đón bạn tại những khách
+            sạn đẳng cấp nhất thế giới. Hãy bắt đầu hành trình của bạn ngay hôm
+            nay.
           </p>
 
-          {/* BookingBox được tích hợp */}
           <div className="mt-32 pr-256">
             <BookingBox onSearch={handleSearch} roomTypes={roomTypes} />
           </div>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto py-12 px-4">
-        <h2 className="text-2xl font-bold text-left mb-8">
+      <div className="max-w-7xl mx-auto py-24 px-4">
+        <h2 className="text-4xl font-bold mb-8 text-center">
           Các phòng đang có sẵn
         </h2>
         {loading && <p className="text-center">Đang tải...</p>}
@@ -366,21 +456,24 @@ const Home: React.FC = () => {
         <div className="relative">
           <button
             onClick={scrollLeft}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow rounded-full p-2"
+            className="absolute -left-16 top-1/2 -translate-y-1/2 z-10 bg-white shadow rounded-full p-2 hover:bg-gray-200 w-12 h-12"
             style={{ display: rooms.length > 2 ? "block" : "none" }}
           >
             ←
           </button>
           <div
             ref={sliderRef}
-            className="flex overflow-x-auto gap-8 scrollbar-hide py-2"
+            className="flex gap-8 py-2 overflow-x-auto no-scrollbar"
             style={{ scrollBehavior: "smooth" }}
           >
-            {rooms.map((room) => (
+            {rooms.map((room, index) => (
               <div
                 key={room.id}
-                className="flex-shrink-0"
+                className="flex-shrink-0 transition-all duration-500"
                 style={{ width: 320 }}
+                ref={(el) => {
+                  if (el) cardRefs.current[index] = el;
+                }}
               >
                 <RoomCard
                   room={room}
@@ -398,7 +491,7 @@ const Home: React.FC = () => {
           </div>
           <button
             onClick={scrollRight}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow rounded-full p-2"
+            className="absolute -right-16 top-1/2 -translate-y-1/2 z-10 bg-white shadow rounded-full p-2 hover:bg-gray-200 w-12 h-12"
             style={{ display: rooms.length > 2 ? "block" : "none" }}
           >
             →

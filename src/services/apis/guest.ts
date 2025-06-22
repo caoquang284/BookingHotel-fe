@@ -4,7 +4,7 @@ import type {
     SearchGuestDTO,
 } from "../../types";
 
-const BASE_URL = 'http://localhost:8081/api/guest';
+const BASE_URL = 'http://localhost:9090/api/guest';
 
 export async function getGuestById(id: number): Promise<ResponseGuestDTO> {
     const response = await fetch(`${BASE_URL}/${id}`, {
