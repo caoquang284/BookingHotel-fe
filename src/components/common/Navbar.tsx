@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import logo from "../../assets/Image/logo.png";
 
 interface NavItem {
   path: string;
@@ -24,24 +25,28 @@ const Navbar: React.FC = () => {
   const location = useLocation();
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const handleLogout = () => {
     logout();
-    window.location.href = "/"; 
+    window.location.href = "/";
   };
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  // Các mục menu (hiển thị khi đã đăng nhập)
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const navItems: NavItem[] = [
     { path: "/", label: "Trang chủ" },
-    ...(user
-      ? [
-          { path: "/booking-history", label: "Lịch sử đặt phòng" },
-        ]
-      : []),
+    ...(user ? [{ path: "/booking-history", label: "Lịch sử đặt phòng" }] : []),
   ];
 
   const authItems: AuthItem[] = user
@@ -49,48 +54,91 @@ const Navbar: React.FC = () => {
         {
           action: handleLogout,
           label: "Đăng xuất",
-          className: "from-black to-gray-700 hover:from-red-700 hover:to-red-800",
+          className:
+            "from-red-600 to-red-700 hover:from-red-700 hover:to-red-800",
         },
       ]
     : [
-        { path: "/login", label: "Đăng nhập", className: "from-black to-gray-700" },
-        { path: "/register", label: "Đăng ký", className: "from-blue-700 to-blue-800" },
+        {
+          path: "/login",
+          label: "Đăng nhập",
+          className:
+            "from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800",
+        },
+        {
+          path: "/register",
+          label: "Đăng ký",
+          className:
+            "from-green-600 to-green-700 hover:from-green-700 hover:to-green-800",
+        },
       ];
 
   return (
-    <nav className="bg-white text-black px-4 sm:px-6 py-4 shadow-md">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <div className="text-xl font-bold text-gray-800">ZenRooms</div>
+    <nav
+      className={`fixed w-full top-0 z-30 px-2 sm:px-4 py-7 ${
+        isScrolled
+          ? "bg-white text-black shadow-md"
+          : "bg-transparent text-white"
+      } transition-all duration-300`}
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center pl-52">
+          <img src={logo} alt="Roomify Logo" className="h-10 w-auto mr-4" />
+          <div className="text-2xl md:text-4xl font-bold">
+            {isScrolled ? (
+              <span className="text-black">Roomify</span>
+            ) : (
+              <span className="text-white">Roomify</span>
+            )}
+          </div>
+        </div>
         <div className="hidden sm:flex flex-1 justify-center gap-6 font-medium">
           {navItems.map((item) => (
             <Link
               key={item.path}
               to={item.path}
-              className={`hover:text-gray-800 transition-colors ${
-                location.pathname === item.path ? "font-bold text-blue-800" : ""
+              className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 group ${
+                location.pathname === item.path
+                  ? isScrolled
+                    ? "font-bold text-blue-600"
+                    : "font-bold text-white"
+                  : ""
               }`}
             >
-              {item.label}
+              <span className="relative">
+                {item.label}
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full"></span>
+              </span>
             </Link>
           ))}
         </div>
-        <div className="hidden sm:flex items-center gap-4">
+        <div className="hidden sm:flex items-center gap-4 pr-52">
           {authItems.map((item) =>
             "path" in item ? (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`px-5 py-2 rounded-full font-semibold shadow hover:scale-105 transition-transform bg-gradient-to-r ${item.className} text-white`}
+                className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${
+                  item.className
+                } group ${isScrolled ? "text-black" : "text-white"} relative`}
               >
-                {item.label}
+                <span className="relative">
+                  {item.label}
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full"></span>
+                </span>
               </Link>
             ) : (
               <button
                 key={item.label}
                 onClick={item.action}
-                className={`px-5 py-2 rounded-full font-semibold shadow hover:scale-105 transition-transform bg-gradient-to-r ${item.className} text-white`}
+                className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${
+                  item.className
+                } group ${isScrolled ? "text-black" : "text-white"} relative`}
               >
-                {item.label}
+                <span className="relative">
+                  {item.label}
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full"></span>
+                </span>
               </button>
             )
           )}
@@ -98,7 +146,11 @@ const Navbar: React.FC = () => {
         <div className="sm:hidden">
           <button
             onClick={toggleMobileMenu}
-            className="p-2 text-gray-600 hover:text-gray-800 focus:outline-none"
+            className={`p-2 ${
+              isScrolled
+                ? "text-black hover:text-gray-600"
+                : "text-white hover:text-gray-300"
+            } focus:outline-none`}
           >
             <svg
               className="w-6 h-6"
@@ -122,20 +174,29 @@ const Navbar: React.FC = () => {
         </div>
       </div>
       {isMobileMenuOpen && (
-        <div className="sm:hidden bg-white shadow-md mt-2 rounded-lg">
+        <div
+          className={`sm:hidden ${
+            isScrolled ? "bg-white text-black" : "bg-transparent text-white"
+          } mt-2 rounded-lg`}
+        >
           <div className="flex flex-col px-4 py-2">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`py-2 px-4 text-sm font-medium hover:bg-gray-100 rounded-md transition-colors ${
+                className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 group ${
                   location.pathname === item.path
-                    ? "font-bold text-blue-600"
+                    ? isScrolled
+                      ? "font-bold text-blue-600"
+                      : "font-bold text-blue-300"
                     : ""
                 }`}
               >
-                {item.label}
+                <span className="relative">
+                  {item.label}
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full"></span>
+                </span>
               </Link>
             ))}
             {authItems.map((item) =>
@@ -144,13 +205,14 @@ const Navbar: React.FC = () => {
                   key={item.path}
                   to={item.path}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`py-2 px-4 text-sm font-medium hover:bg-gray-100 rounded-md transition-colors ${
-                    location.pathname === item.path
-                      ? "font-bold text-blue-600"
-                      : ""
-                  }`}
+                  className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${
+                    item.className
+                  } group ${isScrolled ? "text-black" : "text-white"}`}
                 >
-                  {item.label}
+                  <span className="relative">
+                    {item.label}
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full"></span>
+                  </span>
                 </Link>
               ) : (
                 <button
@@ -159,12 +221,14 @@ const Navbar: React.FC = () => {
                     item.action();
                     setIsMobileMenuOpen(false);
                   }}
-                  className={`py-2 px-4 text-sm font-medium bg-${item.className} text-white rounded-md hover:bg-${item.className.replace(
-                    "600",
-                    "700"
-                  )} transition-colors`}
+                  className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${
+                    item.className
+                  } group ${isScrolled ? "text-black" : "text-white"}`}
                 >
-                  {item.label}
+                  <span className="relative">
+                    {item.label}
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full"></span>
+                  </span>
                 </button>
               )
             )}
