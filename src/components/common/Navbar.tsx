@@ -223,7 +223,7 @@ const Navbar: React.FC = () => {
                   }}
                   className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${
                     item.className
-                  } group ${isScrolled ? "text-black" : "text-white"}`}
+                  } group ${isScrolled ? "text-white" : "text-white"}`}
                 >
                   <span className="relative">
                     {item.label}

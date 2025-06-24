@@ -122,6 +122,10 @@ const imageLinks = [
   "https://acihome.vn/uploads/17/phong-ngu-khach-san-5-sao.jpg",
   "https://www.vietnambooking.com/wp-content/uploads/2021/02/khach-san-ho-chi-minh-35.jpg",
   "https://ik.imagekit.io/tvlk/blog/2023/09/khach-san-view-bien-da-nang-1.jpg?tr=q-70,c-at_max,w-500,h-300,dpr-2",
+  "https://res.cloudinary.com/djbvf02yt/image/upload/v1744266362/qsj8vz0bptxfirwamtx5.png",
+  "https://res.cloudinary.com/djbvf02yt/image/upload/v1744266321/w05jzxrqfwb35qjg5p13.png",
+  "https://res.cloudinary.com/djbvf02yt/image/upload/v1744266245/erovkf0owfbai9h8jkzq.png",
+  "https://res.cloudinary.com/djbvf02yt/image/upload/v1744266199/s6xhgewuv9sf3c1jnlik.png",
 ];
 
 // Component cho thẻ phòng
@@ -148,29 +152,10 @@ const RoomCard: React.FC<{
 }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const randomImage = imageLinks[Math.floor(Math.random() * imageLinks.length)];
+  const randomImage = imageLinks[Math.floor(room.id % imageLinks.length)];
 
   const handleBookingClick = () => {
-    if (!user) {
-      // Nếu chưa đăng nhập, lưu thông tin phòng và điều hướng đến trang đăng nhập
-      localStorage.setItem(
-        "bookingRedirect",
-        JSON.stringify({
-          roomId: room.id,
-          checkIn: checkIn || "",
-          checkOut: checkOut || "",
-          guests: guests || 1,
-        })
-      );
-      navigate("/login");
-    } else {
-      // Nếu đã đăng nhập, mở modal chọn ngày
-      setSelectedRoomId(room.id);
-      setShowDateModal(true);
-      setModalCheckIn("");
-      setModalCheckOut("");
-      setModalGuests(1);
-    }
+    navigate(`/room-detail/${room.id}`);
   };
 
   return (
@@ -194,7 +179,7 @@ const RoomCard: React.FC<{
           <div className="flex items-center mb-6">
             {[...Array(Math.floor(Math.random() * 3) + 3)].map((_, i) => (
               <span key={i} className="text-yellow-400 text-xl">
-                &#9733;
+                ★
               </span>
             ))}
           </div>
@@ -499,42 +484,42 @@ const Home: React.FC = () => {
         </div>
       </div>
       {showDateModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm relative">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 w-full h-full">
+          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-lg relative">
             <button
-              className="absolute top-2 right-2 text-gray-500 hover:text-black"
+              className="absolute top-4 right-4 text-gray-500 hover:text-black text-2xl font-bold w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100"
               onClick={() => setShowDateModal(false)}
             >
               ×
             </button>
-            <h3 className="text-lg font-bold mb-4 text-center">
+            <h3 className="text-2xl font-bold mb-6 text-center">
               Chọn ngày nhận và trả phòng
             </h3>
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-xl font-semibold text-gray-700 mb-2">
                   Ngày đến
                 </label>
                 <input
                   type="date"
                   value={modalCheckIn}
                   onChange={(e) => setModalCheckIn(e.target.value)}
-                  className="w-full border rounded px-2 py-1"
+                  className="w-full text-black text-xl border rounded px-3 py-2"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-xl font-semibold text-gray-700 mb-2">
                   Ngày đi
                 </label>
                 <input
                   type="date"
                   value={modalCheckOut}
                   onChange={(e) => setModalCheckOut(e.target.value)}
-                  className="w-full border rounded px-2 py-1"
+                  className="w-full text-black text-xl border rounded px-3 py-2"
                 />
               </div>
               <button
-                className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+                className="w-full bg-green-600 text-white py-3 rounded hover:bg-green-700"
                 onClick={() => {
                   if (!modalCheckIn || !modalCheckOut) {
                     alert("Vui lòng chọn ngày đến, ngày đi!");

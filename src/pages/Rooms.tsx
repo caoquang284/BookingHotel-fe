@@ -205,7 +205,7 @@ const Rooms: React.FC = () => {
   }, [checkIn, checkOut, roomTypeId]);
 
   return (
-    <div className="max-w-7xl mx-auto py-12 px-4">
+    <div className="max-w-7xl mx-auto py-36 px-4">
       <h2 className="text-3xl font-bold text-center mb-8">Danh sách phòng</h2>
       <p className="text-center text-gray-600 mb-8">
         Kết quả tìm kiếm: {checkIn || "Chưa chọn"} đến {checkOut || "Chưa chọn"}

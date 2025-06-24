@@ -7,6 +7,7 @@ import Register from "./pages/Register";
 import Rooms from "./pages/Rooms";
 import BookingPage from "./pages/BookingPage";
 import { AuthProvider } from "./contexts/AuthContext";
+import RoomDetail from "./pages/RoomDetail";
 
 const router = createBrowserRouter([
   {
@@ -19,7 +20,7 @@ const router = createBrowserRouter([
       { path: "/booking-history", element: <BookingHistory /> },
       { path: "/rooms", element: <Rooms /> },
       { path: "/booking", element: <BookingPage /> },
-
+      { path: "/room-detail/:id", element: <RoomDetail /> },
       { path: "/login", element: <Login /> },
       { path: "/register", element: <Register /> },
     ],
