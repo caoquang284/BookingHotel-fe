@@ -3,9 +3,20 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getRoomById } from "../services/apis/room";
 import { getAllRoomTypes } from "../services/apis/roomType";
 import { getAllFloors } from "../services/apis/floor";
-import type { ResponseRoomDTO, ResponseRoomTypeDTO } from "../types/index.ts";
+import { getImagesByRoomId } from "../services/apis/image";
+import { getReviewsByRoomId } from "../services/apis/review"; // Import API đánh giá
+import type {
+  ResponseRoomDTO,
+  ResponseRoomTypeDTO,
+  ResponseImageDto,
+  ResponseReviewDto,
+} from "../types/index.ts";
 import mapIcon from "../assets/Icon/locationIcon.svg";
 import starIcon from "../assets/Icon/starIconFilled.svg";
+import starIconEmpty from "../assets/Icon/starIconOutlined.svg";
+
+// Placeholder ảnh mặc định
+const DEFAULT_IMAGE = "https://via.placeholder.com/400x300?text=No+Image";
 
 const BookingBox: React.FC<{
   onSearch: (params: {
@@ -14,7 +25,7 @@ const BookingBox: React.FC<{
     roomTypeId: number;
   }) => void;
   roomTypes: ResponseRoomTypeDTO[];
-  onDateChange?: (checkIn: string, checkOut: string) => void; // Callback để truyền giá trị ngày
+  onDateChange?: (checkIn: string, checkOut: string) => void;
 }> = ({ onSearch, roomTypes, onDateChange }) => {
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
@@ -29,7 +40,7 @@ const BookingBox: React.FC<{
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (onDateChange) {
-      onDateChange(checkIn, checkOut); // Truyền giá trị ngày lên parent
+      onDateChange(checkIn, checkOut);
     }
     onSearch({ checkIn, checkOut, roomTypeId });
   };
@@ -37,7 +48,6 @@ const BookingBox: React.FC<{
   const handleBookNow = () => {
     if (onDateChange && checkIn && checkOut) {
       onDateChange(checkIn, checkOut);
-      // Thêm logic điều hướng hoặc xử lý "Book now" nếu cần (tùy thuộc vào parent)
     }
   };
 
@@ -71,7 +81,6 @@ const BookingBox: React.FC<{
             required
           />
         </div>
-
         <div className="justify-self-end mt-4">
           <button
             type="button"
@@ -95,16 +104,21 @@ const RoomDetail: React.FC = () => {
   const [checkOut, setCheckOut] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const [images, setImages] = useState<string[]>([]); // State lưu danh sách URL ảnh
+  const [starRating, setStarRating] = useState<number>(0); // State lưu số sao trung bình
+  const [reviewCount, setReviewCount] = useState<number>(0);
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [roomData, roomTypesData, floorsData] = await Promise.all([
-          getRoomById(Number(id)),
-          getAllRoomTypes(),
-          getAllFloors(),
-        ]);
+        const [roomData, roomTypesData, floorsData, imagesData, reviewsData] =
+          await Promise.all([
+            getRoomById(Number(id)),
+            getAllRoomTypes(),
+            getAllFloors(),
+            getImagesByRoomId(Number(id)),
+            getReviewsByRoomId(Number(id)),
+          ]);
         const roomType = roomTypesData.find(
           (rt) => rt.id === roomData.roomTypeId
         );
@@ -116,40 +130,56 @@ const RoomDetail: React.FC = () => {
           floorName: floor?.name || "Không xác định",
         });
         setRoomTypes(roomTypesData);
+
+        // Lấy 5 ảnh đầu tiên
+        const imageUrls = imagesData
+          .slice(0, 5)
+          .map((img: ResponseImageDto) => img.url);
+        while (imageUrls.length < 5) {
+          imageUrls.push(DEFAULT_IMAGE);
+        }
+        setImages(imageUrls);
+
+        // Tính trung bình rating và số lượt đánh giá
+        const ratings = reviewsData.map(
+          (review: ResponseReviewDto) => review.rating
+        );
+        const averageRating =
+          ratings.length > 0
+            ? Math.floor(
+                ratings.reduce((sum, rating) => sum + rating, 0) /
+                  ratings.length
+              )
+            : 0;
+        setStarRating(averageRating);
+        setReviewCount(reviewsData.length); // Lưu số lượng đánh giá
+        console.log(reviewsData);
         setLoading(false);
       } catch (err) {
-        console.error("Error fetching room detail:", err);
-        setError("Không thể tải chi tiết phòng");
+        console.error("Error fetching room detail, images, or reviews:", err);
+        setError("Không thể tải chi tiết phòng, ảnh hoặc đánh giá");
+        setImages([
+          DEFAULT_IMAGE,
+          DEFAULT_IMAGE,
+          DEFAULT_IMAGE,
+          DEFAULT_IMAGE,
+          DEFAULT_IMAGE,
+        ]);
+        setStarRating(0);
+        setReviewCount(0); // Mặc định 0 lượt nếu lỗi
         setLoading(false);
       }
     };
     fetchData();
   }, [id]);
 
-  const imageLinks = [
-    "https://xuonggooccho.com/ckfinder/userfiles/files/anh-phong-ngu.jpg",
-    "https://noithattrevietnam.com/uploaded/2019/12/1-thiet-ke-phong-ngu-khach-san%20%281%29.jpg",
-    "https://acihome.vn/uploads/17/phong-ngu-khach-san-5-sao.jpg",
-    "https://www.vietnambooking.com/wp-content/uploads/2021/02/khach-san-ho-chi-minh-35.jpg",
-    "https://ik.imagekit.io/tvlk/blog/2023/09/khach-san-view-bien-da-nang-1.jpg?tr=q-70,c-at_max,w-500,h-300,dpr-2",
-    "https://res.cloudinary.com/djbvf02yt/image/upload/v1744266362/qsj8vz0bptxfirwamtx5.png",
-    "https://res.cloudinary.com/djbvf02yt/image/upload/v1744266321/w05jzxrqfwb35qjg5p13.png",
-    "https://res.cloudinary.com/djbvf02yt/image/upload/v1744266245/erovkf0owfbai9h8jkzq.png",
-    "https://res.cloudinary.com/djbvf02yt/image/upload/v1744266199/s6xhgewuv9sf3c1jnlik.png",
-  ];
-
   if (loading) return <p className="text-center">Đang tải...</p>;
   if (error) return <p className="text-center text-red-600">{error}</p>;
   if (!room) return <p className="text-center">Phòng không tồn tại</p>;
 
-  // Lấy ảnh ngẫu nhiên từ imageLinks
-  const mainImage = imageLinks[Math.floor(room.id % imageLinks.length)];
-  const thumbnailImages = imageLinks
-    .filter((_, index) => index !== room.id % imageLinks.length)
-    .slice(0, 4); // Lấy 4 ảnh nhỏ khác
-
-  // Đánh giá sao ngẫu nhiên từ 3 đến 5
-  const starRating = Math.floor(Math.random() * 3) + 3;
+  // Lấy ảnh chính và 4 ảnh thumbnail
+  const mainImage = images[0];
+  const thumbnailImages = images.slice(1, 5);
 
   const handleDateChange = (newCheckIn: string, newCheckOut: string) => {
     setCheckIn(newCheckIn);
@@ -168,8 +198,6 @@ const RoomDetail: React.FC = () => {
 
   return (
     <div className="max-w-8xl mx-auto py-42 px-48">
-      {" "}
-      {/* Tăng py-24 để cách mép trên nhiều hơn */}
       <div className="mb-2 flex items-end gap-4">
         <h1 className="text-5xl font-bold text-gray-800 font-playfair mb-2">
           Room Name: {room.name}
@@ -179,19 +207,25 @@ const RoomDetail: React.FC = () => {
         </span>
       </div>
       <div className="">
-        <div className="flex items-center">
-          {[...Array(starRating)].map((_, i) => (
+        <div className="flex items-center mb-2">
+          {[...Array(5)].map((_, i) => (
             <span key={i} className="text-yellow-400 text-2xl">
-              <img src={starIcon} alt="star" className="w-8 h-8" />
+              <img
+                src={i < starRating ? starIcon : starIconEmpty}
+                alt="star"
+                className="w-6 h-6"
+              />
             </span>
           ))}
+          <span className="text-gray-600 text-xl ml-2 mt-2">
+            {reviewCount} lượt đánh giá
+          </span>
         </div>
       </div>
       <div className="flex items-center mb-6">
         <span className="text-2xl mr-2">
           <img src={mapIcon} alt="map" className="w-8 h-8" />
-        </span>{" "}
-        {/* Icon bản đồ */}
+        </span>
         <span className="text-xl text-gray-600">
           Main Road 123 Street , 23 Colony
         </span>
@@ -202,6 +236,7 @@ const RoomDetail: React.FC = () => {
             src={mainImage}
             alt={room.name}
             className="w-full h-148 object-cover rounded-lg"
+            onError={(e) => (e.currentTarget.src = DEFAULT_IMAGE)}
           />
         </div>
         <div className="w-1/2 grid grid-cols-2 gap-4">
@@ -211,6 +246,7 @@ const RoomDetail: React.FC = () => {
               src={image}
               alt={`${room.name}-thumbnail-${index}`}
               className="w-full h-72 object-cover rounded-lg"
+              onError={(e) => (e.currentTarget.src = DEFAULT_IMAGE)}
             />
           ))}
         </div>

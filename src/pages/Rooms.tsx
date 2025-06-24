@@ -5,11 +5,17 @@ import { getAllRoomTypes } from "../services/apis/roomType";
 import { getAllFloors } from "../services/apis/floor";
 import { getAllBookingConfirmationForms } from "../services/apis/bookingconfirm";
 import starIcon from "../assets/Icon/starIconFilled.svg";
+import starIconEmpty from "../assets/Icon/starIconOutlined.svg";
 import type {
   ResponseRoomDTO,
   ResponseBookingConfirmationFormDTO,
+  ResponseReviewDto,
+  ResponseImageDto,
 } from "../types/index.ts";
 import { RoomStates } from "../types/index.ts";
+import { getReviewsByRoomId } from "../services/apis/review";
+
+import { getImagesByRoomId } from "../services/apis/image";
 
 // Định nghĩa interface cho payload phân trang
 interface PaginatedResponse {
@@ -46,7 +52,52 @@ const RoomCard: React.FC<{
 }> = ({ room, checkIn, checkOut }) => {
   const navigate = useNavigate();
   const originalPrice = room.roomTypePrice ? room.roomTypePrice * 1.35 : 0;
-  const randomImage = imageLinks[room.id % imageLinks.length];
+  const [starRating, setStarRating] = useState<number>(0);
+  const [imageUrl, setImageUrl] = useState<string>(
+    "https://via.placeholder.com/400x300?text=No+Image"
+  ); // State cho ảnh
+
+  // Lấy đánh giá và tính trung bình rating
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const reviews = await getReviewsByRoomId(room.id);
+        const ratings = reviews.map(
+          (review: ResponseReviewDto) => review.rating
+        );
+        const averageRating =
+          ratings.length > 0
+            ? Math.floor(
+                ratings.reduce((sum, rating) => sum + rating, 0) /
+                  ratings.length
+              )
+            : 0;
+        setStarRating(averageRating);
+      } catch (error) {
+        console.error(`Failed to fetch reviews for room ${room.id}:`, error);
+        setStarRating(0);
+      }
+    };
+    fetchReviews();
+  }, [room.id]);
+
+  // Lấy ảnh đầu tiên từ API
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        const images = await getImagesByRoomId(room.id);
+        if (images && images.length > 0) {
+          setImageUrl(images[0].url); // Lấy URL ảnh đầu tiên
+        } else {
+          setImageUrl("https://via.placeholder.com/400x300?text=No+Image");
+        }
+      } catch (error) {
+        console.error(`Failed to fetch image for room ${room.id}:`, error);
+        setImageUrl("https://via.placeholder.com/400x300?text=No+Image");
+      }
+    };
+    fetchImage();
+  }, [room.id]);
 
   return (
     <button
@@ -61,63 +112,62 @@ const RoomCard: React.FC<{
       className="bg-white rounded-lg shadow-md overflow-hidden w-full flex h-92 text-left hover:ring-2 hover:ring-blue-400 transition"
     >
       <img
-        src={randomImage}
+        src={imageUrl}
         alt={room.name}
-        className="w-1/3 h-full object-cover"
-        onError={() => console.error("Image failed to load for", room.name)}
+        className="w-2/5 h-full object-cover"
+        onError={() =>
+          setImageUrl("https://via.placeholder.com/400x300?text=No+Image")
+        }
       />
       <div
-        className="w-2/3 p-2 flex flex-col justify-between relative ml-4"
+        className="w-3/5 p-2 flex flex-col justify-between relative ml-4"
         style={{ minHeight: 180 }}
       >
         <div className="space-y-2">
-          <p className="text-gray-800 text-3xl font-bold">
+          <p className="text-gray-800 text-4xl font-bold mt-3 font-playfair">
             Tên phòng: {room.name}
           </p>
-          {/* 5 ngôi sao */}
-          {/* random sao từ 3 đến 5 */}
+          <p className="text-blue-600 text-xl font-semibold">
+            Loại phòng: {room.roomTypeName}
+          </p>
           <div className="flex items-center">
-            {[...Array(Math.floor(Math.random() * 3) + 3)].map((_, i) => (
+            {[...Array(5)].map((_, i) => (
               <span key={i} className="text-yellow-400 text-xl">
-                ★
+                <img
+                  src={i < starRating ? starIcon : starIconEmpty}
+                  alt="star"
+                  className="w-4 h-4"
+                />
               </span>
             ))}
           </div>
-          <p className="text-blue-600 text-sm font-semibold">
-            Loại phòng: {room.roomTypeName}
-          </p>
-          {/* Dòng mô tả dịch vụ */}
-          {/* random dòng mô tả dịch vụ từ 2 đến 4 */}
           <div>
-            <span className="text-gray-600 text-sm mr-2">
+            <span className="text-gray-600 text-xl mr-2 font-semibold">
               Cơ sở lưu trữ này có:
             </span>
-            <span className="inline-block bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">
+            <br />
+            <span className="inline-block bg-blue-100 text-blue-800 text-lg font-semibold mr-2 px-2.5 py-0.5 rounded mt-2">
               Wifi miễn phí
             </span>
-            <span className="inline-block bg-green-100 text-green-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">
+            <span className="inline-block bg-green-100 text-green-800 text-lg font-semibold mr-2 px-2.5 py-0.5 rounded">
               Bãi đậu xe
             </span>
-            <span className="inline-block bg-yellow-100 text-yellow-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">
+            <span className="inline-block bg-yellow-100 text-yellow-800 text-lg font-semibold mr-2 px-2.5 py-0.5 rounded">
               Bữa sáng
             </span>
-            <span className="inline-block bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-0.5 rounded">
+            <span className="inline-block bg-purple-100 text-purple-800 text-lg font-semibold px-2.5 py-0.5 rounded">
               Nhận phòng nhanh
             </span>
           </div>
-          <p className="text-gray-800 text-base font-medium flex items-center">
-            Tầng: {room.floorName}
-            <i className="fa-solid fa-building text-blue-600 ml-2"></i>
-          </p>
-          <p className="text-gray-600 text-sm font-medium truncate italic">
+          <p className="text-gray-600 text-2xl font-medium truncate italic mt-4">
             Ghi chú: {room.note || "Không có ghi chú"}
           </p>
         </div>
         <div className="absolute right-2 bottom-2 text-right">
-          <p className="text-red-500 font-bold text-lg line-through italic">
+          <p className="text-gray-500 font-bold text-2xl line-through italic">
             {originalPrice.toLocaleString("vi-VN")} VNĐ/đêm
           </p>
-          <p className="text-red-600 font-bold text-xl italic">
+          <p className="text-red-600 font-bold text-4xl italic">
             {room.roomTypePrice?.toLocaleString("vi-VN")} VNĐ/đêm
           </p>
         </div>
@@ -384,13 +434,14 @@ const Rooms: React.FC = () => {
                     onChange={(e) => setStarRating(Number(e.target.value))}
                     className="mr-2"
                   />
-                  {[...Array(star)].map((_, index) => (
-                    <img
-                      key={index}
-                      src={starIcon}
-                      alt="star"
-                      className="w-6 h-6 mr-1"
-                    />
+                  {[...Array(5)].map((_, i) => (
+                    <span key={i} className="text-yellow-400 text-2xl">
+                      <img
+                        src={i < star ? starIcon : starIconEmpty}
+                        alt="star"
+                        className="w-6 h-6"
+                      />
+                    </span>
                   ))}
                 </label>
               ))}
