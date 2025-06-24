@@ -4,6 +4,8 @@ import { getRoomById } from "../services/apis/room";
 import { getAllRoomTypes } from "../services/apis/roomType";
 import { getAllFloors } from "../services/apis/floor";
 import type { ResponseRoomDTO, ResponseRoomTypeDTO } from "../types/index.ts";
+import mapIcon from "../assets/Icon/locationIcon.svg";
+import starIcon from "../assets/Icon/starIconFilled.svg";
 
 const BookingBox: React.FC<{
   onSearch: (params: {
@@ -180,13 +182,16 @@ const RoomDetail: React.FC = () => {
         <div className="flex items-center">
           {[...Array(starRating)].map((_, i) => (
             <span key={i} className="text-yellow-400 text-2xl">
-              ★
+              <img src={starIcon} alt="star" className="w-8 h-8" />
             </span>
           ))}
         </div>
       </div>
       <div className="flex items-center mb-6">
-        <span className="text-2xl mr-2">🗺️</span> {/* Icon bản đồ */}
+        <span className="text-2xl mr-2">
+          <img src={mapIcon} alt="map" className="w-8 h-8" />
+        </span>{" "}
+        {/* Icon bản đồ */}
         <span className="text-xl text-gray-600">
           Main Road 123 Street , 23 Colony
         </span>

@@ -63,37 +63,37 @@ const BookingBox: React.FC<{
         className="grid grid-cols-1 md:grid-cols-4 gap-24"
       >
         <div>
-          <label className="block text-xl font-semibold text-gray-700 mb-2">
+          <label className="block text-2xl font-semibold text-gray-700 mb-2">
             Ngày đến
           </label>
           <input
             type="date"
             value={checkIn}
             onChange={(e) => setCheckIn(e.target.value)}
-            className="text-black mt-1 block w-48 rounded-lg border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 text-xl py-3 px-4"
+            className="text-black mt-1 block w-56 rounded-lg border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 text-2xl py-3 px-4"
             required
           />
         </div>
         <div>
-          <label className="block text-xl font-semibold text-gray-700 mb-2">
+          <label className="block text-2xl font-semibold text-gray-700 mb-2">
             Ngày đi
           </label>
           <input
             type="date"
             value={checkOut}
             onChange={(e) => setCheckOut(e.target.value)}
-            className="text-black mt-1 block w-48 rounded-lg border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 text-xl py-3 px-4"
+            className="text-black mt-1 block w-56 rounded-lg border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 text-2xl py-3 px-4"
             required
           />
         </div>
         <div>
-          <label className="block text-xl font-semibold text-gray-700 mb-2">
+          <label className="block text-2xl font-semibold text-gray-700 mb-2">
             Loại phòng
           </label>
           <select
             value={roomTypeId}
             onChange={(e) => setRoomTypeId(Number(e.target.value))}
-            className="text-black mt-1 block w-48 rounded-lg border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 text-xl py-3 px-4"
+            className="text-black mt-1 block w-56 rounded-lg border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 text-2xl py-4 px-4"
             required
           >
             {roomTypes.map((rt) => (
@@ -103,10 +103,10 @@ const BookingBox: React.FC<{
             ))}
           </select>
         </div>
-        <div className="flex items-end">
+        <div className="flex items-end ">
           <button
             type="submit"
-            className="w-full bg-indigo-600 text-white text-lg font-bold py-3 px-6 rounded-lg hover:bg-indigo-700 shadow-lg transition-all duration-200"
+            className="w-full bg-indigo-600 text-white text-2xl font-bold py-3 px-6 rounded-lg hover:bg-indigo-700 shadow-lg transition-all duration-200"
           >
             Tìm phòng
           </button>
@@ -126,6 +126,13 @@ const imageLinks = [
   "https://res.cloudinary.com/djbvf02yt/image/upload/v1744266321/w05jzxrqfwb35qjg5p13.png",
   "https://res.cloudinary.com/djbvf02yt/image/upload/v1744266245/erovkf0owfbai9h8jkzq.png",
   "https://res.cloudinary.com/djbvf02yt/image/upload/v1744266199/s6xhgewuv9sf3c1jnlik.png",
+  "https://watermark.lovepik.com/photo/20211130/large/lovepik-grand-bed-room-of-superior-hotel-picture_501221020.jpg",
+  "https://saigontourist.com.vn/files/images/luu-tru/luu-tru-mien-nam/hotel-grand-saigon-2.jpg",
+  "https://acihome.vn/uploads/15/mau-thiet-ke-noi-that-phong-2-giuong-don-ben-trong-khach-san-3-4-5-sao-4.jpg",
+  "https://duopig.com/wp-content/uploads/2021/03/Ch%E1%BB%A5p-%E1%BA%A3nh-resort-ch%E1%BB%A5p-%E1%BA%A3nh-nh%C3%A0-h%C3%A0ng-ch%E1%BB%A5p-%E1%BA%A3nh-kh%C3%A1ch-s%E1%BA%A1n-108-copy.jpg",
+  "https://images2.thanhnien.vn/528068263637045248/2023/9/11/biden-12-1694407393696398570440.jpg",
+  "https://khachsandep.vn/storage/files/0%200%20%20bi%20quyet%20thiet%20ke%20homestay%20dep/0%20tieu%20chuan%20thiet%20ke%20phong%20tong%20thong/anh-bia-tieu-chuan-thiet-ke-phong-tong-thong.jpg",
+  "https://images2.thanhnien.vn/528068263637045248/2023/9/12/the-reverie-2-1694491501124271243870.jpg",
 ];
 
 // Component cho thẻ phòng

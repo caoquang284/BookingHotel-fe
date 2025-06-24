@@ -455,3 +455,33 @@ export interface DuplicateCheckResponse {
   isDuplicate: boolean;
   fields: string[];
 }
+
+export interface ImageDto {
+    fileName: string;
+    url: string;
+    roomId: number;
+}
+
+export interface ResponseImageDto {
+    id: number;
+    fileName: string;
+    url: string;
+    roomId: number;
+}
+
+export interface ReviewDto {
+    rating: number;
+    comment: string;
+    roomId: number;
+    guestId: number;
+  }
+  
+  export interface ResponseReviewDto {
+    id: number;
+    rating: number;
+    comment: string;
+    roomId: number;
+    guestId: number;
+    createdAt?: string;
+    updatedAt?: string;
+  }
