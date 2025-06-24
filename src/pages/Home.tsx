@@ -435,19 +435,19 @@ const Home: React.FC = () => {
         }}
       >
         {/* Overlay để làm tối nền ảnh */}
-        {/* <div className="absolute inset-0 bg-black bg-opacity-30 z-0"></div> */}
+        {/* <div className="absolute inset-0 bg-blue bg-opacity-60 z-10"></div> */}
 
         {/* Nội dung chính */}
         <div className="relative z-10 text-left text-white px-4 py-10 pl-56 mt-52">
-          <span className="inline-block bg-green-200 bg-opacity-50 text-blue-800 text-2xl font-semibold px-3 py-2 rounded-full mb-6">
-            The Ultimate Hotel Experience
+          <span className="inline-block bg-green-200 bg-opacity-50 text-blue-800 text-2xl font-semibold px-6 py-2 rounded-full mb-6">
+            Trải nghiệm khách sạn đẳng cấp
           </span>
           <h1 className="text-5xl text-yellow-500 italic md:text-6xl font-bold mb-6">
             Rong chơi bốn phương,
             <br />
-            giá vẫn yêu thương
+            "giá" vẫn yêu thương
           </h1>
-          <p className="text-lg md:text-xl mb-8 max-w-2xl font-semibold">
+          <p className="text-xl md:text-xl mb-8 max-w-2xl font-semibold">
             Sự sang trọng và tiện nghi vô song đang chờ đón bạn tại những khách
             sạn đẳng cấp nhất thế giới. Hãy bắt đầu hành trình của bạn ngay hôm
             nay.
@@ -458,9 +458,15 @@ const Home: React.FC = () => {
           </div>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto py-24 px-4">
-        <h2 className="text-4xl font-bold mb-8 text-center">
+      <div className="max-w-8xl mx-auto py-32 px-48 bg-gray-100">
+        <h2 className="text-5xl font-playfair mb-8 text-center">
           Các phòng đang có sẵn
+        </h2>
+        <h2 className="text-2xl italic text-gray-600 text-center">
+          Tận hưởng kỳ nghỉ hoàn hảo với những căn phòng đẳng cấp
+        </h2>
+        <h2 className="text-2xl italic text-gray-600 text-center mb-12">
+          sang trọng, tinh tế và đầy ấn tượng.
         </h2>
         {loading && <p className="text-center">Đang tải...</p>}
         {error && <p className="text-center text-red-600">{error}</p>}

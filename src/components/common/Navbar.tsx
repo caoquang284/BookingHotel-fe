@@ -55,7 +55,7 @@ const Navbar: React.FC = () => {
           action: handleLogout,
           label: "Đăng xuất",
           className:
-            "from-red-600 to-red-700 hover:from-red-700 hover:to-red-800",
+            "from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-2xl",
         },
       ]
     : [
@@ -63,13 +63,13 @@ const Navbar: React.FC = () => {
           path: "/login",
           label: "Đăng nhập",
           className:
-            "from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800",
+            "from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-2xl",
         },
         {
           path: "/register",
           label: "Đăng ký",
           className:
-            "from-green-600 to-green-700 hover:from-green-700 hover:to-green-800",
+            "from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-2xl",
         },
       ];
 
@@ -83,8 +83,8 @@ const Navbar: React.FC = () => {
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center pl-52">
-          <img src={logo} alt="Roomify Logo" className="h-10 w-auto mr-4" />
-          <div className="text-2xl md:text-4xl font-bold">
+          <img src={logo} alt="Roomify Logo" className="h-12 w-auto mt-2" />
+          <div className="text-2xl md:text-5xl font-bold font-playfair ml-2">
             {isScrolled ? (
               <span className="text-black">Roomify</span>
             ) : (
@@ -97,7 +97,7 @@ const Navbar: React.FC = () => {
             <Link
               key={item.path}
               to={item.path}
-              className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 group ${
+              className={`py-2 px-4 text-lg md:text-3xl font-medium rounded-md transition-all duration-300 group ${
                 location.pathname === item.path
                   ? isScrolled
                     ? "font-bold text-blue-600"
