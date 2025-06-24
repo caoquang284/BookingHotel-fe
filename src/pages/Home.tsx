@@ -152,7 +152,7 @@ const RoomCard: React.FC<{
 }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const randomImage = imageLinks[Math.floor(room.id % imageLinks.length)];
+  const randomImage = imageLinks[room.id % imageLinks.length];
 
   const handleBookingClick = () => {
     navigate(`/room-detail/${room.id}`);
@@ -253,26 +253,55 @@ const Home: React.FC = () => {
         };
       });
 
-      // Lọc phòng dựa trên khoảng thời gian booking
+      // Lọc phòng dựa trên khoảng thời gian booking và ngày hiện tại
       const availableRooms = mappedRooms.filter((room) => {
-        if (!checkInDate || !checkOutDate) return true;
-        const checkInDateObj = new Date(checkInDate);
-        const checkOutDateObj = new Date(checkOutDate);
-        return !bookingForms.some(
+        const currentDate = new Date();
+        currentDate.setHours(0, 0, 0, 0); // Đặt thời gian về 00:00:00 để so sánh ngày
+
+        // Kiểm tra xem phòng có đang được đặt trong khoảng thời gian hiện tại không
+        const isCurrentlyBooked = bookingForms.some(
           (form: ResponseBookingConfirmationFormDTO) => {
+            if (room.id !== form.roomId) return false;
+
             const bookingDateObj = new Date(form.bookingDate);
+            bookingDateObj.setHours(0, 0, 0, 0);
             const endDate = new Date(bookingDateObj);
             endDate.setDate(bookingDateObj.getDate() + form.rentalDays);
-            return (
-              room.id === form.roomId &&
-              ((checkInDateObj >= bookingDateObj && checkInDateObj < endDate) ||
-                (checkOutDateObj > bookingDateObj &&
-                  checkOutDateObj <= endDate) ||
-                (checkInDateObj <= bookingDateObj &&
-                  checkOutDateObj >= endDate))
-            );
+            endDate.setHours(0, 0, 0, 0);
+
+            // Kiểm tra xem ngày hiện tại có nằm trong khoảng thời gian booking không
+            return currentDate >= bookingDateObj && currentDate < endDate;
           }
         );
+
+        // Nếu phòng đang được đặt trong khoảng thời gian hiện tại, ẩn phòng đó
+        if (isCurrentlyBooked) {
+          return false;
+        }
+
+        // Nếu có tham số tìm kiếm, kiểm tra thêm khoảng thời gian tìm kiếm
+        if (checkInDate && checkOutDate) {
+          const checkInDateObj = new Date(checkInDate);
+          const checkOutDateObj = new Date(checkOutDate);
+          return !bookingForms.some(
+            (form: ResponseBookingConfirmationFormDTO) => {
+              const bookingDateObj = new Date(form.bookingDate);
+              const endDate = new Date(bookingDateObj);
+              endDate.setDate(bookingDateObj.getDate() + form.rentalDays);
+              return (
+                room.id === form.roomId &&
+                ((checkInDateObj >= bookingDateObj &&
+                  checkInDateObj < endDate) ||
+                  (checkOutDateObj > bookingDateObj &&
+                    checkOutDateObj <= endDate) ||
+                  (checkInDateObj <= bookingDateObj &&
+                    checkOutDateObj >= endDate))
+              );
+            }
+          );
+        }
+
+        return true;
       });
 
       let filteredRooms = availableRooms;

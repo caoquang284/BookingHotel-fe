@@ -44,7 +44,7 @@ const RoomCard: React.FC<{
 }> = ({ room, checkIn, checkOut }) => {
   const navigate = useNavigate();
   const originalPrice = room.roomTypePrice ? room.roomTypePrice * 1.35 : 0;
-  const randomImage = imageLinks[Math.floor(Math.random() * imageLinks.length)];
+  const randomImage = imageLinks[room.id % imageLinks.length];
 
   return (
     <button
