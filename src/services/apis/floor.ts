@@ -3,7 +3,7 @@ import type {
     ResponseFloorDTO,
 } from '../../types';
 
-const BASE_URL = 'http://localhost:9090/api/floor';
+const BASE_URL = 'http://localhost:8081/api/floor';
 
 export async function getAllFloors(): Promise<ResponseFloorDTO[]> {
     const response = await fetch(`${BASE_URL}`, {

@@ -1,6 +1,6 @@
 import type { ImageDto, ResponseImageDto } from '../../types';
 
-const BASE_URL = 'http://localhost:9090/api/image';
+const BASE_URL = 'http://localhost:8081/api/image';
 
 export async function getImagesByRoomId(roomId: number): Promise<ResponseImageDto[]> {
     const response = await fetch(`${BASE_URL}/room/${roomId}`, {

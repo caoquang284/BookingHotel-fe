@@ -486,3 +486,8 @@ export interface ReviewDto {
     createdAt?: string;
     updatedAt?: string;
   }
+
+  export interface ForgotPasswordDTO {
+  username: string;
+  email: string;
+}

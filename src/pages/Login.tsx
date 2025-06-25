@@ -75,12 +75,12 @@ function Login() {
             <label className="block text-sm font-medium text-gray-700 mb-2">Mật khẩu</label>
             <div className="flex items-center">
               <span className="absolute left-3 text-gray-400">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="black" viewBox="0 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth="2"
-                    d="M12 11c0-1.104-.896-2-2-2s-2 .896-2 2 2 4 2 4 2-.896 2-2zm0 0c0-1.104-.896-2-2-2s-2 .896-2 2 2 4 2 4 2-.896 2-2zm0 0c0-1.104-.896-2-2-2s-2 .896-2 2 2 4 2 4 2-.896 2-2z"
+                    d="M12 11c0-1.104-.896-2-2-2-2 .896-2-2 2z2m0 0c0-1-2-2-2-2 .896-2 .896-2 2z2m0 0c0-1-2-2-2-2-2 .896-2 .896-2 2z2"
                   />
                 </svg>
               </span>
@@ -88,7 +88,7 @@ function Login() {
                 type="password"
                 value={matKhau}
                 onChange={(e) => setMatKhau(e.target.value)}
-                className="pl-10 pr-4 py-3 w-full rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-300"
+                className="pl-10 pr-4 py-3 w-full rounded-lg border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-300"
                 placeholder="••••••••"
                 required
                 aria-label="Mật khẩu"
@@ -103,11 +103,15 @@ function Login() {
               Đăng nhập
             </button>
           </div>
-        </form>
+        </form>  
         <p className="text-center text-sm text-gray-600 mt-4">
           Chưa có tài khoản?{" "}
           <a href="/register" className="text-indigo-500 hover:text-indigo-600 font-medium">
             Đăng ký
+          </a>
+          {" | "}
+          <a href="/forgot-password" className="text-indigo-500 hover:text-indigo-600 font-medium">
+            Quên mật khẩu?
           </a>
         </p>
       </div>

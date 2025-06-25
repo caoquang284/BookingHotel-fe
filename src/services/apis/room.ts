@@ -4,7 +4,7 @@ import type {
     RoomState,
 } from '../../types';
 
-const BASE_URL = 'http://localhost:9090/api/room';
+const BASE_URL = 'http://localhost:8081/api/room';
 
 export async function getAllRooms(): Promise<ResponseRoomDTO[]> {
     const response = await fetch(`${BASE_URL}`, {
