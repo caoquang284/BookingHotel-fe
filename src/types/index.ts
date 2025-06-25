@@ -56,12 +56,13 @@ export interface ResponseBlockDTO {
     floorNames: string[];
 }
 
-export type BookingState = 'PENDING' | 'CONFIRMED' | 'CANCELLED';
+export type BookingState = 'PENDING' | 'COMMITED' | 'CANCELLED' | 'EXPIRED';
 
 export const BookingStates = {
     PENDING: 'PENDING',
-    CONFIRMED: 'CONFIRMED',
+    COMMITED: 'COMMITED',
     CANCELLED: 'CANCELLED',
+    EXPIRED: 'EXPIRED',
 } as const;
 
 export interface BookingConfirmationFormDTO {
