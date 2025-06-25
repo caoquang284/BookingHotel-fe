@@ -11,6 +11,7 @@ import type {
   ResponseRoomTypeDTO,
   ResponseImageDto,
   ResponseReviewDto,
+  ResponseGuestDTO,
 } from "../types/index.ts";
 import { RoomStates } from "../types/index.ts";
 import type {
@@ -22,6 +23,7 @@ import starIcon from "../assets/Icon/starIconFilled.svg";
 import starIconEmpty from "../assets/Icon/starIconOutlined.svg";
 import totalBookingIcon from "../assets/Icon/totalBookingIcon.svg";
 import { getReviewsByRoomId } from "../services/apis/review";
+import { getGuestById } from "../services/apis/guest"; // Import API lấy thông tin khách
 // Placeholder ảnh mặc định
 const DEFAULT_IMAGE = "https://via.placeholder.com/400x300?text=No+Image";
 
@@ -259,6 +261,53 @@ const RoomCard: React.FC<{
   );
 };
 
+const userimageLink = [
+  "https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=200",
+  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200",
+  "https://images.unsplash.com/photo-1701615004837-40d8573b6652?q=80&w=200",
+];
+
+const ReviewCard: React.FC<{
+  review: ResponseReviewDto;
+  guests: Record<number, ResponseGuestDTO>;
+  roomName: string;
+}> = ({ review, guests, roomName }) => {
+  const guest = guests[review.guestId] || { name: "Ẩn danh" };
+  const guestName = guest.name || "Ẩn danh";
+
+  return (
+    <div className="bg-white rounded-lg shadow-md p-4 mb-4">
+      <div className="flex items-center mb-2">
+        <img
+          src={userimageLink[Math.floor(Math.random() * userimageLink.length)]}
+          alt="user"
+          className="w-16 h-16 rounded-full ml-4 mt-4"
+        />
+        <h3 className="text-2xl font-playfair font-semibold mb-2 ml-5 mt-5">
+          {guestName}
+        </h3>
+      </div>
+
+      <p className="text-gray-600 text-lg mb-2 ml-4">
+        Đánh giá cho phòng {roomName}
+      </p>
+      <div className="flex items-center mb-2 ml-4">
+        {[...Array(5)].map((_, i) => (
+          <img
+            key={i}
+            src={i < review.rating ? starIcon : starIconEmpty}
+            alt="star"
+            className="w-6 h-6 mr-1"
+          />
+        ))}
+      </div>
+      <p className="text-gray-600 text-lg italic ml-4">
+        {review.comment || "Không có đánh giá"}
+      </p>
+    </div>
+  );
+};
+
 // Component chính cho trang Home
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -276,6 +325,10 @@ const Home: React.FC = () => {
   const [roomTypes, setRoomTypes] = useState<ResponseRoomTypeDTO[]>([]);
   const [selectedRoomType, setSelectedRoomType] = useState<number | null>(null);
   const [modalRoomType, setModalRoomType] = useState<number | null>(null);
+  const [reviewsByRoom, setReviewsByRoom] = useState<
+    Record<number, ResponseReviewDto[]>
+  >({}); // Lưu đánh giá theo roomId
+  const [guests, setGuests] = useState<Record<number, ResponseGuestDTO>>({}); // Lưu thông tin khách hàng theo guestId
 
   const fetchData = async (
     checkInDate?: string,
@@ -389,6 +442,48 @@ const Home: React.FC = () => {
       `/rooms?checkIn=${params.checkIn}&checkOut=${params.checkOut}&roomTypeId=${params.roomTypeId}`
     );
   };
+
+  useEffect(() => {
+    const fetchReviewsAndGuests = async () => {
+      const reviewsMap: Record<number, ResponseReviewDto[]> = {};
+      const guestsMap: Record<number, ResponseGuestDTO> = {};
+      for (const room of rooms) {
+        const reviews = await getReviewsByRoomId(room.id);
+        reviewsMap[room.id] = reviews;
+        for (const review of reviews) {
+          if (review.guestId && !guestsMap[review.guestId]) {
+            try {
+              const guest = await getGuestById(review.guestId);
+              guestsMap[review.guestId] = guest;
+            } catch (error) {
+              console.error(`Failed to fetch guest ${review.guestId}:`, error);
+              guestsMap[review.guestId] = {
+                name: "Ẩn danh",
+                sex: "MALE",
+                age: 0,
+                identificationNumber: "",
+                phoneNumber: "",
+                email: "",
+                id: 0,
+                invoiceIds: [],
+                invoiceCreatedDates: [],
+                rentalFormIds: [],
+                rentalFormCreatedDates: [],
+                rentalFormDetailIds: [],
+                bookingConfirmationFormIds: [],
+                bookingConfirmationFormCreatedDates: [],
+                bookingConfirmationFormRoomIds: [],
+                bookingConfirmationFormRoomNames: [],
+              };
+            }
+          }
+        }
+      }
+      setReviewsByRoom(reviewsMap);
+      setGuests(guestsMap);
+    };
+    if (rooms.length > 0) fetchReviewsAndGuests();
+  }, [rooms]);
 
   const sliderRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]); // Định nghĩa cardRefs với kiểu đúng
@@ -568,6 +663,35 @@ const Home: React.FC = () => {
           >
             →
           </button>
+        </div>
+        <h2 className="text-5xl font-playfair mb-8 text-center mt-20">
+          Đánh giá từ khách hàng
+        </h2>
+        <h2 className="text-2xl italic text-gray-600 text-center mb-12">
+          Khám phá lý do vì sao những du khách sành điệu luôn tin chọn Roomify
+          <br />
+          cho các chỗ ở sang trọng và đẳng cấp.
+        </h2>
+        <div className="grid grid-cols-3 gap-6 max-h-[800px] overflow-hidden">
+          {Object.values(reviewsByRoom)
+            .flat()
+            .slice(0, 6) // Giới hạn tối đa 6 card
+            .map((review) => (
+              <ReviewCard
+                key={review.id}
+                review={review}
+                guests={guests}
+                roomName={
+                  rooms.find((room) => room.id === review.roomId)?.name ||
+                  "Phòng không xác định"
+                }
+              />
+            ))}
+          {Object.values(reviewsByRoom).every((reviews) => !reviews.length) && (
+            <div className="bg-white rounded-lg shadow-md p-4 text-center col-span-3">
+              <p className="text-gray-600">Chưa có đánh giá</p>
+            </div>
+          )}
         </div>
       </div>
       {showDateModal && (

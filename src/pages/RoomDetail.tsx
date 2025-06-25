@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { getRoomById } from "../services/apis/room";
 import { getAllRoomTypes } from "../services/apis/roomType";
 import { getAllFloors } from "../services/apis/floor";
 import { getImagesByRoomId } from "../services/apis/image";
-import { getReviewsByRoomId } from "../services/apis/review"; // Import API đánh giá
+import { getReviewsByRoomId } from "../services/apis/review";
+import { getGuestById } from "../services/apis/guest";
 import type {
   ResponseRoomDTO,
   ResponseRoomTypeDTO,
   ResponseImageDto,
   ResponseReviewDto,
+  ResponseGuestDTO,
 } from "../types/index.ts";
 import mapIcon from "../assets/Icon/locationIcon.svg";
 import starIcon from "../assets/Icon/starIconFilled.svg";
@@ -26,16 +28,36 @@ const BookingBox: React.FC<{
   }) => void;
   roomTypes: ResponseRoomTypeDTO[];
   onDateChange?: (checkIn: string, checkOut: string) => void;
-}> = ({ onSearch, roomTypes, onDateChange }) => {
-  const [checkIn, setCheckIn] = useState("");
-  const [checkOut, setCheckOut] = useState("");
+  onBookNow: (
+    checkIn: string,
+    checkOut: string,
+    roomId: string | undefined
+  ) => void;
+  initialCheckIn?: string;
+  initialCheckOut?: string;
+  isDisabled?: boolean;
+}> = ({
+  onSearch,
+  roomTypes,
+  onDateChange,
+  onBookNow,
+  initialCheckIn,
+  initialCheckOut,
+  isDisabled,
+}) => {
+  const [checkIn, setCheckIn] = useState(initialCheckIn || "");
+  const [checkOut, setCheckOut] = useState(initialCheckOut || "");
   const [roomTypeId, setRoomTypeId] = useState<number>(
     roomTypes.length > 0 ? roomTypes[0].id : 1
   );
 
   useEffect(() => {
     if (roomTypes.length > 0) setRoomTypeId(roomTypes[0].id);
-  }, [roomTypes]);
+    if (initialCheckIn && initialCheckOut) {
+      setCheckIn(initialCheckIn);
+      setCheckOut(initialCheckOut);
+    }
+  }, [roomTypes, initialCheckIn, initialCheckOut]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,10 +67,12 @@ const BookingBox: React.FC<{
     onSearch({ checkIn, checkOut, roomTypeId });
   };
 
-  const handleBookNow = () => {
-    if (onDateChange && checkIn && checkOut) {
-      onDateChange(checkIn, checkOut);
+  const handleBookNowClick = () => {
+    if (!checkIn || !checkOut) {
+      alert("Vui lòng chọn ngày đến và ngày đi!");
+      return;
     }
+    onBookNow(checkIn, checkOut, undefined);
   };
 
   return (
@@ -64,9 +88,10 @@ const BookingBox: React.FC<{
           <input
             type="date"
             value={checkIn}
-            onChange={(e) => setCheckIn(e.target.value)}
+            onChange={(e) => !isDisabled && setCheckIn(e.target.value)}
             className="text-black mt-1 block w-64 rounded-lg border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 text-2xl py-4 px-6"
             required
+            disabled={isDisabled}
           />
         </div>
         <div>
@@ -76,15 +101,16 @@ const BookingBox: React.FC<{
           <input
             type="date"
             value={checkOut}
-            onChange={(e) => setCheckOut(e.target.value)}
+            onChange={(e) => !isDisabled && setCheckOut(e.target.value)}
             className="text-black mt-1 block w-64 rounded-lg border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 text-2xl py-4 px-6"
             required
+            disabled={isDisabled}
           />
         </div>
         <div className="justify-self-end mt-4">
           <button
             type="button"
-            onClick={handleBookNow}
+            onClick={handleBookNowClick}
             className="bg-blue-600 text-white text-2xl text-center font-semibold mt-4 py-4 px-24 rounded-lg hover:bg-blue-700 shadow-md"
           >
             Book now
@@ -95,18 +121,71 @@ const BookingBox: React.FC<{
   );
 };
 
+const userimageLink = [
+  "https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=200",
+  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200",
+  "https://images.unsplash.com/photo-1701615004837-40d8573b6652?q=80&w=200",
+];
+
+const ReviewCard: React.FC<{
+  review: ResponseReviewDto;
+  guests: Record<number, ResponseGuestDTO>;
+  roomName: string;
+}> = ({ review, guests, roomName }) => {
+  const guest = guests[review.guestId] || { name: "Ẩn danh" };
+  const guestName = guest.name || "Ẩn danh";
+
+  return (
+    <div className="bg-white rounded-lg shadow-md p-4 mb-4">
+      <div className="flex items-center mb-2">
+        <img
+          src={userimageLink[Math.floor(Math.random() * userimageLink.length)]}
+          alt="user"
+          className="w-16 h-16 rounded-full ml-4 mt-4"
+        />
+        <h3 className="text-2xl font-playfair font-semibold mb-2 ml-5 mt-5">
+          {guestName}
+        </h3>
+      </div>
+      <p className="text-gray-600 text-lg mb-2 ml-4">
+        Đánh giá cho phòng {roomName}
+      </p>
+      <div className="flex items-center mb-2 ml-4">
+        {[...Array(5)].map((_, i) => (
+          <img
+            key={i}
+            src={i < review.rating ? starIcon : starIconEmpty}
+            alt="star"
+            className="w-6 h-6 mr-1"
+          />
+        ))}
+      </div>
+      <p className="text-gray-600 text-lg italic ml-4">
+        {review.comment || "Không có đánh giá"}
+      </p>
+    </div>
+  );
+};
+
 const RoomDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const initialCheckIn = queryParams.get("checkIn") || "";
+  const initialCheckOut = queryParams.get("checkOut") || "";
   const [room, setRoom] = useState<ResponseRoomDTO | null>(null);
   const [roomTypes, setRoomTypes] = useState<ResponseRoomTypeDTO[]>([]);
-  const [checkIn, setCheckIn] = useState<string>("");
-  const [checkOut, setCheckOut] = useState<string>("");
+  const [checkIn, setCheckIn] = useState<string>(initialCheckIn);
+  const [checkOut, setCheckOut] = useState<string>(initialCheckOut);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [images, setImages] = useState<string[]>([]); // State lưu danh sách URL ảnh
-  const [starRating, setStarRating] = useState<number>(0); // State lưu số sao trung bình
+  const [images, setImages] = useState<string[]>([]);
+  const [starRating, setStarRating] = useState<number>(0);
   const [reviewCount, setReviewCount] = useState<number>(0);
+  const [reviews, setReviews] = useState<ResponseReviewDto[]>([]);
+  const [guests, setGuests] = useState<Record<number, ResponseGuestDTO>>({});
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -131,7 +210,6 @@ const RoomDetail: React.FC = () => {
         });
         setRoomTypes(roomTypesData);
 
-        // Lấy 5 ảnh đầu tiên
         const imageUrls = imagesData
           .slice(0, 5)
           .map((img: ResponseImageDto) => img.url);
@@ -140,7 +218,7 @@ const RoomDetail: React.FC = () => {
         }
         setImages(imageUrls);
 
-        // Tính trung bình rating và số lượt đánh giá
+        setReviews(reviewsData);
         const ratings = reviewsData.map(
           (review: ResponseReviewDto) => review.rating
         );
@@ -152,8 +230,39 @@ const RoomDetail: React.FC = () => {
               )
             : 0;
         setStarRating(averageRating);
-        setReviewCount(reviewsData.length); // Lưu số lượng đánh giá
-        console.log(reviewsData);
+        setReviewCount(reviewsData.length);
+
+        const guestsMap: Record<number, ResponseGuestDTO> = {};
+        for (const review of reviewsData) {
+          if (review.guestId && !guestsMap[review.guestId]) {
+            try {
+              const guest = await getGuestById(review.guestId);
+              guestsMap[review.guestId] = guest;
+            } catch (error) {
+              console.error(`Failed to fetch guest ${review.guestId}:`, error);
+              guestsMap[review.guestId] = {
+                name: "Ẩn danh",
+                sex: "MALE",
+                age: 0,
+                identificationNumber: "",
+                phoneNumber: "",
+                email: "",
+                id: 0,
+                invoiceIds: [],
+                invoiceCreatedDates: [],
+                rentalFormIds: [],
+                rentalFormCreatedDates: [],
+                rentalFormDetailIds: [],
+                bookingConfirmationFormIds: [],
+                bookingConfirmationFormCreatedDates: [],
+                bookingConfirmationFormRoomIds: [],
+                bookingConfirmationFormRoomNames: [],
+              };
+            }
+          }
+        }
+        setGuests(guestsMap);
+
         setLoading(false);
       } catch (err) {
         console.error("Error fetching room detail, images, or reviews:", err);
@@ -166,7 +275,9 @@ const RoomDetail: React.FC = () => {
           DEFAULT_IMAGE,
         ]);
         setStarRating(0);
-        setReviewCount(0); // Mặc định 0 lượt nếu lỗi
+        setReviewCount(0);
+        setReviews([]);
+        setGuests({});
         setLoading(false);
       }
     };
@@ -177,7 +288,6 @@ const RoomDetail: React.FC = () => {
   if (error) return <p className="text-center text-red-600">{error}</p>;
   if (!room) return <p className="text-center">Phòng không tồn tại</p>;
 
-  // Lấy ảnh chính và 4 ảnh thumbnail
   const mainImage = images[0];
   const thumbnailImages = images.slice(1, 5);
 
@@ -186,9 +296,13 @@ const RoomDetail: React.FC = () => {
     setCheckOut(newCheckOut);
   };
 
-  const handleBookNow = () => {
-    if (!checkIn || !checkOut) {
-      alert("Vui lòng chọn ngày đến và ngày đi!");
+  const handleBookNow = (
+    checkIn: string,
+    checkOut: string,
+    roomId: string | undefined
+  ) => {
+    if (!id) {
+      alert("Không tìm thấy ID phòng!");
       return;
     }
     navigate(
@@ -251,30 +365,57 @@ const RoomDetail: React.FC = () => {
           ))}
         </div>
       </div>
-      <div className="mb-4">
-        <p className="text-black text-4xl mt-2 font-playfair">
-          {"Experience Luxury Like Never Before"}
+      <div className="mb-4 flex items-center justify-between">
+        <p className="text-black text-4xl mt-2 font-playfair mb-2">
+          {"Trải nghiệm xa xỉ chưa từng có"}
+        </p>
+        <p className="text-gray-600 text-3xl font-semibold">
+          {room.roomTypePrice} VND/Đêm
         </p>
       </div>
       <div>
-        <span className="inline-block bg-blue-100 text-blue-800 text-xl font-semibold mr-2 px-3 py-1 rounded">
-          Free Wifi
+        <span className="inline-block bg-blue-100 text-blue-800 text-xl font-semibold mr-4 px-3 py-1 mt-2 rounded">
+          Wifi miễn phí
         </span>
-        <span className="inline-block bg-green-100 text-green-800 text-xl font-semibold mr-2 px-3 py-1 rounded">
-          Free Parking
+        <span className="inline-block bg-green-100 text-green-800 text-xl font-semibold mr-4 px-3 py-1 mt-2 rounded">
+          Đậu xe miễn phí
         </span>
-        <span className="inline-block bg-yellow-100 text-yellow-800 text-xl font-semibold mr-2 px-3 py-1 rounded">
-          Free Breakfast
+        <span className="inline-block bg-yellow-100 text-yellow-800 text-xl font-semibold mr-4 px-3 py-1 mt-2 rounded">
+          Bữa sáng miễn phí
         </span>
-        <span className="inline-block bg-purple-100 text-purple-800 text-xl font-semibold px-3 py-1 rounded">
-          Fast Check-in
+        <span className="inline-block bg-purple-100 text-purple-800 text-xl font-semibold px-3 py-1 mt-2 mb-16 rounded">
+          Check-in nhanh chóng
         </span>
       </div>
       <BookingBox
         onSearch={() => {}}
         roomTypes={roomTypes}
         onDateChange={handleDateChange}
+        onBookNow={handleBookNow}
+        initialCheckIn={initialCheckIn}
+        initialCheckOut={initialCheckOut}
+        isDisabled={!!initialCheckIn && !!initialCheckOut}
       />
+
+      <div className="h-0.5 w-full bg-gray-200 my-12 mt-24 mb-24"></div>
+      <h2 className="text-5xl font-playfair mb-8 text-left mt-12">
+        Khách hàng nói gì?
+      </h2>
+      <div className="grid grid-cols-3 gap-6 max-h-[600px] overflow-hidden">
+        {reviews.slice(0, 6).map((review) => (
+          <ReviewCard
+            key={review.id}
+            review={review}
+            guests={guests}
+            roomName={room.name}
+          />
+        ))}
+        {reviews.length === 0 && (
+          <div className="bg-white rounded-lg shadow-md p-4 text-center col-span-3">
+            <p className="text-gray-600 text-2xl">Chưa có đánh giá</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

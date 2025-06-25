@@ -55,9 +55,8 @@ const RoomCard: React.FC<{
   const [starRating, setStarRating] = useState<number>(0);
   const [imageUrl, setImageUrl] = useState<string>(
     "https://via.placeholder.com/400x300?text=No+Image"
-  ); // State cho ảnh
+  );
 
-  // Lấy đánh giá và tính trung bình rating
   useEffect(() => {
     const fetchReviews = async () => {
       try {
@@ -81,13 +80,12 @@ const RoomCard: React.FC<{
     fetchReviews();
   }, [room.id]);
 
-  // Lấy ảnh đầu tiên từ API
   useEffect(() => {
     const fetchImage = async () => {
       try {
         const images = await getImagesByRoomId(room.id);
         if (images && images.length > 0) {
-          setImageUrl(images[0].url); // Lấy URL ảnh đầu tiên
+          setImageUrl(images[0].url);
         } else {
           setImageUrl("https://via.placeholder.com/400x300?text=No+Image");
         }
@@ -104,7 +102,7 @@ const RoomCard: React.FC<{
       type="button"
       onClick={() => {
         navigate(
-          `/booking?roomId=${room.id}&checkIn=${checkIn || ""}&checkOut=${
+          `/room-detail/${room.id}?checkIn=${checkIn || ""}&checkOut=${
             checkOut || ""
           }`
         );
@@ -187,9 +185,9 @@ const Rooms: React.FC = () => {
   const [rooms, setRooms] = useState<ResponseRoomDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [priceRange, setPriceRange] = useState<string>(""); // Lọc theo khoảng giá
-  const [sortOrder, setSortOrder] = useState<string>(""); // Sắp xếp: low-high hoặc high-low
-  const [starRating, setStarRating] = useState<number | null>(null); // Lọc theo số sao
+  const [priceRange, setPriceRange] = useState<string>("");
+  const [sortOrder, setSortOrder] = useState<string>("");
+  const [starRating, setStarRating] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -216,7 +214,6 @@ const Rooms: React.FC = () => {
           };
         });
 
-        // Lọc phòng theo loại phòng
         let filteredRooms = mappedRooms;
         if (roomTypeId) {
           filteredRooms = filteredRooms.filter(
@@ -224,7 +221,6 @@ const Rooms: React.FC = () => {
           );
         }
 
-        // Lọc phòng không bị trùng lịch
         if (checkIn && checkOut) {
           const checkInDate = new Date(checkIn);
           const checkOutDate = new Date(checkOut);
@@ -242,7 +238,6 @@ const Rooms: React.FC = () => {
           });
         }
 
-        // Lọc theo khoảng giá
         if (priceRange) {
           filteredRooms = filteredRooms.filter((room) => {
             const price = room.roomTypePrice || 0;
@@ -261,16 +256,13 @@ const Rooms: React.FC = () => {
           });
         }
 
-        // Lọc theo số sao
         if (starRating !== null) {
           filteredRooms = filteredRooms.filter((room) => {
-            // Giả định starRating được random trong RoomCard, lấy giá trị từ 3-5
-            const roomStars = Math.floor(Math.random() * 3) + 3;
+            const roomStars = Math.floor(Math.random() * 3) + 3; // Giả lập số sao
             return roomStars === starRating;
           });
         }
 
-        // Sắp xếp theo giá
         if (sortOrder === "low-high") {
           filteredRooms.sort(
             (a, b) => (a.roomTypePrice || 0) - (b.roomTypePrice || 0)
