@@ -207,58 +207,58 @@ const BookingPage: React.FC = () => {
     );
 
   return (
-    <div className="min-h-screen bg-gray-100 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-3xl font-extrabold text-gray-900 text-center mb-8">
+    <div className="min-h-screen bg-gray-100 sm:px-6 lg:px-8 py-42 px-48">
+      <div className="max-w-7xl mx-auto">
+        <h2 className="text-5xl font-playfair font-extrabold text-gray-900 text-center mb-12">
           Đặt Phòng Khách Sạn
         </h2>
         <div className="bg-white shadow-2xl rounded-2xl overflow-hidden">
           <div className="p-8">
-            <h3 className="text-2xl font-bold text-gray-800 mb-6">
+            <h3 className="text-3xl font-bold text-gray-800 mb-6 ml-8 mt-4 font-playfair">
               Thông tin phòng
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 ml-8">
               <div className="space-y-3">
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-2xl">
                   <span className="font-semibold">Tên phòng:</span> {room.name}
                 </p>
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-2xl">
                   <span className="font-semibold">Loại phòng:</span>{" "}
                   {room.roomTypeName}
                 </p>
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-2xl">
                   <span className="font-semibold">Tầng:</span> {room.floorName}
                 </p>
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-2xl">
                   <span className="font-semibold">Ghi chú:</span>{" "}
                   {room.note || "Không có ghi chú"}
                 </p>
               </div>
               <div className="space-y-3">
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-2xl">
                   <span className="font-semibold">Ngày đến:</span>{" "}
                   {checkIn || "Chưa chọn"}
                 </p>
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-2xl">
                   <span className="font-semibold">Ngày đi:</span>{" "}
                   {checkOut || "Chưa chọn"}
                 </p>
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-2xl">
                   <span className="font-semibold">Số khách:</span> {guests}
                 </p>
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-2xl">
                   <span className="font-semibold">Giá:</span>{" "}
                   {formatVND(Number(room.roomTypePrice))}
                 </p>
               </div>
             </div>
 
-            <h3 className="text-2xl font-bold text-gray-800 mb-6">
+            <h3 className="text-3xl font-bold text-gray-800 mb-6 ml-8 mt-4 font-playfair">
               Thông tin khách hàng
             </h3>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6 ml-8">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-2xl font-medium text-gray-700 mb-1">
                   Họ và tên
                 </label>
                 <input
@@ -271,7 +271,7 @@ const BookingPage: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-2xl font-medium text-gray-700 mb-1">
                   Email
                 </label>
                 <input
@@ -284,7 +284,7 @@ const BookingPage: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-2xl font-medium text-gray-700 mb-1">
                   Số điện thoại
                 </label>
                 <input
@@ -298,7 +298,7 @@ const BookingPage: React.FC = () => {
               </div>
               <button
                 type="submit"
-                className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 font-semibold"
+                className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 font-semibold text-2xl"
               >
                 Xác nhận đặt phòng
               </button>
