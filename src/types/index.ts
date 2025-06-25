@@ -491,3 +491,9 @@ export interface ReviewDto {
   username: string;
   email: string;
 }
+
+export interface ChangePasswordDTO {
+  oldPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}

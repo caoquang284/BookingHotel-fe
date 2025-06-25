@@ -46,7 +46,12 @@ const Navbar: React.FC = () => {
 
   const navItems: NavItem[] = [
     { path: "/", label: "Trang chủ" },
-    ...(user ? [{ path: "/booking-history", label: "Lịch sử đặt phòng" }] : []),
+    ...(user
+      ? [
+          { path: "/booking-history", label: "Lịch sử đặt phòng" },
+          { path: "/profile", label: "Hồ sơ" },
+        ]
+      : []),
   ];
 
   const authItems: AuthItem[] = user

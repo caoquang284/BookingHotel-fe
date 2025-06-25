@@ -56,3 +56,21 @@ export async function forgotPassword(data: ForgotPasswordDTO): Promise<void> {
     throw new Error(error || 'Failed to send reset code');
   }
 }
+
+export async function changePassword(data: { oldPassword: string; newPassword: string; confirmPassword: string }, accessToken: string): Promise<void> {
+  console.log('Sending change password request:', { data, accessToken });
+  const response = await fetch(`${BASE_URL}/change-password`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    console.error('Change password error:', error);
+    throw new Error(error || 'Không thể thay đổi mật khẩu');
+  }
+}
