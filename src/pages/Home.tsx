@@ -4,14 +4,29 @@ import { getRoomsByState } from "../services/apis/room";
 import { getAllRoomTypes } from "../services/apis/roomType";
 import { getAllFloors } from "../services/apis/floor";
 import { getAllBookingConfirmationForms } from "../services/apis/bookingconfirm";
+import { getImagesByRoomId } from "../services/apis/image"; // Import API ảnh
 import { useAuth } from "../contexts/AuthContext";
-import type { ResponseRoomDTO, ResponseRoomTypeDTO } from "../types/index.ts";
+import type {
+  ResponseRoomDTO,
+  ResponseRoomTypeDTO,
+  ResponseImageDto,
+  ResponseReviewDto,
+  ResponseGuestDTO,
+} from "../types/index.ts";
 import { RoomStates } from "../types/index.ts";
 import type {
   BookingConfirmationFormDTO,
   ResponseBookingConfirmationFormDTO,
 } from "../types";
 import backgroundImage from "../assets/Image/bg.jpg";
+import starIcon from "../assets/Icon/starIconFilled.svg";
+import starIconEmpty from "../assets/Icon/starIconOutlined.svg";
+import totalBookingIcon from "../assets/Icon/totalBookingIcon.svg";
+import { getReviewsByRoomId } from "../services/apis/review";
+import { getGuestById } from "../services/apis/guest"; // Import API lấy thông tin khách
+// Placeholder ảnh mặc định
+const DEFAULT_IMAGE = "https://via.placeholder.com/400x300?text=No+Image";
+
 // Định nghĩa interface cho payload phân trang
 interface PaginatedResponse {
   content: ResponseRoomDTO[];
@@ -116,25 +131,6 @@ const BookingBox: React.FC<{
   );
 };
 
-const imageLinks = [
-  "https://xuonggooccho.com/ckfinder/userfiles/files/anh-phong-ngu.jpg",
-  "https://noithattrevietnam.com/uploaded/2019/12/1-thiet-ke-phong-ngu-khach-san%20%281%29.jpg",
-  "https://acihome.vn/uploads/17/phong-ngu-khach-san-5-sao.jpg",
-  "https://www.vietnambooking.com/wp-content/uploads/2021/02/khach-san-ho-chi-minh-35.jpg",
-  "https://ik.imagekit.io/tvlk/blog/2023/09/khach-san-view-bien-da-nang-1.jpg?tr=q-70,c-at_max,w-500,h-300,dpr-2",
-  "https://res.cloudinary.com/djbvf02yt/image/upload/v1744266362/qsj8vz0bptxfirwamtx5.png",
-  "https://res.cloudinary.com/djbvf02yt/image/upload/v1744266321/w05jzxrqfwb35qjg5p13.png",
-  "https://res.cloudinary.com/djbvf02yt/image/upload/v1744266245/erovkf0owfbai9h8jkzq.png",
-  "https://res.cloudinary.com/djbvf02yt/image/upload/v1744266199/s6xhgewuv9sf3c1jnlik.png",
-  "https://watermark.lovepik.com/photo/20211130/large/lovepik-grand-bed-room-of-superior-hotel-picture_501221020.jpg",
-  "https://saigontourist.com.vn/files/images/luu-tru/luu-tru-mien-nam/hotel-grand-saigon-2.jpg",
-  "https://acihome.vn/uploads/15/mau-thiet-ke-noi-that-phong-2-giuong-don-ben-trong-khach-san-3-4-5-sao-4.jpg",
-  "https://duopig.com/wp-content/uploads/2021/03/Ch%E1%BB%A5p-%E1%BA%A3nh-resort-ch%E1%BB%A5p-%E1%BA%A3nh-nh%C3%A0-h%C3%A0ng-ch%E1%BB%A5p-%E1%BA%A3nh-kh%C3%A1ch-s%E1%BA%A1n-108-copy.jpg",
-  "https://images2.thanhnien.vn/528068263637045248/2023/9/11/biden-12-1694407393696398570440.jpg",
-  "https://khachsandep.vn/storage/files/0%200%20%20bi%20quyet%20thiet%20ke%20homestay%20dep/0%20tieu%20chuan%20thiet%20ke%20phong%20tong%20thong/anh-bia-tieu-chuan-thiet-ke-phong-tong-thong.jpg",
-  "https://images2.thanhnien.vn/528068263637045248/2023/9/12/the-reverie-2-1694491501124271243870.jpg",
-];
-
 // Component cho thẻ phòng
 const RoomCard: React.FC<{
   room: ResponseRoomDTO;
@@ -159,7 +155,48 @@ const RoomCard: React.FC<{
 }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const randomImage = imageLinks[room.id % imageLinks.length];
+  const [imageUrl, setImageUrl] = useState<string>(DEFAULT_IMAGE);
+  const [starRating, setStarRating] = useState<number>(0); // Thêm state cho số sao
+
+  // Lấy ảnh đầu tiên cho phòng
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        const images = await getImagesByRoomId(room.id);
+        if (images && images.length > 0) {
+          setImageUrl(images[0].url);
+        }
+      } catch (error) {
+        console.error(`Failed to fetch image for room ${room.id}:`, error);
+        setImageUrl(DEFAULT_IMAGE);
+      }
+    };
+    fetchImage();
+  }, [room.id]);
+
+  // Lấy đánh giá và tính trung bình rating
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const reviews = await getReviewsByRoomId(room.id);
+        const ratings = reviews.map(
+          (review: ResponseReviewDto) => review.rating
+        );
+        const averageRating =
+          ratings.length > 0
+            ? Math.floor(
+                ratings.reduce((sum, rating) => sum + rating, 0) /
+                  ratings.length
+              )
+            : 0;
+        setStarRating(averageRating);
+      } catch (error) {
+        console.error(`Failed to fetch reviews for room ${room.id}:`, error);
+        setStarRating(0); // Mặc định 0 sao nếu lỗi
+      }
+    };
+    fetchReviews();
+  }, [room.id]);
 
   const handleBookingClick = () => {
     navigate(`/room-detail/${room.id}`);
@@ -168,10 +205,10 @@ const RoomCard: React.FC<{
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden w-full max-w-md mx-auto">
       <img
-        src={randomImage}
+        src={imageUrl}
         alt={room.name}
         className="w-full h-52 object-cover"
-        onError={() => console.error("Image failed to load for", room.name)}
+        onError={() => setImageUrl(DEFAULT_IMAGE)}
       />
       <div className="p-4">
         <div className="flex justify-between items-center mb-2">
@@ -184,15 +221,25 @@ const RoomCard: React.FC<{
             </p>
           </div>
           <div className="flex items-center mb-6">
-            {[...Array(Math.floor(Math.random() * 3) + 3)].map((_, i) => (
+            {[...Array(5)].map((_, i) => (
               <span key={i} className="text-yellow-400 text-xl">
-                ★
+                <img
+                  src={i < starRating ? starIcon : starIconEmpty}
+                  alt="star"
+                  className="w-4 h-4"
+                />
               </span>
             ))}
           </div>
         </div>
         <div className="flex items-center space-x-2 mb-2">
-          <span className="text-gray-600">📝</span>
+          <span className="text-gray-600">
+            <img
+              src={totalBookingIcon}
+              alt="totalBooking"
+              className="w-4 h-4"
+            />
+          </span>
           <p className="text-gray-600 text-base truncate">
             {room.note || "Không có ghi chú"}
           </p>
@@ -214,6 +261,53 @@ const RoomCard: React.FC<{
   );
 };
 
+const userimageLink = [
+  "https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=200",
+  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200",
+  "https://images.unsplash.com/photo-1701615004837-40d8573b6652?q=80&w=200",
+];
+
+const ReviewCard: React.FC<{
+  review: ResponseReviewDto;
+  guests: Record<number, ResponseGuestDTO>;
+  roomName: string;
+}> = ({ review, guests, roomName }) => {
+  const guest = guests[review.guestId] || { name: "Ẩn danh" };
+  const guestName = guest.name || "Ẩn danh";
+
+  return (
+    <div className="bg-white rounded-lg shadow-md p-4 mb-4">
+      <div className="flex items-center mb-2">
+        <img
+          src={userimageLink[Math.floor(Math.random() * userimageLink.length)]}
+          alt="user"
+          className="w-16 h-16 rounded-full ml-4 mt-4"
+        />
+        <h3 className="text-2xl font-playfair font-semibold mb-2 ml-5 mt-5">
+          {guestName}
+        </h3>
+      </div>
+
+      <p className="text-gray-600 text-lg mb-2 ml-4">
+        Đánh giá cho phòng {roomName}
+      </p>
+      <div className="flex items-center mb-2 ml-4">
+        {[...Array(5)].map((_, i) => (
+          <img
+            key={i}
+            src={i < review.rating ? starIcon : starIconEmpty}
+            alt="star"
+            className="w-6 h-6 mr-1"
+          />
+        ))}
+      </div>
+      <p className="text-gray-600 text-lg italic ml-4">
+        {review.comment || "Không có đánh giá"}
+      </p>
+    </div>
+  );
+};
+
 // Component chính cho trang Home
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -231,6 +325,10 @@ const Home: React.FC = () => {
   const [roomTypes, setRoomTypes] = useState<ResponseRoomTypeDTO[]>([]);
   const [selectedRoomType, setSelectedRoomType] = useState<number | null>(null);
   const [modalRoomType, setModalRoomType] = useState<number | null>(null);
+  const [reviewsByRoom, setReviewsByRoom] = useState<
+    Record<number, ResponseReviewDto[]>
+  >({}); // Lưu đánh giá theo roomId
+  const [guests, setGuests] = useState<Record<number, ResponseGuestDTO>>({}); // Lưu thông tin khách hàng theo guestId
 
   const fetchData = async (
     checkInDate?: string,
@@ -344,6 +442,48 @@ const Home: React.FC = () => {
       `/rooms?checkIn=${params.checkIn}&checkOut=${params.checkOut}&roomTypeId=${params.roomTypeId}`
     );
   };
+
+  useEffect(() => {
+    const fetchReviewsAndGuests = async () => {
+      const reviewsMap: Record<number, ResponseReviewDto[]> = {};
+      const guestsMap: Record<number, ResponseGuestDTO> = {};
+      for (const room of rooms) {
+        const reviews = await getReviewsByRoomId(room.id);
+        reviewsMap[room.id] = reviews;
+        for (const review of reviews) {
+          if (review.guestId && !guestsMap[review.guestId]) {
+            try {
+              const guest = await getGuestById(review.guestId);
+              guestsMap[review.guestId] = guest;
+            } catch (error) {
+              console.error(`Failed to fetch guest ${review.guestId}:`, error);
+              guestsMap[review.guestId] = {
+                name: "Ẩn danh",
+                sex: "MALE",
+                age: 0,
+                identificationNumber: "",
+                phoneNumber: "",
+                email: "",
+                id: 0,
+                invoiceIds: [],
+                invoiceCreatedDates: [],
+                rentalFormIds: [],
+                rentalFormCreatedDates: [],
+                rentalFormDetailIds: [],
+                bookingConfirmationFormIds: [],
+                bookingConfirmationFormCreatedDates: [],
+                bookingConfirmationFormRoomIds: [],
+                bookingConfirmationFormRoomNames: [],
+              };
+            }
+          }
+        }
+      }
+      setReviewsByRoom(reviewsMap);
+      setGuests(guestsMap);
+    };
+    if (rooms.length > 0) fetchReviewsAndGuests();
+  }, [rooms]);
 
   const sliderRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]); // Định nghĩa cardRefs với kiểu đúng
@@ -523,6 +663,35 @@ const Home: React.FC = () => {
           >
             →
           </button>
+        </div>
+        <h2 className="text-5xl font-playfair mb-8 text-center mt-20">
+          Đánh giá từ khách hàng
+        </h2>
+        <h2 className="text-2xl italic text-gray-600 text-center mb-12">
+          Khám phá lý do vì sao những du khách sành điệu luôn tin chọn Roomify
+          <br />
+          cho các chỗ ở sang trọng và đẳng cấp.
+        </h2>
+        <div className="grid grid-cols-3 gap-6 max-h-[800px] overflow-hidden">
+          {Object.values(reviewsByRoom)
+            .flat()
+            .slice(0, 6) // Giới hạn tối đa 6 card
+            .map((review) => (
+              <ReviewCard
+                key={review.id}
+                review={review}
+                guests={guests}
+                roomName={
+                  rooms.find((room) => room.id === review.roomId)?.name ||
+                  "Phòng không xác định"
+                }
+              />
+            ))}
+          {Object.values(reviewsByRoom).every((reviews) => !reviews.length) && (
+            <div className="bg-white rounded-lg shadow-md p-4 text-center col-span-3">
+              <p className="text-gray-600">Chưa có đánh giá</p>
+            </div>
+          )}
         </div>
       </div>
       {showDateModal && (

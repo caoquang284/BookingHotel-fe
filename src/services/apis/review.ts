@@ -1,6 +1,6 @@
 import type { ReviewDto, ResponseReviewDto } from '../../types';
 
-const BASE_URL = 'http://localhost:8080/api/review';
+const BASE_URL = 'http://localhost:9090/api/review';
 
 export async function getReviewsByRoomId(roomId: number): Promise<ResponseReviewDto[]> {
     const response = await fetch(`${BASE_URL}/room/${roomId}`, {
