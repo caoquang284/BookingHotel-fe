@@ -806,11 +806,7 @@ const Home: React.FC = () => {
         <div className="grid grid-cols-3 gap-6 max-h-[800px] overflow-hidden">
           {Object.values(reviewsByRoom)
             .flat()
-<<<<<<< HEAD
             .slice(0, 6)
-=======
-            // Giới hạn tối đa 6 card
->>>>>>> 333e68db96151e9cac463402249cf001cacd6fcf
             .map((review) => (
               <ReviewCard
                 key={review.id}

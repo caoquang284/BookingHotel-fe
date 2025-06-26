@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTheme } from "../contexts/ThemeContext";
 import { getRoomsByState } from "../services/apis/room";
 import { getAllRoomTypes } from "../services/apis/roomType";
 import { getAllFloors } from "../services/apis/floor";
 import { getAllBookingConfirmationForms } from "../services/apis/bookingconfirm";
+import { getReviewsByRoomId } from "../services/apis/review";
+import { getImagesByRoomId } from "../services/apis/image";
 import starIcon from "../assets/Icon/starIconFilled.svg";
 import starIconEmpty from "../assets/Icon/starIconOutlined.svg";
 import type {
@@ -13,9 +16,6 @@ import type {
   ResponseImageDto,
 } from "../types/index.ts";
 import { RoomStates } from "../types/index.ts";
-import { getReviewsByRoomId } from "../services/apis/review";
-
-import { getImagesByRoomId } from "../services/apis/image";
 
 // Định nghĩa interface cho payload phân trang
 interface PaginatedResponse {
@@ -36,13 +36,6 @@ interface PaginatedResponse {
   totalElements: number;
   totalPages: number;
 }
-const imageLinks = [
-  "https://xuonggooccho.com/ckfinder/userfiles/files/anh-phong-ngu.jpg",
-  "https://noithattrevietnam.com/uploaded/2019/12/1-thiet-ke-phong-ngu-khach-san%20%281%29.jpg",
-  "https://acihome.vn/uploads/17/phong-ngu-khach-san-5-sao.jpg",
-  "https://www.vietnambooking.com/wp-content/uploads/2021/02/khach-san-ho-chi-minh-35.jpg",
-  "https://ik.imagekit.io/tvlk/blog/2023/09/khach-san-view-bien-da-nang-1.jpg?tr=q-70,c-at_max,w-500,h-300,dpr-2",
-];
 
 // Component cho thẻ phòng
 const RoomCard: React.FC<{
@@ -50,6 +43,7 @@ const RoomCard: React.FC<{
   checkIn?: string;
   checkOut?: string;
 }> = ({ room, checkIn, checkOut }) => {
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const originalPrice = room.roomTypePrice ? room.roomTypePrice * 1.35 : 0;
   const [starRating, setStarRating] = useState<number>(0);
@@ -107,7 +101,11 @@ const RoomCard: React.FC<{
           }`
         );
       }}
-      className="bg-white rounded-lg shadow-md overflow-hidden w-full flex h-92 text-left hover:ring-2 hover:ring-blue-400 transition"
+      className={`rounded-lg shadow-md overflow-hidden w-full flex h-92 text-left hover:ring-2 transition-all duration-300 ${
+        theme === "light"
+          ? "bg-white hover:ring-blue-400"
+          : "bg-gray-800 hover:ring-blue-300"
+      }`}
     >
       <img
         src={imageUrl}
@@ -122,10 +120,18 @@ const RoomCard: React.FC<{
         style={{ minHeight: 180 }}
       >
         <div className="space-y-2">
-          <p className="text-gray-800 text-4xl font-bold mt-3 font-playfair">
+          <p
+            className={`text-4xl font-bold font-playfair mt-3 transition-all duration-300 ${
+              theme === "light" ? "text-gray-800" : "text-gray-200"
+            }`}
+          >
             Tên phòng: {room.name}
           </p>
-          <p className="text-blue-600 text-xl font-semibold">
+          <p
+            className={`text-xl font-semibold transition-all duration-300 ${
+              theme === "light" ? "text-blue-600" : "text-blue-400"
+            }`}
+          >
             Loại phòng: {room.roomTypeName}
           </p>
           <div className="flex items-center">
@@ -140,32 +146,72 @@ const RoomCard: React.FC<{
             ))}
           </div>
           <div>
-            <span className="text-gray-600 text-xl mr-2 font-semibold">
+            <span
+              className={`text-xl mr-2 font-semibold transition-all duration-300 ${
+                theme === "light" ? "text-gray-600" : "text-gray-300"
+              }`}
+            >
               Cơ sở lưu trữ này có:
             </span>
             <br />
-            <span className="inline-block bg-blue-100 text-blue-800 text-lg font-semibold mr-2 px-2.5 py-0.5 rounded mt-2">
+            <span
+              className={`inline-block text-lg font-semibold mr-2 px-2.5 py-0.5 rounded mt-2 transition-all duration-300 ${
+                theme === "light"
+                  ? "bg-blue-100 text-blue-800"
+                  : "bg-blue-900 text-blue-200"
+              }`}
+            >
               Wifi miễn phí
             </span>
-            <span className="inline-block bg-green-100 text-green-800 text-lg font-semibold mr-2 px-2.5 py-0.5 rounded">
+            <span
+              className={`inline-block text-lg font-semibold mr-2 px-2.5 py-0.5 rounded transition-all duration-300 ${
+                theme === "light"
+                  ? "bg-green-100 text-green-800"
+                  : "bg-green-900 text-green-200"
+              }`}
+            >
               Bãi đậu xe
             </span>
-            <span className="inline-block bg-yellow-100 text-yellow-800 text-lg font-semibold mr-2 px-2.5 py-0.5 rounded">
+            <span
+              className={`inline-block text-lg font-semibold mr-2 px-2.5 py-0.5 rounded transition-all duration-300 ${
+                theme === "light"
+                  ? "bg-yellow-100 text-yellow-800"
+                  : "bg-yellow-900 text-yellow-200"
+              }`}
+            >
               Bữa sáng
             </span>
-            <span className="inline-block bg-purple-100 text-purple-800 text-lg font-semibold px-2.5 py-0.5 rounded">
+            <span
+              className={`inline-block text-lg font-semibold px-2.5 py-0.5 rounded transition-all duration-300 ${
+                theme === "light"
+                  ? "bg-purple-100 text-purple-800"
+                  : "bg-purple-900 text-purple-200"
+              }`}
+            >
               Nhận phòng nhanh
             </span>
           </div>
-          <p className="text-gray-600 text-2xl font-medium truncate italic mt-4">
+          <p
+            className={`text-2xl font-medium truncate italic mt-4 transition-all duration-300 ${
+              theme === "light" ? "text-gray-600" : "text-gray-300"
+            }`}
+          >
             Ghi chú: {room.note || "Không có ghi chú"}
           </p>
         </div>
         <div className="absolute right-2 bottom-2 text-right">
-          <p className="text-gray-500 font-bold text-2xl line-through italic">
+          <p
+            className={`font-bold text-2xl line-through italic transition-all duration-300 ${
+              theme === "light" ? "text-gray-500" : "text-gray-400"
+            }`}
+          >
             {originalPrice.toLocaleString("vi-VN")} VNĐ/đêm
           </p>
-          <p className="text-red-600 font-bold text-4xl italic">
+          <p
+            className={`font-bold text-4xl italic transition-all duration-300 ${
+              theme === "light" ? "text-red-600" : "text-red-400"
+            }`}
+          >
             {room.roomTypePrice?.toLocaleString("vi-VN")} VNĐ/đêm
           </p>
         </div>
@@ -175,6 +221,7 @@ const RoomCard: React.FC<{
 };
 
 const Rooms: React.FC = () => {
+  const { theme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
   const queryParams = new URLSearchParams(location.search);
@@ -291,26 +338,64 @@ const Rooms: React.FC = () => {
   };
 
   return (
-    <div className="max-w-8xl mx-auto py-42 px-48 flex">
+    <div
+      className={`max-w-8xl mx-auto py-42 px-48 flex transition-all duration-300 ${
+        theme === "light" ? "bg-gray-100" : "bg-gray-900"
+      }`}
+    >
       <div className="w-3/4 pr-8">
-        <h2 className="text-5xl font-bold text-left mb-8 font-playfair">
+        <h2
+          className={`text-5xl font-bold text-left mb-8 font-playfair transition-all duration-300 ${
+            theme === "light" ? "text-black" : "text-gray-200"
+          }`}
+        >
           Danh sách phòng
         </h2>
-        <h2 className="text-2xl italic text-gray-600 text-left mb-12">
+        <h2
+          className={`text-2xl italic text-left mb-12 transition-all duration-300 ${
+            theme === "light" ? "text-gray-600" : "text-gray-300"
+          }`}
+        >
           Hãy tận dụng các ưu đãi có thời hạn giới hạn và gói khuyến mãi đặc
           biệt của chúng tôi để
           <br />
           nâng tầm kỳ nghỉ và tạo nên những kỷ niệm khó quên.
         </h2>
-        <p className="text-center text-2xl text-gray-600 mb-8">
+        <p
+          className={`text-center text-2xl mb-8 transition-all duration-300 ${
+            theme === "light" ? "text-gray-600" : "text-gray-300"
+          }`}
+        >
           Kết quả tìm kiếm: {checkIn || "Chưa chọn"} đến{" "}
           {checkOut || "Chưa chọn"}
           {roomTypeId ? `, loại phòng: ${roomTypeId}` : ""}
         </p>
-        {loading && <p className="text-center">Đang tải...</p>}
-        {error && <p className="text-center text-red-600">{error}</p>}
+        {loading && (
+          <p
+            className={`text-center text-2xl transition-all duration-300 ${
+              theme === "light" ? "text-black" : "text-gray-200"
+            }`}
+          >
+            Đang tải...
+          </p>
+        )}
+        {error && (
+          <p
+            className={`text-center text-2xl transition-all duration-300 ${
+              theme === "light" ? "text-red-600" : "text-red-400"
+            }`}
+          >
+            {error}
+          </p>
+        )}
         {!loading && !error && rooms.length === 0 && (
-          <p className="text-center">Không có phòng nào sẵn sàng</p>
+          <p
+            className={`text-center text-2xl transition-all duration-300 ${
+              theme === "light" ? "text-gray-600" : "text-gray-300"
+            }`}
+          >
+            Không có phòng nào sẵn sàng
+          </p>
         )}
         <div className="flex flex-col gap-4">
           {rooms.map((room) => (
@@ -323,108 +408,129 @@ const Rooms: React.FC = () => {
           ))}
         </div>
       </div>
-      <div className="w-1/4 bg-white shadow-md rounded-lg p-6 mt-64 h-192">
+      <div
+        className={`w-1/4 shadow-md rounded-lg p-6 mt-64 h-192 transition-all duration-300 ${
+          theme === "light" ? "bg-white" : "bg-gray-800"
+        }`}
+      >
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-4xl font-bold font-playfair">Bộ lọc</h3>
+          <h3
+            className={`text-4xl font-bold font-playfair transition-all duration-300 ${
+              theme === "light" ? "text-black" : "text-gray-200"
+            }`}
+          >
+            Bộ lọc
+          </h3>
           <button
             onClick={handleClearFilter}
-            className="text-red-500 text-2xl font-semibold hover:text-red-700"
+            className={`text-2xl font-semibold transition-all duration-300 ${
+              theme === "light"
+                ? "text-red-500 hover:text-red-700"
+                : "text-red-400 hover:text-red-300"
+            }`}
           >
             Bỏ lọc
           </button>
         </div>
-        <div className="border-t-2 border-gray-300 my-4"></div>
+        <div
+          className={`border-t-2 my-4 transition-all duration-300 ${
+            theme === "light" ? "border-gray-300" : "border-gray-600"
+          }`}
+        ></div>
         <div className="space-y-4">
           <div>
-            <h4 className="text-2xl font-semibold mb-2 mt-8">
+            <h4
+              className={`text-2xl font-semibold mb-2 mt-8 transition-all duration-300 ${
+                theme === "light" ? "text-black" : "text-gray-200"
+              }`}
+            >
               Giá tiền (VNĐ/đêm)
             </h4>
             <div className="space-y-2">
-              <label className="flex items-center text-xl mt-2">
-                <input
-                  type="radio"
-                  name="priceRange"
-                  value="0-500"
-                  checked={priceRange === "0-500"}
-                  onChange={(e) => setPriceRange(e.target.value)}
-                  className="mr-2"
-                />
-                0 - 500
-              </label>
-              <label className="flex items-center text-xl mt-2">
-                <input
-                  type="radio"
-                  name="priceRange"
-                  value="500-1000"
-                  checked={priceRange === "500-1000"}
-                  onChange={(e) => setPriceRange(e.target.value)}
-                  className="mr-2"
-                />
-                500 - 1000
-              </label>
-              <label className="flex items-center text-xl mt-2">
-                <input
-                  type="radio"
-                  name="priceRange"
-                  value="1000-2000"
-                  checked={priceRange === "1000-2000"}
-                  onChange={(e) => setPriceRange(e.target.value)}
-                  className="mr-2"
-                />
-                1000 - 2000
-              </label>
-              <label className="flex items-center text-xl mt-2">
-                <input
-                  type="radio"
-                  name="priceRange"
-                  value="2000+"
-                  checked={priceRange === "2000+"}
-                  onChange={(e) => setPriceRange(e.target.value)}
-                  className="mr-2"
-                />
-                2000+
-              </label>
+              {["0-500", "500-1000", "1000-2000", "2000+"].map((range) => (
+                <label
+                  key={range}
+                  className={`flex items-center text-xl mt-2 transition-all duration-300 ${
+                    theme === "light" ? "text-black" : "text-gray-200"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="priceRange"
+                    value={range}
+                    checked={priceRange === range}
+                    onChange={(e) => setPriceRange(e.target.value)}
+                    className={`mr-2 transition-all duration-300 ${
+                      theme === "light"
+                        ? "text-blue-600 focus:ring-blue-500"
+                        : "text-blue-400 focus:ring-blue-400"
+                    }`}
+                  />
+                  {range.replace("-", " - ")}
+                </label>
+              ))}
             </div>
           </div>
           <div className="mt-8">
-            <h4 className="text-2xl font-semibold mb-2">Sắp xếp theo giá</h4>
+            <h4
+              className={`text-2xl font-semibold mb-2 transition-all duration-300 ${
+                theme === "light" ? "text-black" : "text-gray-200"
+              }`}
+            >
+              Sắp xếp theo giá
+            </h4>
             <div className="space-y-2">
-              <label className="flex items-center text-xl mt-2">
-                <input
-                  type="radio"
-                  name="sortOrder"
-                  value="low-high"
-                  checked={sortOrder === "low-high"}
-                  onChange={(e) => setSortOrder(e.target.value)}
-                  className="mr-2"
-                />
-                Thấp lên cao
-              </label>
-              <label className="flex items-center text-xl mt-2">
-                <input
-                  type="radio"
-                  name="sortOrder"
-                  value="high-low"
-                  checked={sortOrder === "high-low"}
-                  onChange={(e) => setSortOrder(e.target.value)}
-                  className="mr-2"
-                />
-                Cao xuống thấp
-              </label>
+              {["low-high", "high-low"].map((order) => (
+                <label
+                  key={order}
+                  className={`flex items-center text-xl mt-2 transition-all duration-300 ${
+                    theme === "light" ? "text-black" : "text-gray-200"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="sortOrder"
+                    value={order}
+                    checked={sortOrder === order}
+                    onChange={(e) => setSortOrder(e.target.value)}
+                    className={`mr-2 transition-all duration-300 ${
+                      theme === "light"
+                        ? "text-blue-600 focus:ring-blue-500"
+                        : "text-blue-400 focus:ring-blue-400"
+                    }`}
+                  />
+                  {order === "low-high" ? "Thấp lên cao" : "Cao xuống thấp"}
+                </label>
+              ))}
             </div>
           </div>
           <div className="mt-8">
-            <h4 className="text-2xl font-semibold mb-2">Lọc theo số sao</h4>
+            <h4
+              className={`text-2xl font-semibold mb-2 transition-all duration-300 ${
+                theme === "light" ? "text-black" : "text-gray-200"
+              }`}
+            >
+              Lọc theo số sao
+            </h4>
             <div className="space-y-2">
               {[1, 2, 3, 4, 5].map((star) => (
-                <label key={star} className="flex items-center text-xl mt-2">
+                <label
+                  key={star}
+                  className={`flex items-center text-xl mt-2 transition-all duration-300 ${
+                    theme === "light" ? "text-black" : "text-gray-200"
+                  }`}
+                >
                   <input
                     type="radio"
                     name="starRating"
                     value={star}
                     checked={starRating === star}
                     onChange={(e) => setStarRating(Number(e.target.value))}
-                    className="mr-2"
+                    className={`mr-2 transition-all duration-300 ${
+                      theme === "light"
+                        ? "text-blue-600 focus:ring-blue-500"
+                        : "text-blue-400 focus:ring-blue-400"
+                    }`}
                   />
                   {[...Array(5)].map((_, i) => (
                     <span key={i} className="text-yellow-400 text-2xl">
@@ -437,14 +543,22 @@ const Rooms: React.FC = () => {
                   ))}
                 </label>
               ))}
-              <label className="flex items-center text-xl mt-2">
+              <label
+                className={`flex items-center text-xl mt-2 transition-all duration-300 ${
+                  theme === "light" ? "text-black" : "text-gray-200"
+                }`}
+              >
                 <input
                   type="radio"
                   name="starRating"
                   value=""
                   checked={starRating === null}
                   onChange={() => setStarRating(null)}
-                  className="mr-2"
+                  className={`mr-2 transition-all duration-300 ${
+                    theme === "light"
+                      ? "text-blue-600 focus:ring-blue-500"
+                      : "text-blue-400 focus:ring-blue-400"
+                  }`}
                 />
                 Tất cả
               </label>

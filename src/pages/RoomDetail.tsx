@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useTheme } from "../contexts/ThemeContext";
 import { getRoomById } from "../services/apis/room";
 import { getAllRoomTypes } from "../services/apis/roomType";
 import { getAllFloors } from "../services/apis/floor";
@@ -45,6 +46,7 @@ const BookingBox: React.FC<{
   initialCheckOut,
   isDisabled,
 }) => {
+  const { theme } = useTheme();
   const [checkIn, setCheckIn] = useState(initialCheckIn || "");
   const [checkOut, setCheckOut] = useState(initialCheckOut || "");
   const [roomTypeId, setRoomTypeId] = useState<number>(
@@ -76,33 +78,53 @@ const BookingBox: React.FC<{
   };
 
   return (
-    <div className="bg-white shadow-2xl rounded-3xl p-12 w-300 mx-auto mt-12 relative z-10">
+    <div
+      className={`shadow-2xl rounded-3xl p-12 w-300 mx-auto mt-12 relative z-10 transition-all duration-300 ${
+        theme === "light" ? "bg-white" : "bg-gray-800"
+      }`}
+    >
       <form
         onSubmit={handleSubmit}
         className="grid grid-cols-1 md:grid-cols-3 gap-24"
       >
         <div>
-          <label className="block text-2xl font-semibold text-gray-700 mb-2">
+          <label
+            className={`block text-2xl font-semibold mb-2 transition-all duration-300 ${
+              theme === "light" ? "text-gray-700" : "text-gray-200"
+            }`}
+          >
             Check-in
           </label>
           <input
             type="date"
             value={checkIn}
             onChange={(e) => !isDisabled && setCheckIn(e.target.value)}
-            className="text-black mt-1 block w-64 rounded-lg border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 text-2xl py-4 px-6"
+            className={`mt-1 block w-64 rounded-lg shadow-md text-2xl py-4 px-6 transition-all duration-300 ${
+              theme === "light"
+                ? "text-black border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+                : "text-gray-100 border-gray-600 bg-gray-800 focus:border-indigo-400 focus:ring-indigo-400"
+            }`}
             required
             disabled={isDisabled}
           />
         </div>
         <div>
-          <label className="block text-2xl font-semibold text-gray-700 mb-2">
+          <label
+            className={`block text-2xl font-semibold mb-2 transition-all duration-300 ${
+              theme === "light" ? "text-gray-700" : "text-gray-200"
+            }`}
+          >
             Check-out
           </label>
           <input
             type="date"
             value={checkOut}
             onChange={(e) => !isDisabled && setCheckOut(e.target.value)}
-            className="text-black mt-1 block w-64 rounded-lg border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 text-2xl py-4 px-6"
+            className={`mt-1 block w-64 rounded-lg shadow-md text-2xl py-4 px-6 transition-all duration-300 ${
+              theme === "light"
+                ? "text-black border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+                : "text-gray-100 border-gray-600 bg-gray-800 focus:border-indigo-400 focus:ring-indigo-400"
+            }`}
             required
             disabled={isDisabled}
           />
@@ -111,7 +133,11 @@ const BookingBox: React.FC<{
           <button
             type="button"
             onClick={handleBookNowClick}
-            className="bg-blue-600 text-white text-2xl text-center font-semibold mt-4 py-4 px-24 rounded-lg hover:bg-blue-700 shadow-md"
+            className={`text-white text-2xl text-center font-semibold mt-4 py-4 px-24 rounded-lg shadow-md transition-all duration-300 ${
+              theme === "light"
+                ? "bg-blue-600 hover:bg-blue-700"
+                : "bg-blue-600 hover:bg-blue-700"
+            }`}
           >
             Book now
           </button>
@@ -132,22 +158,35 @@ const ReviewCard: React.FC<{
   guests: Record<number, ResponseGuestDTO>;
   roomName: string;
 }> = ({ review, guests, roomName }) => {
+  const { theme } = useTheme();
   const guest = guests[review.guestId] || { name: "Ẩn danh" };
   const guestName = guest.name || "Ẩn danh";
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 mb-4">
+    <div
+      className={`rounded-lg shadow-md p-4 mb-4 transition-all duration-300 ${
+        theme === "light" ? "bg-white" : "bg-gray-800"
+      }`}
+    >
       <div className="flex items-center mb-2">
         <img
           src={userimageLink[Math.floor(Math.random() * userimageLink.length)]}
           alt="user"
           className="w-16 h-16 rounded-full ml-4 mt-4"
         />
-        <h3 className="text-2xl font-playfair font-semibold mb-2 ml-5 mt-5">
+        <h3
+          className={`text-2xl font-playfair font-semibold mb-2 ml-5 mt-5 transition-all duration-300 ${
+            theme === "light" ? "text-gray-800" : "text-gray-200"
+          }`}
+        >
           {guestName}
         </h3>
       </div>
-      <p className="text-gray-600 text-lg mb-2 ml-4">
+      <p
+        className={`text-lg mb-2 ml-4 transition-all duration-300 ${
+          theme === "light" ? "text-gray-600" : "text-gray-300"
+        }`}
+      >
         Đánh giá cho phòng {roomName}
       </p>
       <div className="flex items-center mb-2 ml-4">
@@ -160,7 +199,11 @@ const ReviewCard: React.FC<{
           />
         ))}
       </div>
-      <p className="text-gray-600 text-lg italic ml-4">
+      <p
+        className={`text-lg italic ml-4 transition-all duration-300 ${
+          theme === "light" ? "text-gray-600" : "text-gray-300"
+        }`}
+      >
         {review.comment || "Không có đánh giá"}
       </p>
     </div>
@@ -168,6 +211,7 @@ const ReviewCard: React.FC<{
 };
 
 const RoomDetail: React.FC = () => {
+  const { theme } = useTheme();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -284,9 +328,36 @@ const RoomDetail: React.FC = () => {
     fetchData();
   }, [id]);
 
-  if (loading) return <p className="text-center">Đang tải...</p>;
-  if (error) return <p className="text-center text-red-600">{error}</p>;
-  if (!room) return <p className="text-center">Phòng không tồn tại</p>;
+  if (loading)
+    return (
+      <p
+        className={`text-center text-2xl transition-all duration-300 ${
+          theme === "light" ? "text-black" : "text-gray-200"
+        }`}
+      >
+        Đang tải...
+      </p>
+    );
+  if (error)
+    return (
+      <p
+        className={`text-center text-2xl transition-all duration-300 ${
+          theme === "light" ? "text-red-600" : "text-red-400"
+        }`}
+      >
+        {error}
+      </p>
+    );
+  if (!room)
+    return (
+      <p
+        className={`text-center text-2xl transition-all duration-300 ${
+          theme === "light" ? "text-gray-600" : "text-gray-300"
+        }`}
+      >
+        Phòng không tồn tại
+      </p>
+    );
 
   const mainImage = images[0];
   const thumbnailImages = images.slice(1, 5);
@@ -311,12 +382,24 @@ const RoomDetail: React.FC = () => {
   };
 
   return (
-    <div className="max-w-8xl mx-auto py-42 px-48">
+    <div
+      className={`max-w-8xl mx-auto py-42 px-48 transition-all duration-300 ${
+        theme === "light" ? "bg-gray-100" : "bg-gray-900"
+      }`}
+    >
       <div className="mb-2 flex items-end gap-4">
-        <h1 className="text-5xl font-bold text-gray-800 font-playfair mb-2">
+        <h1
+          className={`text-5xl font-bold font-playfair mb-2 transition-all duration-300 ${
+            theme === "light" ? "text-gray-800" : "text-gray-200"
+          }`}
+        >
           Room Name: {room.name}
         </h1>
-        <span className="text-2xl text-gray-600 font-semibold mb-1">
+        <span
+          className={`text-2xl font-semibold mb-1 transition-all duration-300 ${
+            theme === "light" ? "text-gray-600" : "text-gray-300"
+          }`}
+        >
           ({room.roomTypeName})
         </span>
       </div>
@@ -331,7 +414,11 @@ const RoomDetail: React.FC = () => {
               />
             </span>
           ))}
-          <span className="text-gray-600 text-xl ml-2 mt-2">
+          <span
+            className={`text-xl ml-2 mt-2 transition-all duration-300 ${
+              theme === "light" ? "text-gray-600" : "text-gray-300"
+            }`}
+          >
             {reviewCount} lượt đánh giá
           </span>
         </div>
@@ -340,7 +427,11 @@ const RoomDetail: React.FC = () => {
         <span className="text-2xl mr-2">
           <img src={mapIcon} alt="map" className="w-8 h-8" />
         </span>
-        <span className="text-xl text-gray-600">
+        <span
+          className={`text-xl transition-all duration-300 ${
+            theme === "light" ? "text-gray-600" : "text-gray-300"
+          }`}
+        >
           Main Road 123 Street , 23 Colony
         </span>
       </div>
@@ -366,24 +457,56 @@ const RoomDetail: React.FC = () => {
         </div>
       </div>
       <div className="mb-4 flex items-center justify-between">
-        <p className="text-black text-4xl mt-2 font-playfair mb-2">
+        <p
+          className={`text-4xl font-playfair mb-2 transition-all duration-300 ${
+            theme === "light" ? "text-black" : "text-gray-100"
+          }`}
+        >
           {"Trải nghiệm xa xỉ chưa từng có"}
         </p>
-        <p className="text-gray-600 text-3xl font-semibold">
+        <p
+          className={`text-3xl font-semibold transition-all duration-300 ${
+            theme === "light" ? "text-gray-600" : "text-gray-300"
+          }`}
+        >
           {room.roomTypePrice} VND/Đêm
         </p>
       </div>
       <div>
-        <span className="inline-block bg-blue-100 text-blue-800 text-xl font-semibold mr-4 px-3 py-1 mt-2 rounded">
+        <span
+          className={`inline-block text-xl font-semibold mr-4 px-3 py-1 mt-2 rounded transition-all duration-300 ${
+            theme === "light"
+              ? "bg-blue-100 text-blue-800"
+              : "bg-blue-900 text-blue-200"
+          }`}
+        >
           Wifi miễn phí
         </span>
-        <span className="inline-block bg-green-100 text-green-800 text-xl font-semibold mr-4 px-3 py-1 mt-2 rounded">
+        <span
+          className={`inline-block text-xl font-semibold mr-4 px-3 py-1 mt-2 rounded transition-all duration-300 ${
+            theme === "light"
+              ? "bg-green-100 text-green-800"
+              : "bg-green-900 text-green-200"
+          }`}
+        >
           Đậu xe miễn phí
         </span>
-        <span className="inline-block bg-yellow-100 text-yellow-800 text-xl font-semibold mr-4 px-3 py-1 mt-2 rounded">
+        <span
+          className={`inline-block text-xl font-semibold mr-4 px-3 py-1 mt-2 rounded transition-all duration-300 ${
+            theme === "light"
+              ? "bg-yellow-100 text-yellow-800"
+              : "bg-yellow-900 text-yellow-200"
+          }`}
+        >
           Bữa sáng miễn phí
         </span>
-        <span className="inline-block bg-purple-100 text-purple-800 text-xl font-semibold px-3 py-1 mt-2 mb-16 rounded">
+        <span
+          className={`inline-block text-xl font-semibold px-3 py-1 mt-2 mb-16 rounded transition-all duration-300 ${
+            theme === "light"
+              ? "bg-purple-100 text-purple-800"
+              : "bg-purple-900 text-purple-200"
+          }`}
+        >
           Check-in nhanh chóng
         </span>
       </div>
@@ -397,8 +520,16 @@ const RoomDetail: React.FC = () => {
         isDisabled={!!initialCheckIn && !!initialCheckOut}
       />
 
-      <div className="h-0.5 w-full bg-gray-200 my-12 mt-24 mb-24"></div>
-      <h2 className="text-5xl font-playfair mb-8 text-left mt-12">
+      <div
+        className={`h-0.5 w-full my-12 mt-24 mb-24 transition-all duration-300 ${
+          theme === "light" ? "bg-gray-200" : "bg-gray-700"
+        }`}
+      ></div>
+      <h2
+        className={`text-5xl font-playfair mb-8 text-left mt-12 transition-all duration-300 ${
+          theme === "light" ? "text-black" : "text-gray-200"
+        }`}
+      >
         Khách hàng nói gì?
       </h2>
       <div className="grid grid-cols-3 gap-6 max-h-[600px] overflow-hidden">
@@ -411,8 +542,18 @@ const RoomDetail: React.FC = () => {
           />
         ))}
         {reviews.length === 0 && (
-          <div className="bg-white rounded-lg shadow-md p-4 text-center col-span-3">
-            <p className="text-gray-600 text-2xl">Chưa có đánh giá</p>
+          <div
+            className={`rounded-lg shadow-md p-4 text-center col-span-3 transition-all duration-300 ${
+              theme === "light" ? "bg-white" : "bg-gray-800"
+            }`}
+          >
+            <p
+              className={`text-2xl transition-all duration-300 ${
+                theme === "light" ? "text-gray-600" : "text-gray-300"
+              }`}
+            >
+              Chưa có đánh giá
+            </p>
           </div>
         )}
       </div>
