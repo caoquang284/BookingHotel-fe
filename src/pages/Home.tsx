@@ -4,7 +4,7 @@ import { getRoomsByState } from "../services/apis/room";
 import { getAllRoomTypes } from "../services/apis/roomType";
 import { getAllFloors } from "../services/apis/floor";
 import { getAllBookingConfirmationForms } from "../services/apis/bookingconfirm";
-import { getImagesByRoomId } from "../services/apis/image"; // Import API ảnh
+import { getImagesByRoomId } from "../services/apis/image"; 
 import { useAuth } from "../contexts/AuthContext";
 import type {
   ResponseRoomDTO,
