@@ -480,6 +480,7 @@ const Home: React.FC = () => {
         }
       }
       setReviewsByRoom(reviewsMap);
+      console.log("Reviews fetched:", reviewsMap);
       setGuests(guestsMap);
     };
     if (rooms.length > 0) fetchReviewsAndGuests();
@@ -675,7 +676,7 @@ const Home: React.FC = () => {
         <div className="grid grid-cols-3 gap-6 max-h-[800px] overflow-hidden">
           {Object.values(reviewsByRoom)
             .flat()
-            .slice(0, 6) // Giới hạn tối đa 6 card
+            // Giới hạn tối đa 6 card
             .map((review) => (
               <ReviewCard
                 key={review.id}
