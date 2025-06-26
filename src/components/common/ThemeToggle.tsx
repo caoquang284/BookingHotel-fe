@@ -6,9 +6,7 @@ export default function ThemeToggle() {
     const stored = localStorage.getItem("theme");
     if (stored) return stored;
 
-    const prefersDark = window.matchMedia(
-      "(prefers-color-scheme: dark)"
-    ).matches;
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     return prefersDark ? "dark" : "light";
   };
 
@@ -33,8 +31,11 @@ export default function ThemeToggle() {
       className="cursor-pointer relative p-2 rounded-full dark:bg-white bg-gray-700 dark:hover:bg-gray-300 hover:bg-gray-600 transition-all duration-300 shadow-lg hover:shadow-xl"
     >
       <div className="relative w-6 h-6">
-        <Moon className="absolute inset-0 w-6 h-6 text-secondary transition-all duration-300 opacity-100 rotate-0 scale-100 dark:opacity-0 dark:rotate-90 dark:scale-0" />
-        <Sun className="absolute inset-0 w-6 h-6 text-amber-500 transition-all duration-300 dark:opacity-100 dark:rotate-0 dark:scale-100 opacity-0 -rotate-90 scale-0" />
+        {theme === "dark" ? (
+          <Sun className="w-6 h-6 text-amber-500 transition-transform duration-300 ease-in-out" />
+        ) : (
+          <Moon className="w-6 h-6 text-gray-800 transition-transform duration-300 ease-in-out" />
+        )}
       </div>
     </button>
   );
