@@ -175,7 +175,7 @@ function Register() {
       </div>
 
       <div
-        className={`p-8 rounded-2xl shadow-xl w-full max-w-4xl z-10 ${
+        className={`p-8 rounded-2xl shadow-xl w-full max-w-4xl z-10${
           theme === "light" ? "bg-white" : "bg-gray-800"
         }`}
       >

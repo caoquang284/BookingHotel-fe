@@ -28,7 +28,7 @@ const Footer = () => {
   return (
     <footer
       className={`py-1 transition-all duration-300 ${
-        theme === "light" ? "bg-gray-900 text-white" : "bg-gray-500 text-gray-900"
+        theme === "light" ? "bg-gray-900 text-white" : "bg-gray-700 text-gray-900"
       }`}
     >
       <div className="max-w-7xl mx-auto px-6">

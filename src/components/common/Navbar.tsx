@@ -29,6 +29,7 @@ const Navbar: React.FC = () => {
   const location = useLocation();
   const { user, logout } = useAuth();
   const { theme } = useTheme();
+  const isLight = theme === "light";
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -78,32 +79,29 @@ const Navbar: React.FC = () => {
         {
           path: "/register",
           label: "Đăng ký",
-          className:"from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-2xl",
+          className:
+            "from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-2xl",
         },
       ];
 
   return (
     <nav
-      className={`fixed w-full top-0 z-30 px-2 sm:px-4 py-7 transition-all duration-300 ${
+      className={`fixed w-full top-0 z-30 px-2 sm:px-4 py-7 transition-all duration-300 shadow-md ${
         isScrolled
-          ? theme === "light"
+          ? isLight
             ? "bg-white text-black"
             : "bg-gray-900 text-gray-100"
-          : theme === "light"
-            ? "bg-transparent text-white"
+          : isLight
+            ? "bg-transparent text-black"
             : "bg-transparent text-gray-100"
-      } shadow-md`}
+      }`}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center pl-52">
           <img src={logo} alt="Roomify Logo" className="h-12 w-auto mt-2" />
           <div
             className={`text-2xl md:text-5xl font-bold font-playfair ml-2 ${
-              isScrolled
-                ? theme === "light"
-                  ? "text-black"
-                  : "text-gray-100"
-                : "text-white"
+              isLight ? "text-black" : "text-gray-100"
             }`}
           >
             Roomify
@@ -116,17 +114,9 @@ const Navbar: React.FC = () => {
               to={item.path}
               className={`py-2 px-4 text-lg md:text-3xl font-medium rounded-md transition-all duration-300 group ${
                 location.pathname === item.path
-                  ? isScrolled
-                    ? theme === "light"
-                      ? "font-bold text-blue-600"
-                      : "font-bold text-blue-400"
-                    : theme === "light"
-                      ? "font-bold text-white"
-                      : "font-bold text-blue-400"
-                  : theme === "light"
-                    ? isScrolled
-                      ? "text-black"
-                      : "text-white"
+                  ? "font-bold text-blue-600"
+                  : isLight
+                    ? "text-black"
                     : "text-gray-100"
               }`}
             >
@@ -135,13 +125,9 @@ const Navbar: React.FC = () => {
                 <span
                   className={`absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full ${
                     location.pathname === item.path
-                      ? theme === "light"
-                        ? "bg-blue-600"
-                        : "bg-blue-400"
-                      : theme === "light"
-                        ? isScrolled
-                          ? "bg-black"
-                          : "bg-white"
+                      ? "bg-blue-600"
+                      : isLight
+                        ? "bg-black"
                         : "bg-gray-100"
                   }`}
                 ></span>
@@ -157,18 +143,14 @@ const Navbar: React.FC = () => {
                   key={item.path}
                   to={item.path}
                   className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${item.className} ${
-                    isScrolled
-                      ? theme === "light"
-                        ? "text-white"
-                        : "text-gray-100"
-                      : "text-white"
+                    isLight ? "text-black" : "text-gray-100"
                   } relative`}
                 >
                   <span className="relative">
                     {item.label}
                     <span
                       className={`absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full ${
-                        theme === "light" ? "bg-white" : "bg-gray-100"
+                        isLight ? "bg-black" : "bg-gray-100"
                       }`}
                     ></span>
                   </span>
@@ -178,18 +160,14 @@ const Navbar: React.FC = () => {
                   key={item.label}
                   onClick={item.action}
                   className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${item.className} ${
-                    isScrolled
-                      ? theme === "light"
-                        ? "text-white"
-                        : "text-gray-100"
-                      : "text-white"
+                    isLight ? "text-black" : "text-gray-100"
                   } relative`}
                 >
                   <span className="relative">
                     {item.label}
                     <span
                       className={`absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full ${
-                        theme === "light" ? "bg-white" : "bg-gray-100"
+                        isLight ? "bg-black" : "bg-gray-100"
                       }`}
                     ></span>
                   </span>
@@ -203,13 +181,9 @@ const Navbar: React.FC = () => {
           <button
             onClick={toggleMobileMenu}
             className={`p-2 transition-all duration-300 ${
-              isScrolled
-                ? theme === "light"
-                  ? "text-black hover:text-gray-600"
-                  : "text-gray-100 hover:text-gray-400"
-                : theme === "light"
-                  ? "text-white hover:text-gray-300"
-                  : "text-gray-100 hover:text-gray-400"
+              isLight
+                ? "text-black hover:text-gray-600"
+                : "text-gray-100 hover:text-gray-400"
             } focus:outline-none`}
           >
             <svg
@@ -233,16 +207,11 @@ const Navbar: React.FC = () => {
           </button>
         </div>
       </div>
+
       {isMobileMenuOpen && (
         <div
           className={`sm:hidden mt-2 rounded-lg transition-all duration-300 ${
-            isScrolled
-              ? theme === "light"
-                ? "bg-white text-black"
-                : "bg-gray-900 text-gray-100"
-              : theme === "light"
-                ? "bg-transparent text-white"
-                : "bg-transparent text-gray-100"
+            isLight ? "bg-white text-black" : "bg-gray-900 text-gray-100"
           }`}
         >
           <div className="flex flex-col px-4 py-2">
@@ -253,17 +222,9 @@ const Navbar: React.FC = () => {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 group ${
                   location.pathname === item.path
-                    ? isScrolled
-                      ? theme === "light"
-                        ? "font-bold text-blue-600"
-                        : "font-bold text-blue-400"
-                      : theme === "light"
-                        ? "font-bold text-blue-300"
-                        : "font-bold text-blue-400"
-                    : theme === "light"
-                      ? isScrolled
-                        ? "text-black"
-                        : "text-white"
+                    ? "font-bold text-blue-600"
+                    : isLight
+                      ? "text-black"
                       : "text-gray-100"
                 }`}
               >
@@ -272,13 +233,9 @@ const Navbar: React.FC = () => {
                   <span
                     className={`absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full ${
                       location.pathname === item.path
-                        ? theme === "light"
-                          ? "bg-blue-600"
-                          : "bg-blue-400"
-                        : theme === "light"
-                          ? isScrolled
-                            ? "bg-black"
-                            : "bg-white"
+                        ? "bg-blue-600"
+                        : isLight
+                          ? "bg-black"
                           : "bg-gray-100"
                     }`}
                   ></span>
@@ -292,18 +249,14 @@ const Navbar: React.FC = () => {
                   to={item.path}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${item.className} ${
-                    isScrolled
-                      ? theme === "light"
-                        ? "text-white"
-                        : "text-gray-100"
-                      : "text-white"
+                    isLight ? "text-black" : "text-gray-100"
                   }`}
                 >
                   <span className="relative">
                     {item.label}
                     <span
                       className={`absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full ${
-                        theme === "light" ? "bg-white" : "bg-gray-100"
+                        isLight ? "bg-black" : "bg-gray-100"
                       }`}
                     ></span>
                   </span>
@@ -316,18 +269,14 @@ const Navbar: React.FC = () => {
                     setIsMobileMenuOpen(false);
                   }}
                   className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${item.className} ${
-                    isScrolled
-                      ? theme === "light"
-                        ? "text-white"
-                        : "text-gray-100"
-                      : "text-white"
+                    isLight ? "text-black" : "text-gray-100"
                   }`}
                 >
                   <span className="relative">
                     {item.label}
                     <span
                       className={`absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full ${
-                        theme === "light" ? "bg-white" : "bg-gray-100"
+                        isLight ? "bg-black" : "bg-gray-100"
                       }`}
                     ></span>
                   </span>
