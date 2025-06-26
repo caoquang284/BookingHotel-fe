@@ -4,7 +4,7 @@ import type {
     SearchGuestDTO,
 } from "../../types";
 
-const BASE_URL = 'http://localhost:9090/api/guest';
+const BASE_URL = 'http://localhost:8081/api/guest';
 
 export async function getGuestById(id: number): Promise<ResponseGuestDTO> {
     const response = await fetch(`${BASE_URL}/${id}`, {
@@ -28,6 +28,7 @@ export async function getGuestByAccountId(id: number): Promise<ResponseGuestDTO>
     const response = await fetch(`${BASE_URL}/account-id/${id}`, {
         method: 'GET',
         headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`, //Lưu accessToken
             'Content-Type': 'application/json',
         },
     });

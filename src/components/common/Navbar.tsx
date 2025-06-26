@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import logo from "../../assets/Image/logo.png";
+import ThemeToggle from "./ThemeToggle";
 
 interface NavItem {
   path: string;
@@ -46,7 +47,12 @@ const Navbar: React.FC = () => {
 
   const navItems: NavItem[] = [
     { path: "/", label: "Trang chủ" },
-    ...(user ? [{ path: "/booking-history", label: "Lịch sử đặt phòng" }] : []),
+    ...(user
+      ? [
+          { path: "/booking-history", label: "Lịch sử đặt phòng" },
+          { path: "/profile", label: "Hồ sơ" },
+        ]
+      : []),
   ];
 
   const authItems: AuthItem[] = user
@@ -55,7 +61,7 @@ const Navbar: React.FC = () => {
           action: handleLogout,
           label: "Đăng xuất",
           className:
-            "from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-2xl",
+            "from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 dark:from-red-500 dark:to-red-600 dark:hover:from-red-600 dark:hover:to-red-700 text-2xl",
         },
       ]
     : [
@@ -63,13 +69,13 @@ const Navbar: React.FC = () => {
           path: "/login",
           label: "Đăng nhập",
           className:
-            "from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-2xl",
+            "from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 dark:Blue-500 dark:to-blue-600 dark:hover:from-blue-600 dark:hover:to-blue-700 text-2xl",
         },
         {
           path: "/register",
           label: "Đăng ký",
           className:
-            "from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-2xl",
+            "from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 dark:from-green-500 dark:to-green-600 dark:hover:from-green-600 dark:hover:to-green-700 text-2xl",
         },
       ];
 
@@ -77,8 +83,8 @@ const Navbar: React.FC = () => {
     <nav
       className={`fixed w-full top-0 z-30 px-2 sm:px-4 py-7 ${
         isScrolled
-          ? "bg-white text-black shadow-md"
-          : "bg-transparent text-white"
+          ? "bg-white text-black dark:bg-[var(--background)] dark:text-[var(--foreground)] shadow-md"
+          : "bg-transparent text-white dark:bg-transparent dark:text-[var(--foreground)]"
       } transition-all duration-300`}
     >
       <div className="flex items-center justify-between">
@@ -86,9 +92,9 @@ const Navbar: React.FC = () => {
           <img src={logo} alt="Roomify Logo" className="h-12 w-auto mt-2" />
           <div className="text-2xl md:text-5xl font-bold font-playfair ml-2">
             {isScrolled ? (
-              <span className="text-black">Roomify</span>
+              <span className="text-black dark:text-[var(--foreground)]">Roomify</span>
             ) : (
-              <span className="text-white">Roomify</span>
+              <span className="text-white dark:text-[var(--foreground)]">Roomify</span>
             )}
           </div>
         </div>
@@ -100,9 +106,9 @@ const Navbar: React.FC = () => {
               className={`py-2 px-4 text-lg md:text-3xl font-medium rounded-md transition-all duration-300 group ${
                 location.pathname === item.path
                   ? isScrolled
-                    ? "font-bold text-blue-600"
-                    : "font-bold text-white"
-                  : ""
+                    ? "font-bold text-blue-600 dark:text-blue-400"
+                    : "font-bold text-white dark:text-blue-400"
+                  : "text-black dark:text-[var(--foreground)]"
               }`}
             >
               <span className="relative">
@@ -115,68 +121,75 @@ const Navbar: React.FC = () => {
         <div className="hidden sm:flex items-center gap-4 pr-52">
           {authItems.map((item) =>
             "path" in item ? (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${
-                  item.className
-                } group ${isScrolled ? "text-black" : "text-white"} relative`}
-              >
-                <span className="relative">
-                  {item.label}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full"></span>
-                </span>
-              </Link>
+              <div key={item.path} className="flex items-center gap-2">
+                <Link
+                  to={item.path}
+                  className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${
+                    item.className
+                  } group ${isScrolled ? "text-black dark:text-[var(--foreground)]" : "text-white dark:text-[var(--foreground)]"} relative`}
+                >
+                  <span className="relative">
+                    {item.label}
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full"></span>
+                  </span>
+                </Link>
+                {item.label === "Đăng ký" && <ThemeToggle />}
+              </div>
             ) : (
               <button
                 key={item.label}
                 onClick={item.action}
                 className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${
                   item.className
-                } group ${isScrolled ? "text-black" : "text-white"} relative`}
+                } group ${isScrolled ? "text-black dark:text-[var(--foreground)]" : "text-white dark:text-[var(--foreground)]"} relative`}
               >
                 <span className="relative">
                   {item.label}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full"></span>
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration espíritu-all duration-300 group-hover:w-full"></span>
                 </span>
               </button>
             )
           )}
         </div>
         <div className="sm:hidden">
-          <button
-            onClick={toggleMobileMenu}
-            className={`p-2 ${
-              isScrolled
-                ? "text-black hover:text-gray-600"
-                : "text-white hover:text-gray-300"
-            } focus:outline-none`}
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <button
+              onClick={toggleMobileMenu}
+              className={`p-2 ${
+                isScrolled
+                  ? "text-black dark:text-[var(--foreground)] hover:text-gray-600 dark:hover:text-gray-400"
+                  : "text-white dark:text-[var(--foreground)] hover:text-gray-300 dark:hover:text-gray-400"
+              } focus:outline-none`}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d={
-                  isMobileMenuOpen
-                    ? "M6 18L18 6M6 6l12 12"
-                    : "M4 6h16M4 12h16M4 18h16"
-                }
-              />
-            </svg>
-          </button>
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d={
+                    isMobileMenuOpen
+                      ? "M6 18L18 6M6 6l12 12"
+                      : "M4 6h16M4 12h16M4 18h16"
+                  }
+                />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
       {isMobileMenuOpen && (
         <div
           className={`sm:hidden ${
-            isScrolled ? "bg-white text-black" : "bg-transparent text-white"
+            isScrolled
+              ? "bg-white text-black dark:bg-[var(--background)] dark:text-[var(--foreground)]"
+              : "bg-transparent text-white dark:bg-[var(--background)] dark:text-[var(--foreground)]"
           } mt-2 rounded-lg`}
         >
           <div className="flex flex-col px-4 py-2">
@@ -188,9 +201,9 @@ const Navbar: React.FC = () => {
                 className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 group ${
                   location.pathname === item.path
                     ? isScrolled
-                      ? "font-bold text-blue-600"
-                      : "font-bold text-blue-300"
-                    : ""
+                      ? "font-bold text-blue-600 dark:text-blue-400"
+                      : "font-bold text-blue-300 dark:text-blue-400"
+                    : "text-black dark:text-[var(--foreground)]"
                 }`}
               >
                 <span className="relative">
@@ -201,19 +214,21 @@ const Navbar: React.FC = () => {
             ))}
             {authItems.map((item) =>
               "path" in item ? (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${
-                    item.className
-                  } group ${isScrolled ? "text-black" : "text-white"}`}
-                >
-                  <span className="relative">
-                    {item.label}
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full"></span>
-                  </span>
-                </Link>
+                <div key={item.path} className="flex items-center gap-2">
+                  <Link
+                    to={item.path}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${
+                      item.className
+                    } group ${isScrolled ? "text-black dark:text-[var(--foreground)]" : "text-white dark:text-[var(--foreground)]"}`}
+                  >
+                    <span className="relative">
+                      {item.label}
+                      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full"></span>
+                    </span>
+                  </Link>
+                  {item.label === "Đăng ký" && <ThemeToggle />}
+                </div>
               ) : (
                 <button
                   key={item.label}
@@ -223,7 +238,7 @@ const Navbar: React.FC = () => {
                   }}
                   className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${
                     item.className
-                  } group ${isScrolled ? "text-white" : "text-white"}`}
+                  } group ${isScrolled ? "text-black dark:text-[var(--foreground)]" : "text-white dark:text-[var(--foreground)]"}`}
                 >
                   <span className="relative">
                     {item.label}
