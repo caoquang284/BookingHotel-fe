@@ -28,7 +28,7 @@ export async function getGuestByAccountId(id: number): Promise<ResponseGuestDTO>
     const response = await fetch(`${BASE_URL}/account-id/${id}`, {
         method: 'GET',
         headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`,
+            'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`, //Lưu accessToken
             'Content-Type': 'application/json',
         },
     });
