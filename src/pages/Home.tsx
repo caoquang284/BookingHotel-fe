@@ -6,6 +6,7 @@ import { getAllFloors } from "../services/apis/floor";
 import { getAllBookingConfirmationForms } from "../services/apis/bookingconfirm";
 import { getImagesByRoomId } from "../services/apis/image"; 
 import { useAuth } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
 import type {
   ResponseRoomDTO,
   ResponseRoomTypeDTO,
@@ -23,11 +24,9 @@ import starIcon from "../assets/Icon/starIconFilled.svg";
 import starIconEmpty from "../assets/Icon/starIconOutlined.svg";
 import totalBookingIcon from "../assets/Icon/totalBookingIcon.svg";
 import { getReviewsByRoomId } from "../services/apis/review";
-import { getGuestById } from "../services/apis/guest"; // Import API lấy thông tin khách
-// Placeholder ảnh mặc định
+import { getGuestById } from "../services/apis/guest";
 const DEFAULT_IMAGE = "https://via.placeholder.com/400x300?text=No+Image";
 
-// Định nghĩa interface cho payload phân trang
 interface PaginatedResponse {
   content: ResponseRoomDTO[];
   empty: boolean;
@@ -47,7 +46,6 @@ interface PaginatedResponse {
   totalPages: number;
 }
 
-// Component cho box đặt phòng
 const BookingBox: React.FC<{
   onSearch: (params: {
     checkIn: string;
@@ -56,6 +54,7 @@ const BookingBox: React.FC<{
   }) => void;
   roomTypes: ResponseRoomTypeDTO[];
 }> = ({ onSearch, roomTypes }) => {
+  const { theme } = useTheme();
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [roomTypeId, setRoomTypeId] = useState<number>(
@@ -72,43 +71,71 @@ const BookingBox: React.FC<{
   };
 
   return (
-    <div className="bg-white shadow-2xl rounded-2xl p-10 w-256 mx-auto -mt-24 relative z-10">
+    <div
+      className={`shadow-2xl rounded-2xl p-10 w-256 mx-auto -mt-24 relative z-10 transition-all duration-300 ${
+        theme === "light" ? "bg-white" : "bg-gray-800"
+      }`}
+    >
       <form
         onSubmit={handleSubmit}
         className="grid grid-cols-1 md:grid-cols-4 gap-24"
       >
         <div>
-          <label className="block text-2xl font-semibold text-gray-700 mb-2">
+          <label
+            className={`block text-2xl font-semibold mb-2 ${
+              theme === "light" ? "text-gray-700" : "text-gray-200"
+            }`}
+          >
             Ngày đến
           </label>
           <input
             type="date"
             value={checkIn}
             onChange={(e) => setCheckIn(e.target.value)}
-            className="text-black mt-1 block w-56 rounded-lg border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 text-2xl py-3 px-4"
+            className={`mt-1 block w-56 rounded-lg border shadow-md focus:outline-none focus:ring-2 text-2xl py-3 px-4 transition-all duration-300 ${
+              theme === "light"
+                ? "border-gray-300 text-black focus:border-indigo-500 focus:ring-indigo-500"
+                : "border-gray-600 text-gray-100 bg-gray-700 focus:border-indigo-400 focus:ring-indigo-400"
+            }`}
             required
           />
         </div>
         <div>
-          <label className="block text-2xl font-semibold text-gray-700 mb-2">
+          <label
+            className={`block text-2xl font-semibold mb-2 ${
+              theme === "light" ? "text-gray-700" : "text-gray-200"
+            }`}
+          >
             Ngày đi
           </label>
           <input
             type="date"
             value={checkOut}
             onChange={(e) => setCheckOut(e.target.value)}
-            className="text-black mt-1 block w-56 rounded-lg border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 text-2xl py-3 px-4"
+            className={`mt-1 block w-56 rounded-lg border shadow-md focus:outline-none focus:ring-2 text-2xl py-3 px-4 transition-all duration-300 ${
+              theme === "light"
+                ? "border-gray-300 text-black focus:border-indigo-500 focus:ring-indigo-500"
+                : "border-gray-600 text-gray-100 bg-gray-700 focus:border-indigo-400 focus:ring-indigo-400"
+            }`}
             required
           />
         </div>
         <div>
-          <label className="block text-2xl font-semibold text-gray-700 mb-2">
+          <label
+            className={`block text-2xl font-semibold mb-2 ${
+              theme === "light" ? "text-gray-700" : "text-gray-200"
+            }`}
+          >
             Loại phòng
           </label>
           <select
             value={roomTypeId}
             onChange={(e) => setRoomTypeId(Number(e.target.value))}
-            className="text-black mt-1 block w-56 rounded-lg border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 text-2xl py-4 px-4"
+            className={`mt-1 block w-56 rounded-lg border shadow-md focus:outline-none focus:ring-2 text-2xl py-4 px-4 transition-all duration-300 ${
+              theme === "light"
+                ? "border-gray-300 text-black focus:border-indigo-500 focus:ring-indigo-500"
+                : "border-gray-600 text-gray-100 bg-gray-700 focus:border-indigo-400 focus:ring-indigo-400"
+            }`}
             required
           >
             {roomTypes.map((rt) => (
@@ -118,10 +145,14 @@ const BookingBox: React.FC<{
             ))}
           </select>
         </div>
-        <div className="flex items-end ">
+        <div className="flex items-end">
           <button
             type="submit"
-            className="w-full bg-indigo-600 text-white text-2xl font-bold py-3 px-6 rounded-lg hover:bg-indigo-700 shadow-lg transition-all duration-200"
+            className={`w-full text-white text-2xl font-bold py-3 px-6 rounded-lg shadow-lg transition-all duration-200 ${
+              theme === "light"
+                ? "bg-indigo-600 hover:bg-indigo-700"
+                : "bg-indigo-700 hover:bg-indigo-800"
+            }`}
           >
             Tìm phòng
           </button>
@@ -131,7 +162,6 @@ const BookingBox: React.FC<{
   );
 };
 
-// Component cho thẻ phòng
 const RoomCard: React.FC<{
   room: ResponseRoomDTO;
   checkIn?: string;
@@ -155,10 +185,10 @@ const RoomCard: React.FC<{
 }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { theme } = useTheme();
   const [imageUrl, setImageUrl] = useState<string>(DEFAULT_IMAGE);
-  const [starRating, setStarRating] = useState<number>(0); // Thêm state cho số sao
+  const [starRating, setStarRating] = useState<number>(0);
 
-  // Lấy ảnh đầu tiên cho phòng
   useEffect(() => {
     const fetchImage = async () => {
       try {
@@ -174,7 +204,6 @@ const RoomCard: React.FC<{
     fetchImage();
   }, [room.id]);
 
-  // Lấy đánh giá và tính trung bình rating
   useEffect(() => {
     const fetchReviews = async () => {
       try {
@@ -192,7 +221,7 @@ const RoomCard: React.FC<{
         setStarRating(averageRating);
       } catch (error) {
         console.error(`Failed to fetch reviews for room ${room.id}:`, error);
-        setStarRating(0); // Mặc định 0 sao nếu lỗi
+        setStarRating(0);
       }
     };
     fetchReviews();
@@ -203,7 +232,11 @@ const RoomCard: React.FC<{
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden w-full max-w-md mx-auto">
+    <div
+      className={`rounded-lg shadow-md overflow-hidden w-full max-w-md mx-auto transition-all duration-300 ${
+        theme === "light" ? "bg-white" : "bg-gray-800"
+      }`}
+    >
       <img
         src={imageUrl}
         alt={room.name}
@@ -213,10 +246,18 @@ const RoomCard: React.FC<{
       <div className="p-4">
         <div className="flex justify-between items-center mb-2">
           <div>
-            <p className="text-2xl font-semibold truncate">
+            <p
+              className={`text-2xl font-semibold truncate ${
+                theme === "light" ? "text-gray-900" : "text-gray-100"
+              }`}
+            >
               Tên phòng: {room.name}
             </p>
-            <p className="text-gray-600 text-base">
+            <p
+              className={`text-base ${
+                theme === "light" ? "text-gray-600" : "text-gray-300"
+              }`}
+            >
               Loại phòng: {room.roomTypeName}
             </p>
           </div>
@@ -233,25 +274,47 @@ const RoomCard: React.FC<{
           </div>
         </div>
         <div className="flex items-center space-x-2 mb-2">
-          <span className="text-gray-600">
+          <span
+            className={`${
+              theme === "light" ? "text-gray-600" : "text-gray-300"
+            }`}
+          >
             <img
               src={totalBookingIcon}
               alt="totalBooking"
               className="w-4 h-4"
             />
           </span>
-          <p className="text-gray-600 text-base truncate">
+          <p
+            className={`text-base truncate ${
+              theme === "light" ? "text-gray-600" : "text-gray-300"
+            }`}
+          >
             {room.note || "Không có ghi chú"}
           </p>
         </div>
         <div className="mt-4 flex justify-between items-center">
-          <p className="text-gray-600 text-2xl font-semibold">
+          <p
+            className={`text-2xl font-semibold ${
+              theme === "light" ? "text-gray-600" : "text-gray-300"
+            }`}
+          >
             {room.roomTypePrice?.toLocaleString("vi-VN")}VNĐ/
-            <span className="text-gray-600 text-base">đêm</span>
+            <span
+              className={`text-base ${
+                theme === "light" ? "text-gray-600" : "text-gray-300"
+              }`}
+            >
+              đêm
+            </span>
           </p>
           <button
             onClick={handleBookingClick}
-            className="bg-transparent text-base py-2 px-4 rounded-md border border-transparent hover:border-gray-400 transition-all duration-200"
+            className={`text-base py-2 px-4 rounded-md border transition-all duration-200 ${
+              theme === "light"
+                ? "bg-transparent border-transparent hover:border-gray-400"
+                : "bg-transparent border-transparent hover:border-gray-500"
+            }`}
           >
             Đặt phòng
           </button>
@@ -272,23 +335,35 @@ const ReviewCard: React.FC<{
   guests: Record<number, ResponseGuestDTO>;
   roomName: string;
 }> = ({ review, guests, roomName }) => {
+  const { theme } = useTheme();
   const guest = guests[review.guestId] || { name: "Ẩn danh" };
   const guestName = guest.name || "Ẩn danh";
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 mb-4">
+    <div
+      className={`rounded-lg shadow-md p-4 mb-4 transition-all duration-300 ${
+        theme === "light" ? "bg-white" : "bg-gray-800"
+      }`}
+    >
       <div className="flex items-center mb-2">
         <img
           src={userimageLink[Math.floor(Math.random() * userimageLink.length)]}
           alt="user"
           className="w-16 h-16 rounded-full ml-4 mt-4"
         />
-        <h3 className="text-2xl font-playfair font-semibold mb-2 ml-5 mt-5">
+        <h3
+          className={`text-2xl font-playfair font-semibold mb-2 ml-5 mt-5 ${
+            theme === "light" ? "text-gray-900" : "text-gray-100"
+          }`}
+        >
           {guestName}
         </h3>
       </div>
-
-      <p className="text-gray-600 text-lg mb-2 ml-4">
+      <p
+        className={`text-lg mb-2 ml-4 ${
+          theme === "light" ? "text-gray-600" : "text-gray-300"
+        }`}
+      >
         Đánh giá cho phòng {roomName}
       </p>
       <div className="flex items-center mb-2 ml-4">
@@ -301,16 +376,20 @@ const ReviewCard: React.FC<{
           />
         ))}
       </div>
-      <p className="text-gray-600 text-lg italic ml-4">
+      <p
+        className={`text-lg italic ml-4 ${
+          theme === "light" ? "text-gray-600" : "text-gray-300"
+        }`}
+      >
         {review.comment || "Không có đánh giá"}
       </p>
     </div>
   );
 };
 
-// Component chính cho trang Home
 const Home: React.FC = () => {
   const navigate = useNavigate();
+  const { theme } = useTheme();
   const [rooms, setRooms] = useState<ResponseRoomDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -327,8 +406,8 @@ const Home: React.FC = () => {
   const [modalRoomType, setModalRoomType] = useState<number | null>(null);
   const [reviewsByRoom, setReviewsByRoom] = useState<
     Record<number, ResponseReviewDto[]>
-  >({}); // Lưu đánh giá theo roomId
-  const [guests, setGuests] = useState<Record<number, ResponseGuestDTO>>({}); // Lưu thông tin khách hàng theo guestId
+  >({});
+  const [guests, setGuests] = useState<Record<number, ResponseGuestDTO>>({});
 
   const fetchData = async (
     checkInDate?: string,
@@ -358,12 +437,10 @@ const Home: React.FC = () => {
         };
       });
 
-      // Lọc phòng dựa trên khoảng thời gian booking và ngày hiện tại
       const availableRooms = mappedRooms.filter((room) => {
         const currentDate = new Date();
-        currentDate.setHours(0, 0, 0, 0); // Đặt thời gian về 00:00:00 để so sánh ngày
+        currentDate.setHours(0, 0, 0, 0);
 
-        // Kiểm tra xem phòng có đang được đặt trong khoảng thời gian hiện tại không
         const isCurrentlyBooked = bookingForms.some(
           (form: ResponseBookingConfirmationFormDTO) => {
             if (room.id !== form.roomId) return false;
@@ -374,17 +451,14 @@ const Home: React.FC = () => {
             endDate.setDate(bookingDateObj.getDate() + form.rentalDays);
             endDate.setHours(0, 0, 0, 0);
 
-            // Kiểm tra xem ngày hiện tại có nằm trong khoảng thời gian booking không
             return currentDate >= bookingDateObj && currentDate < endDate;
           }
         );
 
-        // Nếu phòng đang được đặt trong khoảng thời gian hiện tại, ẩn phòng đó
         if (isCurrentlyBooked) {
           return false;
         }
 
-        // Nếu có tham số tìm kiếm, kiểm tra thêm khoảng thời gian tìm kiếm
         if (checkInDate && checkOutDate) {
           const checkInDateObj = new Date(checkInDate);
           const checkOutDateObj = new Date(checkOutDate);
@@ -486,9 +560,8 @@ const Home: React.FC = () => {
   }, [rooms]);
 
   const sliderRef = useRef<HTMLDivElement>(null);
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([]); // Định nghĩa cardRefs với kiểu đúng
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Hàm cuộn trái với logic vòng lặp
   const scrollLeft = () => {
     if (sliderRef.current) {
       const slider = sliderRef.current;
@@ -497,19 +570,14 @@ const Home: React.FC = () => {
       const maxScroll = scrollWidth - clientWidth;
       const currentScroll = slider.scrollLeft;
 
-      console.log("Scroll Left - Current:", currentScroll, "Max:", maxScroll); // Debug
-
       if (currentScroll <= 0) {
-        // Cuộn về cuối
         slider.scrollTo({ left: maxScroll, behavior: "smooth" });
       } else {
-        // Cuộn bình thường
         slider.scrollBy({ left: -320, behavior: "smooth" });
       }
     }
   };
 
-  // Hàm cuộn phải với logic vòng lặp
   const scrollRight = () => {
     if (sliderRef.current) {
       const slider = sliderRef.current;
@@ -518,19 +586,14 @@ const Home: React.FC = () => {
       const maxScroll = scrollWidth - clientWidth;
       const currentScroll = slider.scrollLeft;
 
-      console.log("Scroll Right - Current:", currentScroll, "Max:", maxScroll); // Debug
-
       if (currentScroll >= maxScroll) {
-        // Cuộn về đầu
         slider.scrollTo({ left: 0, behavior: "smooth" });
       } else {
-        // Cuộn bình thường
         slider.scrollBy({ left: 320, behavior: "smooth" });
       }
     }
   };
 
-  // Hiệu ứng zoom dựa trên vị trí cuộn
   useEffect(() => {
     const slider = sliderRef.current;
     if (!slider) return;
@@ -565,13 +628,16 @@ const Home: React.FC = () => {
     };
   }, [rooms]);
 
-  // Khởi tạo cardRefs khi rooms thay đổi
   useEffect(() => {
     cardRefs.current = new Array(rooms.length).fill(null);
   }, [rooms]);
 
   return (
-    <div>
+    <div
+      className={`transition-all duration-300 ${
+        theme === "light" ? "bg-gray-100" : "bg-gray-900"
+      }`}
+    >
       <div
         className="relative w-full flex flex-col bg-center"
         style={{
@@ -581,20 +647,30 @@ const Home: React.FC = () => {
           minHeight: "100vh",
         }}
       >
-        {/* Overlay để làm tối nền ảnh */}
-        {/* <div className="absolute inset-0 bg-blue bg-opacity-60 z-10"></div> */}
-
-        {/* Nội dung chính */}
-        <div className="relative z-10 text-left text-white px-4 py-10 pl-56 mt-52">
-          <span className="inline-block bg-green-200 bg-opacity-50 text-blue-800 text-2xl font-semibold px-6 py-2 rounded-full mb-6">
+        <div className="relative z-10 text-left px-4 py-10 pl-56 mt-52">
+          <span
+            className={`inline-block text-2xl font-semibold px-6 py-2 rounded-full mb-6 ${
+              theme === "light"
+                ? "bg-green-200 bg-opacity-50 text-blue-800"
+                : "bg-green-900 bg-opacity-50 text-blue-200"
+            }`}
+          >
             Trải nghiệm khách sạn đẳng cấp
           </span>
-          <h1 className="text-5xl text-yellow-500 italic md:text-6xl font-bold mb-6">
+          <h1
+            className={`text-5xl italic md:text-6xl font-bold mb-6 ${
+              theme === "light" ? "text-yellow-500" : "text-yellow-400"
+            }`}
+          >
             Rong chơi bốn phương,
             <br />
             "giá" vẫn yêu thương
           </h1>
-          <p className="text-xl md:text-xl mb-8 max-w-2xl font-semibold">
+          <p
+            className={`text-xl md:text-xl mb-8 max-w-2xl font-semibold ${
+              theme === "light" ? "text-white" : "text-gray-200"
+            }`}
+          >
             Sự sang trọng và tiện nghi vô song đang chờ đón bạn tại những khách
             sạn đẳng cấp nhất thế giới. Hãy bắt đầu hành trình của bạn ngay hôm
             nay.
@@ -605,25 +681,67 @@ const Home: React.FC = () => {
           </div>
         </div>
       </div>
-      <div className="max-w-8xl mx-auto py-32 px-48 bg-gray-100">
-        <h2 className="text-5xl font-playfair mb-8 text-center">
+      <div
+        className={`max-w-8xl mx-auto py-32 px-48 transition-all duration-300 ${
+          theme === "light" ? "bg-gray-100" : "bg-gray-900"
+        }`}
+      >
+        <h2
+          className={`text-5xl font-playfair mb-8 text-center ${
+            theme === "light" ? "text-gray-900" : "text-gray-100"
+          }`}
+        >
           Các phòng đang có sẵn
         </h2>
-        <h2 className="text-2xl italic text-gray-600 text-center">
+        <h2
+          className={`text-2xl italic text-center ${
+            theme === "light" ? "text-gray-600" : "text-gray-300"
+          }`}
+        >
           Tận hưởng kỳ nghỉ hoàn hảo với những căn phòng đẳng cấp
         </h2>
-        <h2 className="text-2xl italic text-gray-600 text-center mb-12">
+        <h2
+          className={`text-2xl italic text-center mb-12 ${
+            theme === "light" ? "text-gray-600" : "text-gray-300"
+          }`}
+        >
           sang trọng, tinh tế và đầy ấn tượng.
         </h2>
-        {loading && <p className="text-center">Đang tải...</p>}
-        {error && <p className="text-center text-red-600">{error}</p>}
+        {loading && (
+          <p
+            className={`text-center ${
+              theme === "light" ? "text-gray-600" : "text-gray-300"
+            }`}
+          >
+            Đang tải...
+          </p>
+        )}
+        {error && (
+          <p
+            className={`text-center ${
+              theme === "light" ? "text-red-600" : "text-red-400"
+            }`}
+          >
+            {error}
+          </p>
+        )}
         {!loading && !error && rooms.length === 0 && (
-          <p className="text-center">Không có phòng nào sẵn sàng</p>
+          <p
+            className={`text-center ${
+              theme === "light" ? "text-gray-600" : "text-gray-300"
+            }`}
+          >
+            Không có phòng nào sẵn sàng
+          </p>
         )}
         <div className="relative">
           <button
             onClick={scrollLeft}
-            className="absolute -left-16 top-1/2 -translate-y-1/2 z-10 bg-white shadow rounded-full p-2 hover:bg-gray-200 w-12 h-12"
+            className={`absolute -left-16 top-1/2 -translate-y-1/2 z-10 shadow rounded-full p-2 transition-all duration-200 w-12 h-12 ${
+              theme === "light"
+                ? "bg-white hover:bg-gray-200"
+                : "bg-gray-800 hover:bg-gray-700"
+            }`}
             style={{ display: rooms.length > 2 ? "block" : "none" }}
           >
             ←
@@ -658,16 +776,28 @@ const Home: React.FC = () => {
           </div>
           <button
             onClick={scrollRight}
-            className="absolute -right-16 top-1/2 -translate-y-1/2 z-10 bg-white shadow rounded-full p-2 hover:bg-gray-200 w-12 h-12"
+            className={`absolute -right-16 top-1/2 -translate-y-1/2 z-10 shadow rounded-full p-2 transition-all duration-200 w-12 h-12 ${
+              theme === "light"
+                ? "bg-white hover:bg-gray-200"
+                : "bg-gray-800 hover:bg-gray-700"
+            }`}
             style={{ display: rooms.length > 2 ? "block" : "none" }}
           >
             →
           </button>
         </div>
-        <h2 className="text-5xl font-playfair mb-8 text-center mt-20">
+        <h2
+          className={`text-5xl font-playfair mb-8 text-center mt-20 ${
+            theme === "light" ? "text-gray-900" : "text-gray-100"
+          }`}
+        >
           Đánh giá từ khách hàng
         </h2>
-        <h2 className="text-2xl italic text-gray-600 text-center mb-12">
+        <h2
+          className={`text-2xl italic text-center mb-12 ${
+            theme === "light" ? "text-gray-600" : "text-gray-300"
+          }`}
+        >
           Khám phá lý do vì sao những du khách sành điệu luôn tin chọn Roomify
           <br />
           cho các chỗ ở sang trọng và đẳng cấp.
@@ -675,7 +805,7 @@ const Home: React.FC = () => {
         <div className="grid grid-cols-3 gap-6 max-h-[800px] overflow-hidden">
           {Object.values(reviewsByRoom)
             .flat()
-            .slice(0, 6) // Giới hạn tối đa 6 card
+            .slice(0, 6)
             .map((review) => (
               <ReviewCard
                 key={review.id}
@@ -688,49 +818,95 @@ const Home: React.FC = () => {
               />
             ))}
           {Object.values(reviewsByRoom).every((reviews) => !reviews.length) && (
-            <div className="bg-white rounded-lg shadow-md p-4 text-center col-span-3">
-              <p className="text-gray-600">Chưa có đánh giá</p>
+            <div
+              className={`rounded-lg shadow-md p-4 text-center col-span-3 transition-all duration-300 ${
+                theme === "light" ? "bg-white" : "bg-gray-800"
+              }`}
+            >
+              <p
+                className={`${
+                  theme === "light" ? "text-gray-600" : "text-gray-300"
+                }`}
+              >
+                Chưa có đánh giá
+              </p>
             </div>
           )}
         </div>
       </div>
       {showDateModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 w-full h-full">
-          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-lg relative">
+        <div
+          className={`fixed inset-0 flex items-center justify-center z-50 w-full h-full transition-all duration-300 ${
+            theme === "light" ? "bg-black/40" : "bg-black/60"
+          }`}
+        >
+          <div
+            className={`rounded-lg shadow-lg p-8 w-full max-w-lg relative transition-all duration-300 ${
+              theme === "light" ? "bg-white" : "bg-gray-800"
+            }`}
+          >
             <button
-              className="absolute top-4 right-4 text-gray-500 hover:text-black text-2xl font-bold w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100"
+              className={`absolute top-4 right-4 text-2xl font-bold w-10 h-10 flex items-center justify-center rounded-full transition-all duration-200 ${
+                theme === "light"
+                  ? "text-gray-500 hover:text-black hover:bg-gray-100"
+                  : "text-gray-300 hover:text-white hover:bg-gray-700"
+              }`}
               onClick={() => setShowDateModal(false)}
             >
               ×
             </button>
-            <h3 className="text-2xl font-bold mb-6 text-center">
+            <h3
+              className={`text-2xl font-bold mb-6 text-center ${
+                theme === "light" ? "text-gray-900" : "text-gray-100"
+              }`}
+            >
               Chọn ngày nhận và trả phòng
             </h3>
             <div className="space-y-6">
               <div>
-                <label className="block text-xl font-semibold text-gray-700 mb-2">
+                <label
+                  className={`block text-xl font-semibold mb-2 ${
+                    theme === "light" ? "text-gray-700" : "text-gray-200"
+                  }`}
+                >
                   Ngày đến
                 </label>
                 <input
                   type="date"
                   value={modalCheckIn}
                   onChange={(e) => setModalCheckIn(e.target.value)}
-                  className="w-full text-black text-xl border rounded px-3 py-2"
+                  className={`w-full text-xl border rounded px-3 py-2 transition-all duration-300 ${
+                    theme === "light"
+                      ? "text-black border-gray-300"
+                      : "text-gray-100 border-gray-600 bg-gray-700"
+                  }`}
                 />
               </div>
               <div>
-                <label className="block text-xl font-semibold text-gray-700 mb-2">
+                <label
+                  className={`block text-xl font-semibold mb-2 ${
+                    theme === "light" ? "text-gray-700" : "text-gray-200"
+                  }`}
+                >
                   Ngày đi
                 </label>
                 <input
                   type="date"
                   value={modalCheckOut}
                   onChange={(e) => setModalCheckOut(e.target.value)}
-                  className="w-full text-black text-xl border rounded px-3 py-2"
+                  className={`w-full text-xl border rounded px-3 py-2 transition-all duration-300 ${
+                    theme === "light"
+                      ? "text-black border-gray-300"
+                      : "text-gray-100 border-gray-600 bg-gray-700"
+                  }`}
                 />
               </div>
               <button
-                className="w-full bg-green-600 text-white py-3 rounded hover:bg-green-700"
+                className={`w-full text-white py-3 rounded transition-all duration-200 ${
+                  theme === "light"
+                    ? "bg-green-600 hover:bg-green-700"
+                    : "bg-green-700 hover:bg-green-800"
+                }`}
                 onClick={() => {
                   if (!modalCheckIn || !modalCheckOut) {
                     alert("Vui lòng chọn ngày đến, ngày đi!");
