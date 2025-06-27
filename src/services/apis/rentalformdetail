@@ -1,6 +1,6 @@
 import type { RentalFormDetailDTO, ResponseRentalFormDetailDTO } from '../../types';
 
-const BASE_URL = 'http://localhost:8080/api/rental-form-detail';
+const BASE_URL = 'http://localhost:8081/api/rental-form-detail';
 
 export async function getAllRentalFormDetails(page: number = 0, size: number = 10): Promise<ResponseRentalFormDetailDTO[]> {
     const response = await fetch(`${BASE_URL}?page=${page}&size=${size}`, {
