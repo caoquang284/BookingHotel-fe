@@ -4,7 +4,7 @@ import { getGuestByAccountId } from "../services/apis/guest";
 import { getRoomById } from "../services/apis/room";
 import { getAllBookingConfirmationForms } from "../services/apis/bookingconfirm";
 import { deleteBookingConfirmationForm } from "../services/apis/bookingconfirm";
-import { createReview } from "../services/apis/review"; // Thêm API tạo đánh giá
+import { createReview } from "../services/apis/review";
 import type { ResponseGuestDTO } from "../types/index.ts";
 import type { ResponseBookingConfirmationFormDTO } from "../types";
 import { getRoomTypeById } from "../services/apis/roomType";
@@ -20,9 +20,9 @@ const BookingHistory: React.FC = () => {
   >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showReviewForm, setShowReviewForm] = useState<number | null>(null); // State để hiển thị form đánh giá
-  const [rating, setRating] = useState<number>(0); // Đánh giá (1-5)
-  const [comment, setComment] = useState<string>(""); // Bình luận
+  const [showReviewForm, setShowReviewForm] = useState<number | null>(null);
+  const [rating, setRating] = useState<number>(0);
+  const [comment, setComment] = useState<string>("");
   const bookingState = {
     PENDING: "Chờ xác nhận",
     COMMITED: "Đã xác nhận",
@@ -34,6 +34,17 @@ const BookingHistory: React.FC = () => {
     COMMITED: "text-green-500",
     CANCELLED: "text-red-500",
     EXPIRED: "text-gray-500",
+  };
+
+  // Hàm kiểm tra xem có hiển thị nút Hủy trong form đánh giá không
+  const canShowCancelButton = (bookingDate: string): boolean => {
+    const bookingDateObj = new Date(bookingDate);
+    const threeDaysAfterBooking = new Date(bookingDateObj);
+    threeDaysAfterBooking.setDate(bookingDateObj.getDate() + 3);
+    const currentDate = new Date();
+    console.log("3 ngay sau", threeDaysAfterBooking);
+    console.log(currentDate);
+    return threeDaysAfterBooking < currentDate;
   };
 
   useEffect(() => {
@@ -56,7 +67,6 @@ const BookingHistory: React.FC = () => {
         for (const booking of userBookings) {
           const room = await getRoomById(booking.roomId);
           const roomType = await getRoomTypeById(room.roomTypeId);
-
           booking.roomName = room.name;
           booking.roomTypeName = roomType.name;
         }
@@ -72,14 +82,12 @@ const BookingHistory: React.FC = () => {
     fetchBookingHistory();
   }, [user?.id]);
 
-  // Hàm xử lý hủy đơn
   const handleCancelBooking = async (bookingId: number) => {
     if (!user?.id) {
       setError("Vui lòng đăng nhập để hủy đặt phòng");
       return;
     }
 
-    // Thay thế window.confirm bằng toast với confirm
     const confirmed = window.confirm(
       "Bạn có chắc chắn muốn hủy đơn đặt phòng này? Hành động này không thể hoàn tác."
     );
@@ -96,7 +104,6 @@ const BookingHistory: React.FC = () => {
     }
   };
 
-  // Hàm xử lý gửi đánh giá
   const handleSubmitReview = async (bookingId: number) => {
     if (!user?.id || !guestId) {
       setError("Vui lòng đăng nhập để đánh giá");
@@ -117,11 +124,10 @@ const BookingHistory: React.FC = () => {
 
     try {
       await createReview(reviewData, user.id, "GUEST");
-      setShowReviewForm(null); // Ẩn form sau khi gửi
-      setRating(0); // Reset rating
-      setComment(""); // Reset comment
+      setShowReviewForm(null);
+      setRating(0);
+      setComment("");
       toast.success("Đánh giá thành công!");
-      // Có thể gọi lại fetchBookingHistory hoặc cập nhật state nếu cần
     } catch (err) {
       console.error("Error submitting review:", err);
       setError("Không thể gửi đánh giá. Vui lòng thử lại sau.");
@@ -181,27 +187,26 @@ const BookingHistory: React.FC = () => {
                 <span className="font-semibold">Số ngày thuê:</span>{" "}
                 {booking.rentalDays}
               </p>
-              {/* Nút Hủy và Đánh giá, chỉ hiển thị khi PENDING hoặc COMMITED */}
               {(booking.bookingState === "PENDING" ||
-                booking.bookingState === "COMMITED") && (
-                <div className="flex justify-end gap-4 mt-4">
-                  <button
-                    onClick={() => handleCancelBooking(booking.id)}
-                    className="bg-red-500 text-white text-xl font-semibold py-2 px-6 rounded-lg hover:bg-red-600 transition"
-                  >
-                    Hủy
-                  </button>
-                  {booking.bookingState === "COMMITED" && (
+                booking.bookingState === "COMMITED") &&
+                canShowCancelButton(booking.bookingDate) && (
+                  <div className="flex justify-end gap-4 mt-4">
                     <button
-                      onClick={() => setShowReviewForm(booking.id)}
-                      className="bg-blue-500 text-white text-xl font-semibold py-2 px-6 rounded-lg hover:bg-blue-600 transition"
+                      onClick={() => handleCancelBooking(booking.id)}
+                      className="bg-red-500 text-white text-xl font-semibold py-2 px-6 rounded-lg hover:bg-red-600 transition"
                     >
-                      Đánh giá
+                      Hủy
                     </button>
-                  )}
-                </div>
-              )}
-              {/* Form đánh giá */}
+                    {booking.bookingState === "COMMITED" && (
+                      <button
+                        onClick={() => setShowReviewForm(booking.id)}
+                        className="bg-blue-500 text-white text-xl font-semibold py-2 px-6 rounded-lg hover:bg-blue-600 transition"
+                      >
+                        Đánh giá
+                      </button>
+                    )}
+                  </div>
+                )}
               {showReviewForm === booking.id && (
                 <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                   <h3 className="text-2xl font-semibold mb-2">
@@ -215,7 +220,7 @@ const BookingHistory: React.FC = () => {
                       <span
                         key={star}
                         onClick={() => setRating(star)}
-                        className={`cursor-pointer text-2xl`}
+                        className="cursor-pointer text-2xl"
                       >
                         {star <= rating ? (
                           <img
@@ -245,12 +250,14 @@ const BookingHistory: React.FC = () => {
                     />
                   </div>
                   <div className="flex justify-end gap-4">
-                    <button
-                      onClick={() => setShowReviewForm(null)}
-                      className="bg-gray-500 text-white text-xl font-semibold py-2 px-6 rounded-lg hover:bg-gray-600 transition"
-                    >
-                      Hủy
-                    </button>
+                    {
+                      <button
+                        onClick={() => setShowReviewForm(null)}
+                        className="bg-gray-500 text-white text-xl font-semibold py-2 px-6 rounded-lg hover:bg-gray-600 transition"
+                      >
+                        Hủy
+                      </button>
+                    }
                     <button
                       onClick={() => handleSubmitReview(booking.id)}
                       className="bg-green-500 text-white text-xl font-semibold py-2 px-6 rounded-lg hover:bg-green-600 transition"

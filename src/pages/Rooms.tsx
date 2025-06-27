@@ -36,13 +36,6 @@ interface PaginatedResponse {
   totalElements: number;
   totalPages: number;
 }
-const imageLinks = [
-  "https://xuonggooccho.com/ckfinder/userfiles/files/anh-phong-ngu.jpg",
-  "https://noithattrevietnam.com/uploaded/2019/12/1-thiet-ke-phong-ngu-khach-san%20%281%29.jpg",
-  "https://acihome.vn/uploads/17/phong-ngu-khach-san-5-sao.jpg",
-  "https://www.vietnambooking.com/wp-content/uploads/2021/02/khach-san-ho-chi-minh-35.jpg",
-  "https://ik.imagekit.io/tvlk/blog/2023/09/khach-san-view-bien-da-nang-1.jpg?tr=q-70,c-at_max,w-500,h-300,dpr-2",
-];
 
 // Component cho thẻ phòng
 const RoomCard: React.FC<{
@@ -307,7 +300,38 @@ const Rooms: React.FC = () => {
           {checkOut || "Chưa chọn"}
           {roomTypeId ? `, loại phòng: ${roomTypeId}` : ""}
         </p>
-        {loading && <p className="text-center">Đang tải...</p>}
+        {loading && (
+          <div className="flex flex-col gap-4">
+            {[...Array(4)].map((_, idx) => (
+              <div
+                key={idx}
+                className="animate-pulse bg-gray-200 rounded-lg shadow-md w-full flex h-92"
+              >
+                <div className="w-2/5 h-full bg-gray-300" />
+                <div className="w-3/5 p-2 flex flex-col justify-between ml-4">
+                  <div className="space-y-4 mt-4">
+                    <div className="h-8 bg-gray-300 rounded w-3/4" />
+                    <div className="h-6 bg-gray-300 rounded w-1/2" />
+                    <div className="flex gap-2 mt-2">
+                      {[...Array(5)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="w-6 h-6 bg-gray-300 rounded-full"
+                        />
+                      ))}
+                    </div>
+                    <div className="h-5 bg-gray-300 rounded w-2/3 mt-2" />
+                    <div className="h-6 bg-gray-200 rounded w-1/2 mt-4" />
+                  </div>
+                  <div className="flex flex-col items-end mt-8">
+                    <div className="h-6 bg-gray-300 rounded w-32 mb-2" />
+                    <div className="h-8 bg-gray-300 rounded w-40" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         {error && <p className="text-center text-red-600">{error}</p>}
         {!loading && !error && rooms.length === 0 && (
           <p className="text-center">Không có phòng nào sẵn sàng</p>
