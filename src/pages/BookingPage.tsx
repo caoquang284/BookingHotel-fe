@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { toast } from "react-toastify";
 import { getRoomById } from "../services/apis/room";
 import { getAllRoomTypes } from "../services/apis/roomType";
 import { getAllFloors } from "../services/apis/floor";
@@ -129,7 +130,7 @@ const BookingPage: React.FC = () => {
       }
     } catch (error) {
       console.error("generateQRCode - Error:", error);
-      alert(`Lỗi khi tạo mã QR: ${error}`);
+      toast.error(`Lỗi khi tạo mã QR: ${error}`);
       throw error;
     } finally {
       setIsGeneratingQR(false);
@@ -144,7 +145,7 @@ const BookingPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!customerInfo.fullName || !customerInfo.email || !customerInfo.phone) {
-      alert("Vui lòng điền đầy đủ thông tin");
+      toast.error("Vui lòng điền đầy đủ thông tin");
       return;
     }
     setPaymentMethod("qr");
@@ -154,7 +155,7 @@ const BookingPage: React.FC = () => {
 
   const handleConfirmPayment = async () => {
     if (!user || !roomId || !checkIn || !checkOut) {
-      alert("Thông tin không đầy đủ để tạo phiếu đặt phòng");
+      toast.error("Thông tin không đầy đủ để tạo phiếu đặt phòng");
       return;
     }
 
@@ -175,11 +176,11 @@ const BookingPage: React.FC = () => {
       const impactor = "USER";
       console.log(bookingData);
       await createBookingConfirmationForm(bookingData, impactorId, impactor);
-      alert("Phiếu đặt phòng đã được tạo thành công!");
+      toast.success("Phiếu đặt phòng đã được tạo thành công!");
       navigate("/");
     } catch (error) {
       console.error("Error creating booking confirmation:", error);
-      alert(`Lỗi khi tạo phiếu đặt phòng: ${error}`);
+      toast.error(`Lỗi khi tạo phiếu đặt phòng: ${error}`);
     } finally {
       setShowPaymentModal(false);
       setPaymentMethod(null);

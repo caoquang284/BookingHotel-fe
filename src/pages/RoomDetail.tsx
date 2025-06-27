@@ -16,6 +16,7 @@ import type {
 import mapIcon from "../assets/Icon/locationIcon.svg";
 import starIcon from "../assets/Icon/starIconFilled.svg";
 import starIconEmpty from "../assets/Icon/starIconOutlined.svg";
+import { toast } from "react-toastify";
 
 // Placeholder ảnh mặc định
 const DEFAULT_IMAGE = "https://via.placeholder.com/400x300?text=No+Image";
@@ -69,7 +70,7 @@ const BookingBox: React.FC<{
 
   const handleBookNowClick = () => {
     if (!checkIn || !checkOut) {
-      alert("Vui lòng chọn ngày đến và ngày đi!");
+      toast.error("Vui lòng chọn ngày đến và ngày đi!");
       return;
     }
     onBookNow(checkIn, checkOut, undefined);
@@ -302,7 +303,7 @@ const RoomDetail: React.FC = () => {
     roomId: string | undefined
   ) => {
     if (!id) {
-      alert("Không tìm thấy ID phòng!");
+      toast.error("Không tìm thấy ID phòng!");
       return;
     }
     navigate(

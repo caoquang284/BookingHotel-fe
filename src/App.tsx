@@ -1,4 +1,6 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Home from "./pages/Home";
 import AppLayout from "./components/common/AppLayout";
 import BookingHistory from "./pages/BookingHistory";
@@ -25,8 +27,8 @@ const router = createBrowserRouter([
       { path: "/room-detail/:id", element: <RoomDetail /> },
       { path: "/login", element: <Login /> },
       { path: "/register", element: <Register /> },
-      { path: "/forgot-password", element: <ForgotPassword />},
-      { path: "/profile", element: <Profile />},
+      { path: "/forgot-password", element: <ForgotPassword /> },
+      { path: "/profile", element: <Profile /> },
     ],
   },
 ]);
@@ -35,6 +37,18 @@ function App() {
   return (
     <AuthProvider>
       <RouterProvider router={router} />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </AuthProvider>
   );
 }

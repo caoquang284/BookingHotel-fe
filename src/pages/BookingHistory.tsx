@@ -10,6 +10,8 @@ import type { ResponseBookingConfirmationFormDTO } from "../types";
 import { getRoomTypeById } from "../services/apis/roomType";
 import starIconFilled from "../assets/Icon/starIconFilled.svg";
 import starIconOutlined from "../assets/Icon/starIconOutlined.svg";
+import { toast } from "react-toastify";
+
 const BookingHistory: React.FC = () => {
   const { user } = useAuth();
   const [guestId, setGuestId] = useState<number | null>(null);
@@ -77,15 +79,16 @@ const BookingHistory: React.FC = () => {
       return;
     }
 
-    if (
-      window.confirm(
-        "Bạn có chắc chắn muốn hủy đơn đặt phòng này? Hành động này không thể hoàn tác."
-      )
-    ) {
+    // Thay thế window.confirm bằng toast với confirm
+    const confirmed = window.confirm(
+      "Bạn có chắc chắn muốn hủy đơn đặt phòng này? Hành động này không thể hoàn tác."
+    );
+
+    if (confirmed) {
       try {
         await deleteBookingConfirmationForm(bookingId, user.id, "GUEST");
         setBookings(bookings.filter((booking) => booking.id !== bookingId));
-        alert("Hủy đặt phòng thành công!");
+        toast.success("Hủy đặt phòng thành công!");
       } catch (err) {
         console.error("Error cancelling booking:", err);
         setError("Không thể hủy đặt phòng. Vui lòng thử lại sau.");
@@ -117,7 +120,7 @@ const BookingHistory: React.FC = () => {
       setShowReviewForm(null); // Ẩn form sau khi gửi
       setRating(0); // Reset rating
       setComment(""); // Reset comment
-      alert("Đánh giá thành công!");
+      toast.success("Đánh giá thành công!");
       // Có thể gọi lại fetchBookingHistory hoặc cập nhật state nếu cần
     } catch (err) {
       console.error("Error submitting review:", err);

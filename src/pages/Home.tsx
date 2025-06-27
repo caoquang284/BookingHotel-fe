@@ -4,7 +4,7 @@ import { getRoomsByState } from "../services/apis/room";
 import { getAllRoomTypes } from "../services/apis/roomType";
 import { getAllFloors } from "../services/apis/floor";
 import { getAllBookingConfirmationForms } from "../services/apis/bookingconfirm";
-import { getImagesByRoomId } from "../services/apis/image"; 
+import { getImagesByRoomId } from "../services/apis/image";
 import { useAuth } from "../contexts/AuthContext";
 import type {
   ResponseRoomDTO,
@@ -24,6 +24,7 @@ import starIconEmpty from "../assets/Icon/starIconOutlined.svg";
 import totalBookingIcon from "../assets/Icon/totalBookingIcon.svg";
 import { getReviewsByRoomId } from "../services/apis/review";
 import { getGuestById } from "../services/apis/guest"; // Import API lấy thông tin khách
+import { toast } from "react-toastify";
 // Placeholder ảnh mặc định
 const DEFAULT_IMAGE = "https://via.placeholder.com/400x300?text=No+Image";
 
@@ -676,6 +677,7 @@ const Home: React.FC = () => {
         <div className="grid grid-cols-3 gap-6 max-h-[800px] overflow-hidden">
           {Object.values(reviewsByRoom)
             .flat()
+            .slice(0, 6)
             // Giới hạn tối đa 6 card
             .map((review) => (
               <ReviewCard
@@ -734,7 +736,7 @@ const Home: React.FC = () => {
                 className="w-full bg-green-600 text-white py-3 rounded hover:bg-green-700"
                 onClick={() => {
                   if (!modalCheckIn || !modalCheckOut) {
-                    alert("Vui lòng chọn ngày đến, ngày đi!");
+                    toast.error("Vui lòng chọn ngày đến, ngày đi!");
                     return;
                   }
                   setShowDateModal(false);
