@@ -409,6 +409,45 @@ const ReviewCard: React.FC<{
   );
 };
 
+// Thêm Skeleton components
+const SkeletonBox = ({ className = "" }) => (
+  <div
+    className={`animate-pulse bg-gray-200 dark:bg-gray-700 rounded-lg ${className}`}
+  ></div>
+);
+
+const SkeletonBookingBox = () => (
+  <div className="shadow-2xl rounded-2xl p-10 w-256 mx-auto -mt-24 relative z-10 animate-pulse bg-gray-200 dark:bg-gray-700 h-56" />
+);
+
+const SkeletonRoomCard = () => (
+  <div className="rounded-lg shadow-md overflow-hidden w-full max-w-md mx-auto animate-pulse bg-gray-200 dark:bg-gray-700">
+    <div className="w-full h-52 bg-gray-300 dark:bg-gray-600" />
+    <div className="p-4">
+      <div className="h-6 bg-gray-300 dark:bg-gray-600 rounded w-2/3 mb-2" />
+      <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/3 mb-6" />
+      <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/2 mb-2" />
+      <div className="h-8 bg-gray-300 dark:bg-gray-600 rounded w-1/2 mt-4" />
+    </div>
+  </div>
+);
+
+const SkeletonReviewCard = () => (
+  <div className="rounded-lg shadow-md p-4 mb-4 animate-pulse bg-gray-200 dark:bg-gray-700">
+    <div className="flex items-center mb-2">
+      <div className="w-16 h-16 rounded-full bg-gray-300 dark:bg-gray-600 ml-4 mt-4" />
+      <div className="h-6 bg-gray-300 dark:bg-gray-600 rounded w-32 ml-5 mt-5" />
+    </div>
+    <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/2 mb-2 ml-4" />
+    <div className="flex items-center mb-2 ml-4 space-x-2">
+      {[...Array(5)].map((_, i) => (
+        <div key={i} className="w-6 h-6 bg-gray-300 dark:bg-gray-600 rounded" />
+      ))}
+    </div>
+    <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-2/3 ml-4" />
+  </div>
+);
+
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const { theme } = useTheme();
@@ -742,13 +781,21 @@ const Home: React.FC = () => {
           sang trọng, tinh tế và đầy ấn tượng.
         </h2>
         {loading && (
-          <p
-            className={`text-center ${
-              theme === "light" ? "text-gray-600" : "text-gray-300"
-            }`}
-          >
-            Đang tải...
-          </p>
+          <>
+            <SkeletonBookingBox />
+            <div className="flex gap-8 py-2 overflow-x-auto no-scrollbar mt-12">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="flex-shrink-0" style={{ width: 320 }}>
+                  <SkeletonRoomCard />
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-3 gap-6 mt-20">
+              {[...Array(3)].map((_, i) => (
+                <SkeletonReviewCard key={i} />
+              ))}
+            </div>
+          </>
         )}
         {error && (
           <p
