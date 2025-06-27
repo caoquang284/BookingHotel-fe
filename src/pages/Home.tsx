@@ -23,8 +23,10 @@ import starIcon from "../assets/Icon/starIconFilled.svg";
 import starIconEmpty from "../assets/Icon/starIconOutlined.svg";
 import totalBookingIcon from "../assets/Icon/totalBookingIcon.svg";
 import { getReviewsByRoomId } from "../services/apis/review";
-import { getGuestById } from "../services/apis/guest"; // Import API lấy thông tin khách
+import { getGuestById } from "../services/apis/guest";
 import { toast } from "react-toastify";
+import Chatbot from "../components/chatBox"; // Import component Chatbot
+
 // Placeholder ảnh mặc định
 const DEFAULT_IMAGE = "https://via.placeholder.com/400x300?text=No+Image";
 
@@ -119,7 +121,7 @@ const BookingBox: React.FC<{
             ))}
           </select>
         </div>
-        <div className="flex items-end ">
+        <div className="flex items-end">
           <button
             type="submit"
             className="w-full bg-indigo-600 text-white text-2xl font-bold py-3 px-6 rounded-lg hover:bg-indigo-700 shadow-lg transition-all duration-200"
@@ -157,9 +159,8 @@ const RoomCard: React.FC<{
   const navigate = useNavigate();
   const { user } = useAuth();
   const [imageUrl, setImageUrl] = useState<string>(DEFAULT_IMAGE);
-  const [starRating, setStarRating] = useState<number>(0); // Thêm state cho số sao
+  const [starRating, setStarRating] = useState<number>(0);
 
-  // Lấy ảnh đầu tiên cho phòng
   useEffect(() => {
     const fetchImage = async () => {
       try {
@@ -175,7 +176,6 @@ const RoomCard: React.FC<{
     fetchImage();
   }, [room.id]);
 
-  // Lấy đánh giá và tính trung bình rating
   useEffect(() => {
     const fetchReviews = async () => {
       try {
@@ -193,7 +193,7 @@ const RoomCard: React.FC<{
         setStarRating(averageRating);
       } catch (error) {
         console.error(`Failed to fetch reviews for room ${room.id}:`, error);
-        setStarRating(0); // Mặc định 0 sao nếu lỗi
+        setStarRating(0);
       }
     };
     fetchReviews();
@@ -288,7 +288,6 @@ const ReviewCard: React.FC<{
           {guestName}
         </h3>
       </div>
-
       <p className="text-gray-600 text-lg mb-2 ml-4">
         Đánh giá cho phòng {roomName}
       </p>
@@ -328,8 +327,8 @@ const Home: React.FC = () => {
   const [modalRoomType, setModalRoomType] = useState<number | null>(null);
   const [reviewsByRoom, setReviewsByRoom] = useState<
     Record<number, ResponseReviewDto[]>
-  >({}); // Lưu đánh giá theo roomId
-  const [guests, setGuests] = useState<Record<number, ResponseGuestDTO>>({}); // Lưu thông tin khách hàng theo guestId
+  >({});
+  const [guests, setGuests] = useState<Record<number, ResponseGuestDTO>>({});
 
   const fetchData = async (
     checkInDate?: string,
@@ -359,12 +358,10 @@ const Home: React.FC = () => {
         };
       });
 
-      // Lọc phòng dựa trên khoảng thời gian booking và ngày hiện tại
       const availableRooms = mappedRooms.filter((room) => {
         const currentDate = new Date();
-        currentDate.setHours(0, 0, 0, 0); // Đặt thời gian về 00:00:00 để so sánh ngày
+        currentDate.setHours(0, 0, 0, 0);
 
-        // Kiểm tra xem phòng có đang được đặt trong khoảng thời gian hiện tại không
         const isCurrentlyBooked = bookingForms.some(
           (form: ResponseBookingConfirmationFormDTO) => {
             if (room.id !== form.roomId) return false;
@@ -375,17 +372,14 @@ const Home: React.FC = () => {
             endDate.setDate(bookingDateObj.getDate() + form.rentalDays);
             endDate.setHours(0, 0, 0, 0);
 
-            // Kiểm tra xem ngày hiện tại có nằm trong khoảng thời gian booking không
             return currentDate >= bookingDateObj && currentDate < endDate;
           }
         );
 
-        // Nếu phòng đang được đặt trong khoảng thời gian hiện tại, ẩn phòng đó
         if (isCurrentlyBooked) {
           return false;
         }
 
-        // Nếu có tham số tìm kiếm, kiểm tra thêm khoảng thời gian tìm kiếm
         if (checkInDate && checkOutDate) {
           const checkInDateObj = new Date(checkInDate);
           const checkOutDateObj = new Date(checkOutDate);
@@ -488,51 +482,8 @@ const Home: React.FC = () => {
   }, [rooms]);
 
   const sliderRef = useRef<HTMLDivElement>(null);
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([]); // Định nghĩa cardRefs với kiểu đúng
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Hàm cuộn trái với logic vòng lặp
-  const scrollLeft = () => {
-    if (sliderRef.current) {
-      const slider = sliderRef.current;
-      const scrollWidth = slider.scrollWidth;
-      const clientWidth = slider.clientWidth;
-      const maxScroll = scrollWidth - clientWidth;
-      const currentScroll = slider.scrollLeft;
-
-      console.log("Scroll Left - Current:", currentScroll, "Max:", maxScroll); // Debug
-
-      if (currentScroll <= 0) {
-        // Cuộn về cuối
-        slider.scrollTo({ left: maxScroll, behavior: "smooth" });
-      } else {
-        // Cuộn bình thường
-        slider.scrollBy({ left: -320, behavior: "smooth" });
-      }
-    }
-  };
-
-  // Hàm cuộn phải với logic vòng lặp
-  const scrollRight = () => {
-    if (sliderRef.current) {
-      const slider = sliderRef.current;
-      const scrollWidth = slider.scrollWidth;
-      const clientWidth = slider.clientWidth;
-      const maxScroll = scrollWidth - clientWidth;
-      const currentScroll = slider.scrollLeft;
-
-      console.log("Scroll Right - Current:", currentScroll, "Max:", maxScroll); // Debug
-
-      if (currentScroll >= maxScroll) {
-        // Cuộn về đầu
-        slider.scrollTo({ left: 0, behavior: "smooth" });
-      } else {
-        // Cuộn bình thường
-        slider.scrollBy({ left: 320, behavior: "smooth" });
-      }
-    }
-  };
-
-  // Hiệu ứng zoom dựa trên vị trí cuộn
   useEffect(() => {
     const slider = sliderRef.current;
     if (!slider) return;
@@ -567,10 +518,41 @@ const Home: React.FC = () => {
     };
   }, [rooms]);
 
-  // Khởi tạo cardRefs khi rooms thay đổi
   useEffect(() => {
     cardRefs.current = new Array(rooms.length).fill(null);
   }, [rooms]);
+
+  const scrollLeft = () => {
+    if (sliderRef.current) {
+      const slider = sliderRef.current;
+      const scrollWidth = slider.scrollWidth;
+      const clientWidth = slider.clientWidth;
+      const maxScroll = scrollWidth - clientWidth;
+      const currentScroll = slider.scrollLeft;
+
+      if (currentScroll <= 0) {
+        slider.scrollTo({ left: maxScroll, behavior: "smooth" });
+      } else {
+        slider.scrollBy({ left: -320, behavior: "smooth" });
+      }
+    }
+  };
+
+  const scrollRight = () => {
+    if (sliderRef.current) {
+      const slider = sliderRef.current;
+      const scrollWidth = slider.scrollWidth;
+      const clientWidth = slider.clientWidth;
+      const maxScroll = scrollWidth - clientWidth;
+      const currentScroll = slider.scrollLeft;
+
+      if (currentScroll >= maxScroll) {
+        slider.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        slider.scrollBy({ left: 320, behavior: "smooth" });
+      }
+    }
+  };
 
   return (
     <div>
@@ -583,10 +565,6 @@ const Home: React.FC = () => {
           minHeight: "100vh",
         }}
       >
-        {/* Overlay để làm tối nền ảnh */}
-        {/* <div className="absolute inset-0 bg-blue bg-opacity-60 z-10"></div> */}
-
-        {/* Nội dung chính */}
         <div className="relative z-10 text-left text-white px-4 py-10 pl-56 mt-52">
           <span className="inline-block bg-green-200 bg-opacity-50 text-blue-800 text-2xl font-semibold px-6 py-2 rounded-full mb-6">
             Trải nghiệm khách sạn đẳng cấp
@@ -678,7 +656,6 @@ const Home: React.FC = () => {
           {Object.values(reviewsByRoom)
             .flat()
             .slice(0, 6)
-            // Giới hạn tối đa 6 card
             .map((review) => (
               <ReviewCard
                 key={review.id}
@@ -752,6 +729,7 @@ const Home: React.FC = () => {
           </div>
         </div>
       )}
+      <Chatbot /> {/* Thêm component Chatbot */}
     </div>
   );
 };
