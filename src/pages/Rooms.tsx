@@ -371,23 +371,38 @@ const Rooms: React.FC = () => {
           {roomTypeId ? `, loại phòng: ${roomTypeId}` : ""}
         </p>
         {loading && (
-          <p
-            className={`text-center text-2xl transition-all duration-300 ${
-              theme === "light" ? "text-black" : "text-gray-200"
-            }`}
-          >
-            Đang tải...
-          </p>
+          <div className="flex flex-col gap-4">
+            {[...Array(4)].map((_, idx) => (
+              <div
+                key={idx}
+                className="animate-pulse bg-gray-200 rounded-lg shadow-md w-full flex h-92"
+              >
+                <div className="w-2/5 h-full bg-gray-300" />
+                <div className="w-3/5 p-2 flex flex-col justify-between ml-4">
+                  <div className="space-y-4 mt-4">
+                    <div className="h-8 bg-gray-300 rounded w-3/4" />
+                    <div className="h-6 bg-gray-300 rounded w-1/2" />
+                    <div className="flex gap-2 mt-2">
+                      {[...Array(5)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="w-6 h-6 bg-gray-300 rounded-full"
+                        />
+                      ))}
+                    </div>
+                    <div className="h-5 bg-gray-300 rounded w-2/3 mt-2" />
+                    <div className="h-6 bg-gray-200 rounded w-1/2 mt-4" />
+                  </div>
+                  <div className="flex flex-col items-end mt-8">
+                    <div className="h-6 bg-gray-300 rounded w-32 mb-2" />
+                    <div className="h-8 bg-gray-300 rounded w-40" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
-        {error && (
-          <p
-            className={`text-center text-2xl transition-all duration-300 ${
-              theme === "light" ? "text-red-600" : "text-red-400"
-            }`}
-          >
-            {error}
-          </p>
-        )}
+        {error && <p className="text-center text-red-600">{error}</p>}
         {!loading && !error && rooms.length === 0 && (
           <p
             className={`text-center text-2xl transition-all duration-300 ${

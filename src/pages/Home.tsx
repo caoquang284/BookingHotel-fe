@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { getRoomsByState } from "../services/apis/room";
+import { getAllRooms, getRoomsByState } from "../services/apis/room";
 import { getAllRoomTypes } from "../services/apis/roomType";
 import { getAllFloors } from "../services/apis/floor";
 import { getAllBookingConfirmationForms } from "../services/apis/bookingconfirm";
@@ -425,7 +425,7 @@ const Home: React.FC = () => {
           getAllBookingConfirmationForms(),
         ]);
       const roomsData = (roomsResponse as unknown as PaginatedResponse).content;
-      console.log("Rooms fetched:", roomsData.length);
+
       const mappedRooms = roomsData.map((room) => {
         const roomType = roomTypesData.find((rt) => rt.id === room.roomTypeId);
         const floor = floorsData.find((f) => f.id === room.floorId);
@@ -523,7 +523,8 @@ const Home: React.FC = () => {
     const fetchReviewsAndGuests = async () => {
       const reviewsMap: Record<number, ResponseReviewDto[]> = {};
       const guestsMap: Record<number, ResponseGuestDTO> = {};
-      for (const room of rooms) {
+      const allroom = await getAllRooms();
+      for (const room of allroom) {
         const reviews = await getReviewsByRoomId(room.id);
         reviewsMap[room.id] = reviews;
         for (const review of reviews) {
@@ -556,7 +557,7 @@ const Home: React.FC = () => {
         }
       }
       setReviewsByRoom(reviewsMap);
-      console.log("Reviews fetched:", reviewsMap);
+
       setGuests(guestsMap);
     };
     if (rooms.length > 0) fetchReviewsAndGuests();
@@ -650,10 +651,14 @@ const Home: React.FC = () => {
           minHeight: "100vh",
         }}
       >
-        <div className="relative z-10 text-left text-white px-4 py-10 pl-56 mt-52">
+        <div className="absolute inset-0 bg-black/70"></div>
+        <div className="relative z-10 text-left text-white px-4 py-10 pl-56 mt-52 ">
           <span className="inline-block bg-green-200 bg-opacity-50 text-blue-800 text-2xl font-semibold px-6 py-2 rounded-full mb-6">
             Trải nghiệm khách sạn đẳng cấp
           </span>
+          <h1 className="text-5xl text-yellow-500 italic md:text-6xl font-bold mb-6 font-playfair">
+            <span>Rong chơi bốn phương,</span>
+            <span className="block mt-6">"giá" vẫn yêu thương</span>
           <h1
             className={`text-5xl italic md:text-6xl font-bold mb-6 ${
               theme === "light" ? "text-yellow-500" : "text-yellow-400"
@@ -799,7 +804,7 @@ const Home: React.FC = () => {
           <br />
           cho các chỗ ở sang trọng và đẳng cấp.
         </h2>
-        <div className="grid grid-cols-3 gap-6 max-h-[800px] overflow-hidden">
+        <div className="grid grid-cols-3 gap-6 flex overflow-hidden">
           {Object.values(reviewsByRoom)
             .flat()
             .slice(0, 6)

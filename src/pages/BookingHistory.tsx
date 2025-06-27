@@ -5,11 +5,9 @@ import { getGuestByAccountId } from "../services/apis/guest";
 import { getRoomById } from "../services/apis/room";
 import { getAllBookingConfirmationForms } from "../services/apis/bookingconfirm";
 import { deleteBookingConfirmationForm } from "../services/apis/bookingconfirm";
-import { createReview } from "../services/apis/review";
-import type {
-  ResponseGuestDTO,
-  ResponseBookingConfirmationFormDTO,
-} from "../types";
+import { createReview } from "../services/apis/review"; // Thêm API tạo đánh giá
+import type { ResponseGuestDTO } from "../types/index.ts";
+import type { ResponseBookingConfirmationFormDTO } from "../types";
 import { getRoomTypeById } from "../services/apis/roomType";
 import starIconFilled from "../assets/Icon/starIconFilled.svg";
 import starIconOutlined from "../assets/Icon/starIconOutlined.svg";
@@ -23,10 +21,9 @@ const BookingHistory: React.FC = () => {
   >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showReviewForm, setShowReviewForm] = useState<number | null>(null);
-  const [rating, setRating] = useState<number>(0);
-  const [comment, setComment] = useState<string>("");
-
+  const [showReviewForm, setShowReviewForm] = useState<number | null>(null); // State để hiển thị form đánh giá
+  const [rating, setRating] = useState<number>(0); // Đánh giá (1-5)
+  const [comment, setComment] = useState<string>(""); // Bình luận
   const bookingState = {
     PENDING: "Chờ xác nhận",
     COMMITED: "Đã xác nhận",
@@ -39,6 +36,17 @@ const BookingHistory: React.FC = () => {
     COMMITED: "text-green-500",
     CANCELLED: "text-red-500",
     EXPIRED: "text-gray-500",
+  };
+
+  // Hàm kiểm tra xem có hiển thị nút Hủy trong form đánh giá không
+  const canShowCancelButton = (bookingDate: string): boolean => {
+    const bookingDateObj = new Date(bookingDate);
+    const threeDaysAfterBooking = new Date(bookingDateObj);
+    threeDaysAfterBooking.setDate(bookingDateObj.getDate() + 3);
+    const currentDate = new Date();
+    console.log("3 ngay sau", threeDaysAfterBooking);
+    console.log(currentDate);
+    return threeDaysAfterBooking < currentDate;
   };
 
   useEffect(() => {
@@ -61,7 +69,6 @@ const BookingHistory: React.FC = () => {
         for (const booking of userBookings) {
           const room = await getRoomById(booking.roomId);
           const roomType = await getRoomTypeById(room.roomTypeId);
-
           booking.roomName = room.name;
           booking.roomTypeName = roomType.name;
         }
@@ -83,7 +90,6 @@ const BookingHistory: React.FC = () => {
       return;
     }
 
-    // Thay thế window.confirm bằng toast với confirm
     const confirmed = window.confirm(
       "Bạn có chắc chắn muốn hủy đơn đặt phòng này? Hành động này không thể hoàn tác."
     );
@@ -120,11 +126,10 @@ const BookingHistory: React.FC = () => {
 
     try {
       await createReview(reviewData, user.id, "GUEST");
-      setShowReviewForm(null); // Ẩn form sau khi gửi
-      setRating(0); // Reset rating
-      setComment(""); // Reset comment
+      setShowReviewForm(null);
+      setRating(0);
+      setComment("");
       toast.success("Đánh giá thành công!");
-      // Có thể gọi lại fetchBookingHistory hoặc cập nhật state nếu cần
     } catch (err) {
       console.error("Error submitting review:", err);
       setError("Không thể gửi đánh giá. Vui lòng thử lại sau.");
@@ -234,28 +239,21 @@ const BookingHistory: React.FC = () => {
                 <div className="flex justify-end gap-4 mt-4">
                   <button
                     onClick={() => handleCancelBooking(booking.id)}
-                    className={`text-white text-xl font-semibold py-2 px-6 rounded-lg transition-all duration-300 ${
-                      theme === "light"
-                        ? "bg-red-500 hover:bg-red-600"
-                        : "bg-red-600 hover:bg-red-700"
-                    }`}
+                    className="bg-red-500 text-white text-xl font-semibold py-2 px-6 rounded-lg hover:bg-red-600 transition"
                   >
                     Hủy
                   </button>
                   {booking.bookingState === "COMMITED" && (
                     <button
                       onClick={() => setShowReviewForm(booking.id)}
-                      className={`text-white text-xl font-semibold py-2 px-6 rounded-lg transition-all duration-300 ${
-                        theme === "light"
-                          ? "bg-blue-500 hover:bg-blue-600"
-                          : "bg-blue-600 hover:bg-blue-700"
-                      }`}
+                      className="bg-blue-500 text-white text-xl font-semibold py-2 px-6 rounded-lg hover:bg-blue-600 transition"
                     >
                       Đánh giá
                     </button>
                   )}
                 </div>
               )}
+              {/* Form đánh giá */}
               {showReviewForm === booking.id && (
                 <div
                   className={`mt-4 p-4 rounded-lg transition-all duration-300 ${
@@ -321,11 +319,7 @@ const BookingHistory: React.FC = () => {
                   <div className="flex justify-end gap-4">
                     <button
                       onClick={() => setShowReviewForm(null)}
-                      className={`text-white text-xl font-semibold py-2 px-6 rounded-lg transition-all duration-300 ${
-                        theme === "light"
-                          ? "bg-gray-500 hover:bg-gray-600"
-                          : "bg-gray-600 hover:bg-gray-700"
-                      }`}
+                      className="bg-gray-500 text-white text-xl font-semibold py-2 px-6 rounded-lg hover:bg-gray-600 transition"
                     >
                       Hủy
                     </button>
