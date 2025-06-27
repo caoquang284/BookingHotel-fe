@@ -659,15 +659,8 @@ const Home: React.FC = () => {
           <h1 className="text-5xl text-yellow-500 italic md:text-6xl font-bold mb-6 font-playfair">
             <span>Rong chơi bốn phương,</span>
             <span className="block mt-6">"giá" vẫn yêu thương</span>
-          <h1
-            className={`text-5xl italic md:text-6xl font-bold mb-6 ${
-              theme === "light" ? "text-yellow-500" : "text-yellow-400"
-            }`}
-          >
-            Rong chơi bốn phương,
-            <br />
-            "giá" vẫn yêu thương
           </h1>
+
           <p
             className={`text-xl md:text-xl mb-8 max-w-2xl font-semibold ${
               theme === "light" ? "text-white" : "text-gray-200"
