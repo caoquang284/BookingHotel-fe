@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import { toast } from "react-toastify";
+import { askChatbot } from "../services/apis/chatbot/chatbot";
+import { loadKnowledgeSections, getRelevantSections } from "../services/apis/chatbot/loadKnowledge";
 import closeIcon from "../assets/icon/closeIcon.svg";
+import { useAuth } from "../contexts/AuthContext";
+import { getGuestByAccountId } from '../services/apis/guest'
+
 interface Message {
   id: number;
   text: string;
@@ -8,12 +12,41 @@ interface Message {
 }
 
 const Chatbot: React.FC = () => {
+  const { user } = useAuth();
+  const [guestId, setGuestId] = useState<number | null>(null);
   const [messages, setMessages] = useState<Message[]>([
     { id: 1, text: "🤖 Chatbot sẵn sàng trả lời câu hỏi!", isUser: false },
   ]);
   const [input, setInput] = useState("");
-  const [isOpen, setIsOpen] = useState(false); // Trạng thái để kiểm soát thu gọn/mở rộng
+  const [isOpen, setIsOpen] = useState(false);
+  const [knowledge, setKnowledge] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    getGuestByAccountId(user.id)
+      .then((guest) => {
+        if (guest?.id) setGuestId(guest.id);
+      })
+      .catch((err) => {
+        console.error("Không lấy được guest từ account id:", err);
+      });
+  }, [user]);
+
+  useEffect(() => {
+    if (!guestId) return;
+
+    loadKnowledgeSections(guestId)
+      .then((data) => {
+      console.log("🎯 DỮ LIỆU KIẾN THỨC CHO CHATBOT (knowledge):", data);
+      setKnowledge(data);
+      })
+      .catch((err) => {
+        console.error("❌ Lỗi khi tải dữ liệu kiến thức:", err);
+      });
+  }, [guestId]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -24,48 +57,37 @@ const Chatbot: React.FC = () => {
   }, [messages]);
 
   const handleSend = async () => {
-    if (!input.trim()) return;
+    const question = input.trim();
+    if (!question || loading) return;
 
     const userMessage: Message = {
       id: messages.length + 1,
-      text: input,
+      text: question,
       isUser: true,
     };
-    setMessages([...messages, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setInput("");
+    setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:9090/api/chatbot/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ question: input }),
-      });
+      const relevantData = getRelevantSections(question, knowledge);
+      const responseText = await askChatbot(question, relevantData);
 
-      if (!response.ok) {
-        throw new Error(
-          `Failed to get chatbot response: ${await response.text()}`
-        );
-      }
-
-      const botResponse = await response.text();
       const botMessage: Message = {
         id: messages.length + 2,
-        text: botResponse,
+        text: responseText,
         isUser: false,
       };
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
-      console.error(error);
-      const errorMessage: Message = {
-        id: messages.length + 2,
-        text:
-          "Lỗi khi gọi chatbot: " +
-          (error instanceof Error ? error.message : "Unknown error"),
-        isUser: false,
-      };
-      setMessages((prev) => [...prev, errorMessage]);
+      const errorText =
+        error instanceof Error ? error.message : "Lỗi không xác định khi gọi Gemini.";
+      setMessages((prev) => [
+        ...prev,
+        { id: messages.length + 2, text: "❌ " + errorText, isUser: false },
+      ]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -131,12 +153,14 @@ const Chatbot: React.FC = () => {
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Nhập câu hỏi của bạn..."
+              disabled={loading}
             />
             <button
-              className="mt-2 w-full bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700"
+              className="mt-2 w-full bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
               onClick={handleSend}
+              disabled={loading}
             >
-              Gửi
+              {loading ? "Đang xử lý..." : "Gửi"}
             </button>
           </div>
         </div>

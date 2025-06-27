@@ -121,3 +121,19 @@ export async function deleteBookingConfirmationForm(id: number, impactorId: numb
 
     return await response.text();
 }
+
+export async function getBookingConfirmationFormsByUserId(id: number): Promise<ResponseBookingConfirmationFormDTO[]> {
+    const response = await fetch(`${BASE_URL}/user-id/${id}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+
+    if (response.ok) {
+        const error = await response.text();
+        throw new Error(`Failed to get booking confirmation forms with user id ${id}: ${error}`);
+    }
+
+    return await response.json();
+}
