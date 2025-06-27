@@ -1,34 +1,39 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
 import { getGuestByAccountId } from "../services/apis/guest";
 import { getRoomById } from "../services/apis/room";
 import { getAllBookingConfirmationForms } from "../services/apis/bookingconfirm";
 import { deleteBookingConfirmationForm } from "../services/apis/bookingconfirm";
-import { createReview } from "../services/apis/review"; // Thêm API tạo đánh giá
-import type { ResponseGuestDTO } from "../types/index.ts";
-import type { ResponseBookingConfirmationFormDTO } from "../types";
+import { createReview } from "../services/apis/review";
+import type {
+  ResponseGuestDTO,
+  ResponseBookingConfirmationFormDTO,
+} from "../types";
 import { getRoomTypeById } from "../services/apis/roomType";
 import starIconFilled from "../assets/Icon/starIconFilled.svg";
 import starIconOutlined from "../assets/Icon/starIconOutlined.svg";
 import { toast } from "react-toastify";
-
 const BookingHistory: React.FC = () => {
   const { user } = useAuth();
+  const { theme } = useTheme();
   const [guestId, setGuestId] = useState<number | null>(null);
   const [bookings, setBookings] = useState<
     ResponseBookingConfirmationFormDTO[]
   >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showReviewForm, setShowReviewForm] = useState<number | null>(null); // State để hiển thị form đánh giá
-  const [rating, setRating] = useState<number>(0); // Đánh giá (1-5)
-  const [comment, setComment] = useState<string>(""); // Bình luận
+  const [showReviewForm, setShowReviewForm] = useState<number | null>(null);
+  const [rating, setRating] = useState<number>(0);
+  const [comment, setComment] = useState<string>("");
+
   const bookingState = {
     PENDING: "Chờ xác nhận",
     COMMITED: "Đã xác nhận",
     CANCELLED: "Đã hủy",
     EXPIRED: "Đã hết hạn",
   };
+
   const bookingStateColor = {
     PENDING: "text-yellow-500",
     COMMITED: "text-green-500",
@@ -72,7 +77,6 @@ const BookingHistory: React.FC = () => {
     fetchBookingHistory();
   }, [user?.id]);
 
-  // Hàm xử lý hủy đơn
   const handleCancelBooking = async (bookingId: number) => {
     if (!user?.id) {
       setError("Vui lòng đăng nhập để hủy đặt phòng");
@@ -96,7 +100,6 @@ const BookingHistory: React.FC = () => {
     }
   };
 
-  // Hàm xử lý gửi đánh giá
   const handleSubmitReview = async (bookingId: number) => {
     if (!user?.id || !guestId) {
       setError("Vui lòng đăng nhập để đánh giá");
@@ -131,36 +134,69 @@ const BookingHistory: React.FC = () => {
   if (loading)
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
+        <div
+          className={`animate-spin rounded-full h-12 w-12 border-t-4 transition-all duration-300 ${
+            theme === "light" ? "border-blue-500" : "border-blue-400"
+          }`}
+        ></div>
       </div>
     );
   if (error)
     return (
-      <div className="text-center py-12 text-red-600 text-xl font-semibold">
+      <div
+        className={`text-center py-12 text-xl font-semibold transition-all duration-300 ${
+          theme === "light" ? "text-red-600" : "text-red-400"
+        }`}
+      >
         {error}
       </div>
     );
   if (!bookings.length)
     return (
-      <div className="text-center py-12 text-gray-600 text-2xl font-semibold py-48 px-42">
+      <div
+        className={`text-center py-12 text-2xl font-semibold py-48 px-42 transition-all duration-300 ${
+          theme === "light" ? "text-gray-600" : "text-gray-300"
+        }`}
+      >
         Không có lịch sử đặt phòng
       </div>
     );
 
   return (
-    <div className="min-h-screen bg-gray-100 sm:px-6 lg:px-8 py-42 px-48">
+    <div
+      className={`min-h-screen sm:px-6 lg:px-8 py-42 px-48 transition-all duration-300 ${
+        theme === "light" ? "bg-gray-100" : "bg-gray-900"
+      }`}
+    >
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-5xl font-playfair font-extrabold text-gray-900 text-center mb-12">
+        <h2
+          className={`text-5xl font-playfair font-extrabold text-center mb-12 transition-all duration-300 ${
+            theme === "light" ? "text-gray-900" : "text-gray-100"
+          }`}
+        >
           Lịch Sử Đặt Phòng
         </h2>
         <div className="grid gap-6">
           {bookings.map((booking) => (
-            <div key={booking.id} className="bg-white shadow-md rounded-lg p-6">
+            <div
+              key={booking.id}
+              className={`shadow-md rounded-lg p-6 transition-all duration-300 ${
+                theme === "light" ? "bg-white" : "bg-gray-800"
+              }`}
+            >
               <div className="flex justify-between items-center mb-3">
-                <span className="text-gray-600 text-2xl">
+                <span
+                  className={`text-2xl ${
+                    theme === "light" ? "text-gray-600" : "text-gray-300"
+                  }`}
+                >
                   <span className="font-semibold">Mã phiếu:</span> {booking.id}
                 </span>
-                <span className="text-gray-600 text-2xl">
+                <span
+                  className={`text-2xl ${
+                    theme === "light" ? "text-gray-600" : "text-gray-300"
+                  }`}
+                >
                   <span className="font-semibold">Trạng thái:</span>{" "}
                   <span
                     className={`${bookingStateColor[booking.bookingState]}`}
@@ -169,53 +205,83 @@ const BookingHistory: React.FC = () => {
                   </span>
                 </span>
               </div>
-              <p className="text-gray-600 text-2xl mb-3">
+              <p
+                className={`text-2xl mb-3 ${
+                  theme === "light" ? "text-gray-600" : "text-gray-300"
+                }`}
+              >
                 <span className="font-semibold">Phòng:</span> {booking.roomName}{" "}
                 - {booking.roomTypeName}
               </p>
-              <p className="text-gray-600 text-2xl mb-3">
+              <p
+                className={`text-2xl mb-3 ${
+                  theme === "light" ? "text-gray-600" : "text-gray-300"
+                }`}
+              >
                 <span className="font-semibold">Ngày đặt:</span>{" "}
                 {new Date(booking.bookingDate).toLocaleDateString("vi-VN")}
               </p>
-              <p className="text-gray-600 text-2xl mb-3">
+              <p
+                className={`text-2xl mb-3 ${
+                  theme === "light" ? "text-gray-600" : "text-gray-300"
+                }`}
+              >
                 <span className="font-semibold">Số ngày thuê:</span>{" "}
                 {booking.rentalDays}
               </p>
-              {/* Nút Hủy và Đánh giá, chỉ hiển thị khi PENDING hoặc COMMITED */}
               {(booking.bookingState === "PENDING" ||
                 booking.bookingState === "COMMITED") && (
                 <div className="flex justify-end gap-4 mt-4">
                   <button
                     onClick={() => handleCancelBooking(booking.id)}
-                    className="bg-red-500 text-white text-xl font-semibold py-2 px-6 rounded-lg hover:bg-red-600 transition"
+                    className={`text-white text-xl font-semibold py-2 px-6 rounded-lg transition-all duration-300 ${
+                      theme === "light"
+                        ? "bg-red-500 hover:bg-red-600"
+                        : "bg-red-600 hover:bg-red-700"
+                    }`}
                   >
                     Hủy
                   </button>
                   {booking.bookingState === "COMMITED" && (
                     <button
                       onClick={() => setShowReviewForm(booking.id)}
-                      className="bg-blue-500 text-white text-xl font-semibold py-2 px-6 rounded-lg hover:bg-blue-600 transition"
+                      className={`text-white text-xl font-semibold py-2 px-6 rounded-lg transition-all duration-300 ${
+                        theme === "light"
+                          ? "bg-blue-500 hover:bg-blue-600"
+                          : "bg-blue-600 hover:bg-blue-700"
+                      }`}
                     >
                       Đánh giá
                     </button>
                   )}
                 </div>
               )}
-              {/* Form đánh giá */}
               {showReviewForm === booking.id && (
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                  <h3 className="text-2xl font-semibold mb-2">
+                <div
+                  className={`mt-4 p-4 rounded-lg transition-all duration-300 ${
+                    theme === "light" ? "bg-gray-50" : "bg-gray-700"
+                  }`}
+                >
+                  <h3
+                    className={`text-2xl font-semibold mb-2 ${
+                      theme === "light" ? "text-gray-600" : "text-gray-200"
+                    }`}
+                  >
                     Đánh giá phòng
                   </h3>
                   <div className="mb-2 flex gap-1">
-                    <label className="block text-xl font-medium mb-1">
+                    <label
+                      className={`block text-xl font-medium mb-1 ${
+                        theme === "light" ? "text-gray-600" : "text-gray-200"
+                      }`}
+                    >
                       Số sao:
                     </label>
                     {[1, 2, 3, 4, 5].map((star) => (
                       <span
                         key={star}
                         onClick={() => setRating(star)}
-                        className={`cursor-pointer text-2xl`}
+                        className="cursor-pointer text-2xl"
                       >
                         {star <= rating ? (
                           <img
@@ -234,26 +300,42 @@ const BookingHistory: React.FC = () => {
                     ))}
                   </div>
                   <div className="mb-2">
-                    <label className="block text-xl font-medium mb-1">
+                    <label
+                      className={`block text-xl font-medium mb-1 ${
+                        theme === "light" ? "text-gray-600" : "text-gray-200"
+                      }`}
+                    >
                       Bình luận:
                     </label>
                     <textarea
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
-                      className="w-full p-2 border rounded-lg text-xl"
+                      className={`w-full p-2 border rounded-lg text-xl transition-all duration-300 ${
+                        theme === "light"
+                          ? "border-gray-300 text-gray-900 bg-white"
+                          : "border-gray-600 text-gray-100 bg-gray-800"
+                      }`}
                       rows={3}
                     />
                   </div>
                   <div className="flex justify-end gap-4">
                     <button
                       onClick={() => setShowReviewForm(null)}
-                      className="bg-gray-500 text-white text-xl font-semibold py-2 px-6 rounded-lg hover:bg-gray-600 transition"
+                      className={`text-white text-xl font-semibold py-2 px-6 rounded-lg transition-all duration-300 ${
+                        theme === "light"
+                          ? "bg-gray-500 hover:bg-gray-600"
+                          : "bg-gray-600 hover:bg-gray-700"
+                      }`}
                     >
                       Hủy
                     </button>
                     <button
                       onClick={() => handleSubmitReview(booking.id)}
-                      className="bg-green-500 text-white text-xl font-semibold py-2 px-6 rounded-lg hover:bg-green-600 transition"
+                      className={`text-white text-xl font-semibold py-2 px-6 rounded-lg transition-all duration-300 ${
+                        theme === "light"
+                          ? "bg-green-500 hover:bg-green-600"
+                          : "bg-green-600 hover:bg-green-700"
+                      }`}
                     >
                       Gửi đánh giá
                     </button>

@@ -5,8 +5,11 @@ import {
   FaTwitter,
   FaLinkedin,
 } from "react-icons/fa";
+import { useTheme } from "../../contexts/ThemeContext";
 
 const Footer = () => {
+  const { theme } = useTheme();
+
   const socialIcons = [
     { Icon: FaFacebook, link: "https://facebook.com" },
     { Icon: FaInstagram, link: "https://instagram.com" },
@@ -23,7 +26,11 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-gray-900 text-white py-1">
+    <footer
+      className={`py-1 transition-all duration-300 ${
+        theme === "light" ? "bg-gray-900 text-white" : "bg-gray-700 text-gray-900"
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-6">
         {/* Main */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-6">
@@ -66,7 +73,11 @@ const Footer = () => {
                   href={link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white hover:text-gray-400 transition-colors"
+                  className={`transition-colors ${
+                    theme === "light"
+                      ? "text-white hover:text-gray-400"
+                      : "text-gray-900 hover:text-gray-600"
+                  }`}
                 >
                   <Icon size={24} />
                 </a>
@@ -76,7 +87,11 @@ const Footer = () => {
         </div>
 
         {/* Copyright and Legal */}
-        <div className="border-t border-gray-700 pt-6 flex flex-col md:flex-row justify-between items-center text-sm">
+        <div
+          className={`border-t pt-6 flex flex-col md:flex-row justify-between items-center text-sm ${
+            theme === "light" ? "border-gray-700" : "border-gray-300"
+          }`}
+        >
           <p className="mb-4 md:mb-0">
             2025 © Website đặt phòng khách sạn. Bản quyền thuộc về nhóm 5, Trường Đại học
             Công nghệ thông tin - ĐHQG.TPHCM
@@ -86,7 +101,11 @@ const Footer = () => {
               <a
                 key={index}
                 href={link.path}
-                className="hover:text-gray-400 transition-colors"
+                className={`transition-colors ${
+                  theme === "light"
+                    ? "text-white hover:text-gray-400"
+                    : "text-gray-900 hover:text-gray-600"
+                }`}
               >
                 {link.label}
               </a>
