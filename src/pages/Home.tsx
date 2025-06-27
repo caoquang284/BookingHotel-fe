@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAllRooms, getRoomsByState } from "../services/apis/room";
+import {
+  getAllRooms,
+  getRoomById,
+  getRoomsByState,
+} from "../services/apis/room";
 import { getAllRoomTypes } from "../services/apis/roomType";
 import { getAllFloors } from "../services/apis/floor";
 import { getAllBookingConfirmationForms } from "../services/apis/bookingconfirm";
@@ -71,6 +75,22 @@ const BookingBox: React.FC<{
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+    if (
+      !checkIn ||
+      !checkOut ||
+      checkInDate < today ||
+      checkOutDate < today ||
+      checkOutDate <= checkInDate
+    ) {
+      toast.error(
+        "Ngày đến và ngày đi phải lớn hơn hôm nay và ngày đi phải lớn hơn ngày đến"
+      );
+      return;
+    }
     onSearch({ checkIn, checkOut, roomTypeId });
   };
 
@@ -315,10 +335,10 @@ const RoomCard: React.FC<{
           </p>
           <button
             onClick={handleBookingClick}
-            className={`text-base py-2 px-4 rounded-md border transition-all duration-200 ${
+            className={`text-lg py-2 px-4 rounded-md border transition-all duration-200 ${
               theme === "light"
-                ? "bg-transparent border-transparent hover:border-gray-400"
-                : "bg-transparent border-transparent hover:border-gray-500"
+                ? "bg-transparent border-transparent hover:border-gray-400 text-black"
+                : "bg-transparent border-transparent hover:border-gray-500 text-white"
             }`}
           >
             Đặt phòng
@@ -338,12 +358,13 @@ const userimageLink = [
 const ReviewCard: React.FC<{
   review: ResponseReviewDto;
   guests: Record<number, ResponseGuestDTO>;
-  roomName: string;
-}> = ({ review, guests, roomName }) => {
+  roomId: number;
+  roomNames: Record<number, string>;
+}> = ({ review, guests, roomId, roomNames }) => {
   const { theme } = useTheme();
   const guest = guests[review.guestId] || { name: "Ẩn danh" };
   const guestName = guest.name || "Ẩn danh";
-
+  const roomName = roomNames[roomId] || "Phòng không xác định";
   return (
     <div
       className={`rounded-lg shadow-md p-4 mb-4 transition-all duration-300 ${
@@ -409,6 +430,8 @@ const Home: React.FC = () => {
     Record<number, ResponseReviewDto[]>
   >({});
   const [guests, setGuests] = useState<Record<number, ResponseGuestDTO>>({});
+  const [roomNames, setRoomNames] = useState<Record<number, string>>({});
+  const [allRoomNames, setAllRoomNames] = useState<Record<number, string>>({});
 
   const fetchData = async (
     checkInDate?: string,
@@ -503,6 +526,14 @@ const Home: React.FC = () => {
   useEffect(() => {
     fetchData();
     getAllRoomTypes().then(setRoomTypes);
+    // Lấy toàn bộ danh sách phòng để tạo allRoomNames
+    getAllRooms().then((allRooms) => {
+      const names: Record<number, string> = {};
+      allRooms.forEach((room) => {
+        names[room.id] = room.name;
+      });
+      setAllRoomNames(names);
+    });
   }, []);
 
   const handleSearch = (params: {
@@ -557,10 +588,18 @@ const Home: React.FC = () => {
         }
       }
       setReviewsByRoom(reviewsMap);
-
       setGuests(guestsMap);
     };
     if (rooms.length > 0) fetchReviewsAndGuests();
+  }, [rooms]);
+
+  useEffect(() => {
+    // Tạo object roomNames từ rooms
+    const roomNames: Record<number, string> = {};
+    rooms.forEach((room) => {
+      roomNames[room.id] = room.name;
+    });
+    setRoomNames(roomNames);
   }, [rooms]);
 
   const sliderRef = useRef<HTMLDivElement>(null);
@@ -800,17 +839,13 @@ const Home: React.FC = () => {
         <div className="grid grid-cols-3 gap-6 flex overflow-hidden">
           {Object.values(reviewsByRoom)
             .flat()
-            .slice(0, 6)
-            .slice(0, 6)
             .map((review) => (
               <ReviewCard
                 key={review.id}
                 review={review}
                 guests={guests}
-                roomName={
-                  rooms.find((room) => room.id === review.roomId)?.name ||
-                  "Phòng không xác định"
-                }
+                roomId={review.roomId}
+                roomNames={allRoomNames}
               />
             ))}
           {Object.values(reviewsByRoom).every((reviews) => !reviews.length) && (

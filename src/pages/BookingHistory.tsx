@@ -12,6 +12,8 @@ import { getRoomTypeById } from "../services/apis/roomType";
 import starIconFilled from "../assets/Icon/starIconFilled.svg";
 import starIconOutlined from "../assets/Icon/starIconOutlined.svg";
 import { toast } from "react-toastify";
+import type { ToastContent, ToastOptions } from "react-toastify";
+
 const BookingHistory: React.FC = () => {
   const { user } = useAuth();
   const { theme } = useTheme();
@@ -24,6 +26,12 @@ const BookingHistory: React.FC = () => {
   const [showReviewForm, setShowReviewForm] = useState<number | null>(null); // State để hiển thị form đánh giá
   const [rating, setRating] = useState<number>(0); // Đánh giá (1-5)
   const [comment, setComment] = useState<string>(""); // Bình luận
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
+  const [isGeneratingQR, setIsGeneratingQR] = useState(false);
+  const [selectedBookingForQR, setSelectedBookingForQR] =
+    useState<ResponseBookingConfirmationFormDTO | null>(null);
+  const [qrPrice, setQrPrice] = useState<number>(0);
   const bookingState = {
     PENDING: "Chờ xác nhận",
     COMMITED: "Đã xác nhận",
@@ -39,14 +47,12 @@ const BookingHistory: React.FC = () => {
   };
 
   // Hàm kiểm tra xem có hiển thị nút Hủy trong form đánh giá không
-  const canShowCancelButton = (bookingDate: string): boolean => {
-    const bookingDateObj = new Date(bookingDate);
+  const canShowCancelButton = (createAt: string): boolean => {
+    const bookingDateObj = new Date(createAt);
     const threeDaysAfterBooking = new Date(bookingDateObj);
     threeDaysAfterBooking.setDate(bookingDateObj.getDate() + 3);
     const currentDate = new Date();
-    console.log("3 ngay sau", threeDaysAfterBooking);
-    console.log(currentDate);
-    return threeDaysAfterBooking < currentDate;
+    return threeDaysAfterBooking > currentDate;
   };
 
   useEffect(() => {
@@ -86,34 +92,66 @@ const BookingHistory: React.FC = () => {
 
   const handleCancelBooking = async (bookingId: number) => {
     if (!user?.id) {
-      setError("Vui lòng đăng nhập để hủy đặt phòng");
+      toast.error("Vui lòng đăng nhập để hủy đặt phòng");
       return;
     }
 
-    const confirmed = window.confirm(
-      "Bạn có chắc chắn muốn hủy đơn đặt phòng này? Hành động này không thể hoàn tác."
+    // Custom toast xác nhận
+    let toastId: number | string | undefined;
+    const ConfirmToast = () => (
+      <div>
+        <div className="mb-2 text-lg font-semibold">
+          Bạn có chắc chắn muốn hủy đơn đặt phòng này? Hành động này không thể
+          hoàn tác.
+        </div>
+        <div className="flex gap-2 justify-end mt-2">
+          <button
+            className="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded mr-2"
+            onClick={() => {
+              if (toastId) toast.dismiss(toastId);
+            }}
+          >
+            Hủy
+          </button>
+          <button
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+            onClick={async () => {
+              if (toastId) toast.dismiss(toastId);
+              try {
+                await deleteBookingConfirmationForm(
+                  bookingId,
+                  user.id,
+                  "GUEST"
+                );
+                setBookings(
+                  bookings.filter((booking) => booking.id !== bookingId)
+                );
+                toast.success("Hủy đặt phòng thành công!");
+              } catch (err) {
+                console.error("Error cancelling booking:", err);
+                toast.error("Không thể hủy đặt phòng. Vui lòng thử lại sau.");
+              }
+            }}
+          >
+            Xác nhận
+          </button>
+        </div>
+      </div>
     );
-
-    if (confirmed) {
-      try {
-        await deleteBookingConfirmationForm(bookingId, user.id, "GUEST");
-        setBookings(bookings.filter((booking) => booking.id !== bookingId));
-        toast.success("Hủy đặt phòng thành công!");
-      } catch (err) {
-        console.error("Error cancelling booking:", err);
-        setError("Không thể hủy đặt phòng. Vui lòng thử lại sau.");
-      }
-    }
+    toastId = toast.info(<ConfirmToast />, {
+      autoClose: false,
+      closeOnClick: false,
+    });
   };
 
   const handleSubmitReview = async (bookingId: number) => {
     if (!user?.id || !guestId) {
-      setError("Vui lòng đăng nhập để đánh giá");
+      toast.error("Vui lòng đăng nhập để đánh giá");
       return;
     }
 
     if (rating === 0) {
-      setError("Vui lòng chọn số sao để đánh giá");
+      toast.error("Vui lòng chọn số sao để đánh giá");
       return;
     }
 
@@ -132,7 +170,83 @@ const BookingHistory: React.FC = () => {
       toast.success("Đánh giá thành công!");
     } catch (err) {
       console.error("Error submitting review:", err);
-      setError("Không thể gửi đánh giá. Vui lòng thử lại sau.");
+      toast.error("Không thể gửi đánh giá. Vui lòng thử lại sau.");
+    }
+  };
+
+  const generateQRCode = async (amount: number, bookingId: number) => {
+    try {
+      setIsGeneratingQR(true);
+      const accountNo = "5622889955";
+      const accountName = "KHACH SAN 5 SAO";
+      const acqId = "970418";
+      const transferContent = `Thanh toan tien phong #${bookingId}`.slice(
+        0,
+        50
+      );
+
+      if (!Number.isInteger(amount) || amount <= 0) {
+        throw new Error("Số tiền phải là số nguyên lớn hơn 0");
+      }
+
+      const payload = {
+        accountNo: accountNo.trim(),
+        accountName: accountName.trim(),
+        acqId,
+        amount,
+        addInfo: transferContent,
+        format: "text",
+        template: "compact2",
+      };
+
+      const response = await fetch("https://api.vietqr.io/v2/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-client-id": "658ae10f-8dbf-44bf-b943-31745299dd84",
+          "x-api-key": "f1ac89af-9c63-48bb-9a09-9c635411954e",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`VietQR API error: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      if (data.code === "00" && data.data?.qrDataURL) {
+        setQrCodeUrl(data.data.qrDataURL);
+      } else {
+        throw new Error(`VietQR API failed: ${data.desc || "Unknown error"}`);
+      }
+    } catch (error) {
+      console.error("generateQRCode - Error:", error);
+      toast.error(`Lỗi khi tạo mã QR: ${error}`);
+      setQrCodeUrl("");
+    } finally {
+      setIsGeneratingQR(false);
+    }
+  };
+
+  const handleShowQRModal = async (
+    booking: ResponseBookingConfirmationFormDTO
+  ) => {
+    setSelectedBookingForQR(booking);
+    setShowQRModal(true);
+    setQrCodeUrl("");
+    setQrPrice(0);
+    // Lấy thông tin phòng từ API
+    try {
+      const room = await getRoomById(booking.roomId);
+      const roomType = await getRoomTypeById(room.roomTypeId);
+      const price = roomType.price ?? 0;
+      setQrPrice(price);
+      const amount = (booking.rentalDays || 1) * price;
+      await generateQRCode(amount, booking.id);
+    } catch (error) {
+      toast.error("Không thể lấy thông tin phòng để tạo mã QR");
+      setQrCodeUrl("");
     }
   };
 
@@ -153,7 +267,7 @@ const BookingHistory: React.FC = () => {
           theme === "light" ? "text-red-600" : "text-red-400"
         }`}
       >
-        {error}
+        {toast.error(error)}
       </div>
     );
   if (!bookings.length)
@@ -224,6 +338,14 @@ const BookingHistory: React.FC = () => {
                 }`}
               >
                 <span className="font-semibold">Ngày đặt:</span>{" "}
+                {new Date(booking.createdAt).toLocaleDateString("vi-VN")}
+              </p>
+              <p
+                className={`text-2xl mb-3 ${
+                  theme === "light" ? "text-gray-600" : "text-gray-300"
+                }`}
+              >
+                <span className="font-semibold">Ngày nhận phòng:</span>{" "}
                 {new Date(booking.bookingDate).toLocaleDateString("vi-VN")}
               </p>
               <p
@@ -234,23 +356,31 @@ const BookingHistory: React.FC = () => {
                 <span className="font-semibold">Số ngày thuê:</span>{" "}
                 {booking.rentalDays}
               </p>
-              {(booking.bookingState === "PENDING" ||
-                booking.bookingState === "COMMITED") && (
+              {booking.bookingState === "PENDING" &&
+                canShowCancelButton(booking.createdAt) && (
+                  <div className="flex justify-end gap-4 mt-4">
+                    <button
+                      onClick={() => handleCancelBooking(booking.id)}
+                      className="bg-red-500 text-white text-xl font-semibold py-2 px-6 rounded-lg hover:bg-red-600 transition"
+                    >
+                      Hủy
+                    </button>
+                  </div>
+                )}
+              {booking.bookingState === "COMMITED" && (
                 <div className="flex justify-end gap-4 mt-4">
                   <button
-                    onClick={() => handleCancelBooking(booking.id)}
-                    className="bg-red-500 text-white text-xl font-semibold py-2 px-6 rounded-lg hover:bg-red-600 transition"
+                    onClick={() => setShowReviewForm(booking.id)}
+                    className="bg-blue-500 text-white text-xl font-semibold py-2 px-6 rounded-lg hover:bg-blue-600 transition"
                   >
-                    Hủy
+                    Đánh giá
                   </button>
-                  {booking.bookingState === "COMMITED" && (
-                    <button
-                      onClick={() => setShowReviewForm(booking.id)}
-                      className="bg-blue-500 text-white text-xl font-semibold py-2 px-6 rounded-lg hover:bg-blue-600 transition"
-                    >
-                      Đánh giá
-                    </button>
-                  )}
+                  <button
+                    onClick={() => handleShowQRModal(booking)}
+                    className="bg-green-500 text-white text-xl font-semibold py-2 px-6 rounded-lg hover:bg-green-600 transition"
+                  >
+                    Check Out
+                  </button>
                 </div>
               )}
               {/* Form đánh giá */}
@@ -340,6 +470,202 @@ const BookingHistory: React.FC = () => {
           ))}
         </div>
       </div>
+      {/* Modal QR Code */}
+      {showQRModal && selectedBookingForQR && (
+        <div className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2">
+          <div
+            className={`rounded-2xl shadow-2xl max-w-2xl w-full p-4 relative transition-all duration-300 ${
+              theme === "light" ? "bg-white" : "bg-gray-800"
+            }`}
+          >
+            <button
+              onClick={() => {
+                setShowQRModal(false);
+                setQrCodeUrl("");
+                setQrPrice(0);
+                setSelectedBookingForQR(null);
+              }}
+              className={`absolute top-4 right-4 transition-all duration-300 ${
+                theme === "light"
+                  ? "text-gray-500 hover:text-gray-700"
+                  : "text-gray-400 hover:text-gray-200"
+              }`}
+            >
+              <svg
+                className="h-6 w-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+
+            <h3
+              className={`text-3xl font-bold mb-8 text-center transition-all duration-300 ${
+                theme === "light" ? "text-gray-800" : "text-gray-200"
+              }`}
+            >
+              Thanh toán QR
+            </h3>
+
+            <div
+              className={`mb-8 text-center text-2xl space-y-3 ${
+                theme === "light" ? "text-gray-800" : "text-gray-200"
+              }`}
+            >
+              <div>
+                Mã phiếu: <b>{selectedBookingForQR.id}</b>
+              </div>
+              <div>
+                Phòng: <b>{selectedBookingForQR.roomName}</b>
+              </div>
+              <div>
+                Loại phòng: <b>{selectedBookingForQR.roomTypeName}</b>
+              </div>
+              <div>
+                Ngày nhận phòng:{" "}
+                <b>
+                  {new Date(
+                    selectedBookingForQR.bookingDate
+                  ).toLocaleDateString("vi-VN")}
+                </b>
+              </div>
+              <div>
+                Số ngày thuê: <b>{selectedBookingForQR.rentalDays}</b>
+              </div>
+              <div
+                className={`text-3xl font-bold ${
+                  theme === "light" ? "text-green-600" : "text-green-400"
+                }`}
+              >
+                Số tiền:{" "}
+                <b>
+                  {(
+                    (selectedBookingForQR.rentalDays || 1) * qrPrice
+                  ).toLocaleString("vi-VN")}{" "}
+                  VNĐ
+                </b>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-center space-y-4">
+              {isGeneratingQR ? (
+                <div
+                  className={`animate-spin rounded-full h-12 w-12 border-t-4 transition-all duration-300 ${
+                    theme === "light" ? "border-blue-500" : "border-blue-400"
+                  }`}
+                ></div>
+              ) : qrCodeUrl ? (
+                <>
+                  <img
+                    src={qrCodeUrl}
+                    alt="QR Code"
+                    className="w-80 h-80 object-contain rounded-lg shadow-md mb-6"
+                  />
+                  <p
+                    className={`text-2xl text-center transition-all duration-300 ${
+                      theme === "light" ? "text-gray-800" : "text-gray-200"
+                    }`}
+                  >
+                    Vui lòng quét mã QR để thực hiện thanh toán
+                  </p>
+                </>
+              ) : (
+                <p
+                  className={`transition-all duration-300 ${
+                    theme === "light" ? "text-red-600" : "text-red-400"
+                  }`}
+                >
+                  Đang tạo mã QR...
+                </p>
+              )}
+            </div>
+
+            <div className="flex justify-end space-x-4 mt-8">
+              <button
+                onClick={() => {
+                  setShowQRModal(false);
+                  setQrCodeUrl("");
+                  setQrPrice(0);
+                  setSelectedBookingForQR(null);
+                }}
+                className={`px-6 py-2 rounded-lg transition-all duration-300 ${
+                  theme === "light"
+                    ? "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                    : "bg-gray-700 text-gray-200 hover:bg-gray-600"
+                }`}
+              >
+                Hủy
+              </button>
+              <button
+                onClick={() => {
+                  toast.success("Thanh toán thành công! (Demo)");
+                  setShowQRModal(false);
+                  setQrCodeUrl("");
+                  setQrPrice(0);
+                  setSelectedBookingForQR(null);
+                }}
+                disabled={isGeneratingQR || !qrCodeUrl}
+                className={`px-6 py-2 rounded-lg text-white transition-all duration-300 flex items-center ${
+                  theme === "light"
+                    ? "bg-blue-600 hover:bg-blue-700"
+                    : "bg-blue-600 hover:bg-blue-700"
+                } disabled:opacity-50`}
+              >
+                {isGeneratingQR ? (
+                  <div className="flex items-center">
+                    <svg
+                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className={`transition-all duration-300 ${
+                          theme === "light" ? "opacity-25" : "opacity-50"
+                        }`}
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Đang xử lý...
+                  </div>
+                ) : (
+                  <span className="flex items-center">
+                    <svg
+                      className="w-5 h-5 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Xác nhận thanh toán
+                  </span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
