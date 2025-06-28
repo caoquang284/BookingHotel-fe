@@ -263,18 +263,89 @@ const BookingHistory: React.FC = () => {
 
   if (loading)
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div
-          className={`animate-spin rounded-full h-12 w-12 border-t-4 transition-all duration-300 ${
-            theme === "light" ? "border-blue-500" : "border-blue-400"
-          }`}
-        ></div>
+      <div
+        className={`min-h-screen px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16 lg:py-42 transition-all duration-300 ${
+          theme === "light" ? "bg-gray-100" : "bg-gray-900"
+        }`}
+      >
+        <div className="max-w-7xl mx-auto">
+          {/* Header skeleton */}
+          <div
+            className={`h-8 sm:h-10 md:h-12 lg:h-16 w-3/4 mx-auto ${
+              theme === "light" ? "bg-gray-300" : "bg-gray-600"
+            } rounded animate-pulse mb-6 sm:mb-8 md:mb-10 lg:mb-12`}
+          ></div>
+
+          {/* Booking cards skeleton */}
+          <div className="grid gap-4 sm:gap-6">
+            {[...Array(3)].map((_, idx) => (
+              <div
+                key={idx}
+                className={`shadow-md rounded-lg p-4 sm:p-6 transition-all duration-300 ${
+                  theme === "light" ? "bg-white" : "bg-gray-800"
+                }`}
+              >
+                {/* Header skeleton */}
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 gap-2 sm:gap-0">
+                  <div
+                    className={`h-4 sm:h-5 md:h-6 lg:h-7 w-32 sm:w-40 ${
+                      theme === "light" ? "bg-gray-300" : "bg-gray-600"
+                    } rounded animate-pulse`}
+                  ></div>
+                  <div
+                    className={`h-4 sm:h-5 md:h-6 lg:h-7 w-24 sm:w-32 ${
+                      theme === "light" ? "bg-gray-300" : "bg-gray-600"
+                    } rounded animate-pulse`}
+                  ></div>
+                </div>
+
+                {/* Content skeleton */}
+                <div className="space-y-2 sm:space-y-3">
+                  <div
+                    className={`h-4 sm:h-5 md:h-6 lg:h-7 w-3/4 ${
+                      theme === "light" ? "bg-gray-300" : "bg-gray-600"
+                    } rounded animate-pulse`}
+                  ></div>
+                  <div
+                    className={`h-4 sm:h-5 md:h-6 lg:h-7 w-1/2 ${
+                      theme === "light" ? "bg-gray-300" : "bg-gray-600"
+                    } rounded animate-pulse`}
+                  ></div>
+                  <div
+                    className={`h-4 sm:h-5 md:h-6 lg:h-7 w-2/3 ${
+                      theme === "light" ? "bg-gray-300" : "bg-gray-600"
+                    } rounded animate-pulse`}
+                  ></div>
+                  <div
+                    className={`h-4 sm:h-5 md:h-6 lg:h-7 w-1/3 ${
+                      theme === "light" ? "bg-gray-300" : "bg-gray-600"
+                    } rounded animate-pulse`}
+                  ></div>
+                </div>
+
+                {/* Buttons skeleton */}
+                <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4 mt-4">
+                  <div
+                    className={`h-8 sm:h-10 w-20 sm:w-24 ${
+                      theme === "light" ? "bg-gray-200" : "bg-gray-700"
+                    } rounded animate-pulse`}
+                  ></div>
+                  <div
+                    className={`h-8 sm:h-10 w-24 sm:w-28 ${
+                      theme === "light" ? "bg-gray-200" : "bg-gray-700"
+                    } rounded animate-pulse`}
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   if (error)
     return (
       <div
-        className={`text-center py-12 text-xl font-semibold transition-all duration-300 ${
+        className={`text-center py-8 sm:py-12 text-lg sm:text-xl font-semibold transition-all duration-300 ${
           theme === "light" ? "text-red-600" : "text-red-400"
         }`}
       >
@@ -284,7 +355,7 @@ const BookingHistory: React.FC = () => {
   if (!bookings.length)
     return (
       <div
-        className={`text-center py-12 text-2xl font-semibold py-48 px-42 transition-all duration-300 ${
+        className={`text-center py-12 sm:py-16 md:py-24 lg:py-48 px-4 sm:px-8 md:px-16 lg:px-42 text-xl sm:text-2xl font-semibold transition-all duration-300 ${
           theme === "light" ? "text-gray-600" : "text-gray-300"
         }`}
       >
@@ -294,19 +365,19 @@ const BookingHistory: React.FC = () => {
 
   return (
     <div
-      className={`min-h-screen sm:px-6 lg:px-8 py-42 px-48 transition-all duration-300 ${
+      className={`min-h-screen px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16 lg:py-42 transition-all duration-300 ${
         theme === "light" ? "bg-gray-100" : "bg-gray-900"
       }`}
     >
       <div className="max-w-7xl mx-auto">
         <h2
-          className={`text-5xl font-playfair font-extrabold text-center mb-12 transition-all duration-300 ${
+          className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-playfair font-extrabold text-center mb-6 sm:mb-8 md:mb-10 lg:mb-12 transition-all duration-300 ${
             theme === "light" ? "text-gray-900" : "text-gray-100"
           }`}
         >
           Lịch Sử Đặt Phòng
         </h2>
-        <div className="grid gap-6">
+        <div className="grid gap-4 sm:gap-6">
           {bookings.map((booking) => {
             // Tìm rental form khớp với booking
             const rentalForm = rentalForms.find(
@@ -319,13 +390,13 @@ const BookingHistory: React.FC = () => {
             return (
               <div
                 key={booking.id}
-                className={`shadow-md rounded-lg p-6 transition-all duration-300 ${
+                className={`shadow-md rounded-lg p-4 sm:p-6 transition-all duration-300 ${
                   theme === "light" ? "bg-white" : "bg-gray-800"
                 }`}
               >
-                <div className="flex justify-between items-center mb-3">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 gap-2 sm:gap-0">
                   <span
-                    className={`text-2xl ${
+                    className={`text-base sm:text-lg md:text-xl lg:text-2xl ${
                       theme === "light" ? "text-gray-600" : "text-gray-300"
                     }`}
                   >
@@ -333,7 +404,7 @@ const BookingHistory: React.FC = () => {
                     {booking.id}
                   </span>
                   <span
-                    className={`text-2xl ${
+                    className={`text-base sm:text-lg md:text-xl lg:text-2xl ${
                       theme === "light" ? "text-gray-600" : "text-gray-300"
                     }`}
                   >
@@ -346,7 +417,7 @@ const BookingHistory: React.FC = () => {
                   </span>
                 </div>
                 <p
-                  className={`text-2xl mb-3 ${
+                  className={`text-base sm:text-lg md:text-xl lg:text-2xl mb-2 sm:mb-3 ${
                     theme === "light" ? "text-gray-600" : "text-gray-300"
                   }`}
                 >
@@ -354,7 +425,7 @@ const BookingHistory: React.FC = () => {
                   {booking.roomName} - {booking.roomTypeName}
                 </p>
                 <p
-                  className={`text-2xl mb-3 ${
+                  className={`text-base sm:text-lg md:text-xl lg:text-2xl mb-2 sm:mb-3 ${
                     theme === "light" ? "text-gray-600" : "text-gray-300"
                   }`}
                 >
@@ -362,7 +433,7 @@ const BookingHistory: React.FC = () => {
                   {new Date(booking.createdAt).toLocaleDateString("vi-VN")}
                 </p>
                 <p
-                  className={`text-2xl mb-3 ${
+                  className={`text-base sm:text-lg md:text-xl lg:text-2xl mb-2 sm:mb-3 ${
                     theme === "light" ? "text-gray-600" : "text-gray-300"
                   }`}
                 >
@@ -370,7 +441,7 @@ const BookingHistory: React.FC = () => {
                   {new Date(booking.bookingDate).toLocaleDateString("vi-VN")}
                 </p>
                 <p
-                  className={`text-2xl mb-3 ${
+                  className={`text-base sm:text-lg md:text-xl lg:text-2xl mb-2 sm:mb-3 ${
                     theme === "light" ? "text-gray-600" : "text-gray-300"
                   }`}
                 >
@@ -379,28 +450,28 @@ const BookingHistory: React.FC = () => {
                 </p>
                 {booking.bookingState === "PENDING" &&
                   canShowCancelButton(booking.createdAt) && (
-                    <div className="flex justify-end gap-4 mt-4">
+                    <div className="flex justify-end gap-2 sm:gap-4 mt-4">
                       <button
                         onClick={() => handleCancelBooking(booking.id)}
-                        className="bg-red-500 text-white text-xl font-semibold py-2 px-6 rounded-lg hover:bg-red-600 transition"
+                        className="bg-red-500 text-white text-sm sm:text-base md:text-lg lg:text-xl font-semibold py-1 sm:py-2 px-3 sm:px-4 md:px-6 rounded-lg hover:bg-red-600 transition"
                       >
                         Hủy
                       </button>
                     </div>
                   )}
                 {booking.bookingState === "COMMITED" && (
-                  <div className="flex justify-end gap-4 mt-4">
+                  <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4 mt-4">
                     {!isPaid && (
                       <>
                         <button
                           onClick={() => setShowReviewForm(booking.id)}
-                          className="bg-blue-500 text-white text-xl font-semibold py-2 px-6 rounded-lg hover:bg-blue-600 transition"
+                          className="bg-blue-500 text-white text-sm sm:text-base md:text-lg lg:text-xl font-semibold py-1 sm:py-2 px-3 sm:px-4 md:px-6 rounded-lg hover:bg-blue-600 transition"
                         >
                           Đánh giá
                         </button>
                         <button
                           onClick={() => handleShowQRModal(booking)}
-                          className="bg-green-500 text-white text-xl font-semibold py-2 px-6 rounded-lg hover:bg-green-600 transition"
+                          className="bg-green-500 text-white text-sm sm:text-base md:text-lg lg:text-xl font-semibold py-1 sm:py-2 px-3 sm:px-4 md:px-6 rounded-lg hover:bg-green-600 transition"
                         >
                           Check Out
                         </button>
@@ -411,7 +482,7 @@ const BookingHistory: React.FC = () => {
                 {isPaid && (
                   <div className="flex justify-end mt-4">
                     <button
-                      className="bg-gray-400 text-white text-xl font-semibold py-2 px-6 rounded-lg cursor-not-allowed"
+                      className="bg-gray-400 text-white text-sm sm:text-base md:text-lg lg:text-xl font-semibold py-1 sm:py-2 px-3 sm:px-4 md:px-6 rounded-lg cursor-not-allowed"
                       disabled
                     >
                       Đã thanh toán
@@ -421,12 +492,12 @@ const BookingHistory: React.FC = () => {
                 {/* Form đánh giá */}
                 {showReviewForm === booking.id && (
                   <div
-                    className={`mt-4 p-4 rounded-lg transition-all duration-300 ${
+                    className={`mt-4 p-3 sm:p-4 rounded-lg transition-all duration-300 ${
                       theme === "light" ? "bg-gray-50" : "bg-gray-700"
                     }`}
                   >
                     <h3
-                      className={`text-2xl font-semibold mb-2 ${
+                      className={`text-lg sm:text-xl md:text-2xl font-semibold mb-2 ${
                         theme === "light" ? "text-gray-600" : "text-gray-200"
                       }`}
                     >
@@ -434,7 +505,7 @@ const BookingHistory: React.FC = () => {
                     </h3>
                     <div className="mb-2 flex gap-1">
                       <label
-                        className={`block text-xl font-medium mb-1 ${
+                        className={`block text-sm sm:text-base md:text-lg lg:text-xl font-medium mb-1 ${
                           theme === "light" ? "text-gray-600" : "text-gray-200"
                         }`}
                       >
@@ -444,19 +515,19 @@ const BookingHistory: React.FC = () => {
                         <span
                           key={star}
                           onClick={() => setRating(star)}
-                          className="cursor-pointer text-2xl"
+                          className="cursor-pointer text-lg sm:text-xl md:text-2xl"
                         >
                           {star <= rating ? (
                             <img
                               src={starIconFilled}
                               alt="star"
-                              className="w-6 h-6"
+                              className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6"
                             />
                           ) : (
                             <img
                               src={starIconOutlined}
                               alt="star"
-                              className="w-6 h-6"
+                              className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6"
                             />
                           )}
                         </span>
@@ -464,7 +535,7 @@ const BookingHistory: React.FC = () => {
                     </div>
                     <div className="mb-2">
                       <label
-                        className={`block text-xl font-medium mb-1 ${
+                        className={`block text-sm sm:text-base md:text-lg lg:text-xl font-medium mb-1 ${
                           theme === "light" ? "text-gray-600" : "text-gray-200"
                         }`}
                       >
@@ -473,7 +544,7 @@ const BookingHistory: React.FC = () => {
                       <textarea
                         value={comment}
                         onChange={(e) => setComment(e.target.value)}
-                        className={`w-full p-2 border rounded-lg text-xl transition-all duration-300 ${
+                        className={`w-full p-2 border rounded-lg text-sm sm:text-base md:text-lg lg:text-xl transition-all duration-300 ${
                           theme === "light"
                             ? "border-gray-300 text-gray-900 bg-white"
                             : "border-gray-600 text-gray-100 bg-gray-800"
@@ -481,16 +552,16 @@ const BookingHistory: React.FC = () => {
                         rows={3}
                       />
                     </div>
-                    <div className="flex justify-end gap-4">
+                    <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4">
                       <button
                         onClick={() => setShowReviewForm(null)}
-                        className="bg-gray-500 text-white text-xl font-semibold py-2 px-6 rounded-lg hover:bg-gray-600 transition"
+                        className="bg-gray-500 text-white text-sm sm:text-base md:text-lg lg:text-xl font-semibold py-1 sm:py-2 px-3 sm:px-4 md:px-6 rounded-lg hover:bg-gray-600 transition"
                       >
                         Hủy
                       </button>
                       <button
                         onClick={() => handleSubmitReview(booking.id)}
-                        className={`text-white text-xl font-semibold py-2 px-6 rounded-lg transition-all duration-300 ${
+                        className={`text-white text-sm sm:text-base md:text-lg lg:text-xl font-semibold py-1 sm:py-2 px-3 sm:px-4 md:px-6 rounded-lg transition-all duration-300 ${
                           theme === "light"
                             ? "bg-green-500 hover:bg-green-600"
                             : "bg-green-600 hover:bg-green-700"
@@ -508,9 +579,10 @@ const BookingHistory: React.FC = () => {
       </div>
       {/* Modal QR Code */}
       {showQRModal && selectedBookingForQR && (
-        <div className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black bg-opacity-50"></div>
           <div
-            className={`rounded-2xl shadow-2xl max-w-2xl w-full p-4 relative transition-all duration-300 ${
+            className={`rounded-2xl shadow-2xl max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl w-full p-4 sm:p-6 relative transition-all duration-300 ${
               theme === "light" ? "bg-white" : "bg-gray-800"
             }`}
           >
@@ -521,14 +593,14 @@ const BookingHistory: React.FC = () => {
                 setQrPrice(0);
                 setSelectedBookingForQR(null);
               }}
-              className={`absolute top-4 right-4 transition-all duration-300 ${
+              className={`absolute top-2 sm:top-4 right-2 sm:right-4 transition-all duration-300 ${
                 theme === "light"
                   ? "text-gray-500 hover:text-gray-700"
                   : "text-gray-400 hover:text-gray-200"
               }`}
             >
               <svg
-                className="h-6 w-6"
+                className="h-5 w-5 sm:h-6 sm:w-6"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -543,7 +615,7 @@ const BookingHistory: React.FC = () => {
             </button>
 
             <h3
-              className={`text-3xl font-bold mb-8 text-center transition-all duration-300 ${
+              className={`text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 md:mb-8 text-center transition-all duration-300 ${
                 theme === "light" ? "text-gray-800" : "text-gray-200"
               }`}
             >
@@ -551,7 +623,7 @@ const BookingHistory: React.FC = () => {
             </h3>
 
             <div
-              className={`mb-8 text-center text-2xl space-y-3 ${
+              className={`mb-4 sm:mb-6 md:mb-8 text-center text-sm sm:text-base md:text-lg lg:text-2xl space-y-2 sm:space-y-3 ${
                 theme === "light" ? "text-gray-800" : "text-gray-200"
               }`}
             >
@@ -576,7 +648,7 @@ const BookingHistory: React.FC = () => {
                 Số ngày thuê: <b>{selectedBookingForQR.rentalDays}</b>
               </div>
               <div
-                className={`text-3xl font-bold ${
+                className={`text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold ${
                   theme === "light" ? "text-green-600" : "text-green-400"
                 }`}
               >
@@ -593,7 +665,7 @@ const BookingHistory: React.FC = () => {
             <div className="flex flex-col items-center space-y-4">
               {isGeneratingQR ? (
                 <div
-                  className={`animate-spin rounded-full h-12 w-12 border-t-4 transition-all duration-300 ${
+                  className={`animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 border-t-4 transition-all duration-300 ${
                     theme === "light" ? "border-blue-500" : "border-blue-400"
                   }`}
                 ></div>
@@ -602,10 +674,10 @@ const BookingHistory: React.FC = () => {
                   <img
                     src={qrCodeUrl}
                     alt="QR Code"
-                    className="w-80 h-80 object-contain rounded-lg shadow-md mb-6"
+                    className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 object-contain rounded-lg shadow-md mb-4 sm:mb-6"
                   />
                   <p
-                    className={`text-2xl text-center transition-all duration-300 ${
+                    className={`text-sm sm:text-base md:text-lg lg:text-2xl text-center transition-all duration-300 ${
                       theme === "light" ? "text-gray-800" : "text-gray-200"
                     }`}
                   >
@@ -623,7 +695,7 @@ const BookingHistory: React.FC = () => {
               )}
             </div>
 
-            <div className="flex justify-end space-x-4 mt-8">
+            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 mt-4 sm:mt-6 md:mt-8">
               <button
                 onClick={() => {
                   setShowQRModal(false);
@@ -631,7 +703,7 @@ const BookingHistory: React.FC = () => {
                   setQrPrice(0);
                   setSelectedBookingForQR(null);
                 }}
-                className={`px-6 py-2 rounded-lg transition-all duration-300 ${
+                className={`px-4 sm:px-6 py-2 rounded-lg transition-all duration-300 ${
                   theme === "light"
                     ? "bg-gray-200 text-gray-800 hover:bg-gray-300"
                     : "bg-gray-700 text-gray-200 hover:bg-gray-600"
@@ -700,6 +772,7 @@ const BookingHistory: React.FC = () => {
                     toast.success(
                       "Thanh toán thành công, Roomify xin cảm ơn và hẹn gặp lại quý khách!"
                     );
+                    window.location.reload();
                   } catch (error) {
                     toast.error("Lỗi khi tạo phiếu thuê/hóa đơn: " + error);
                   }
@@ -709,7 +782,7 @@ const BookingHistory: React.FC = () => {
                   setSelectedBookingForQR(null);
                 }}
                 disabled={isGeneratingQR || !qrCodeUrl}
-                className={`px-6 py-2 rounded-lg text-white transition-all duration-300 flex items-center ${
+                className={`px-4 sm:px-6 py-2 rounded-lg text-white transition-all duration-300 flex items-center justify-center ${
                   theme === "light"
                     ? "bg-blue-600 hover:bg-blue-700"
                     : "bg-blue-600 hover:bg-blue-700"
@@ -718,7 +791,7 @@ const BookingHistory: React.FC = () => {
                 {isGeneratingQR ? (
                   <div className="flex items-center">
                     <svg
-                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      className="animate-spin -ml-1 mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5 text-white"
                       fill="none"
                       viewBox="0 0 24 24"
                     >
@@ -738,12 +811,12 @@ const BookingHistory: React.FC = () => {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       ></path>
                     </svg>
-                    Đang xử lý...
+                    <span className="text-sm sm:text-base">Đang xử lý...</span>
                   </div>
                 ) : (
-                  <span className="flex items-center">
+                  <span className="flex items-center text-sm sm:text-base">
                     <svg
-                      className="w-5 h-5 mr-2"
+                      className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"

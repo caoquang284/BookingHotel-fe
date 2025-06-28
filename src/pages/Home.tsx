@@ -30,9 +30,8 @@ import totalBookingIcon from "../assets/Icon/totalBookingIcon.svg";
 import { getReviewsByRoomId } from "../services/apis/review";
 import { getGuestById } from "../services/apis/guest";
 import { toast } from "react-toastify";
-import Chatbot from "../components/chatBox"; // Import component Chatbot
+import Chatbot from "../components/chatBox";
 
-// Placeholder ảnh mặc định
 const DEFAULT_IMAGE = "https://via.placeholder.com/400x300?text=No+Image";
 
 interface PaginatedResponse {
@@ -96,17 +95,17 @@ const BookingBox: React.FC<{
 
   return (
     <div
-      className={`shadow-2xl rounded-2xl p-10 w-256 mx-auto -mt-24 relative z-10 transition-all duration-300 ${
+      className={`shadow-2xl rounded-2xl p-4 sm:p-6 md:p-8 lg:p-10 w-full max-w-5xl mx-auto -mt-16 sm:-mt-20 md:-mt-24 relative z-10 transition-all duration-300 ${
         theme === "light" ? "bg-white" : "bg-gray-800"
       }`}
     >
       <form
         onSubmit={handleSubmit}
-        className="grid grid-cols-1 md:grid-cols-4 gap-24"
+        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8"
       >
         <div>
           <label
-            className={`block text-2xl font-semibold mb-2 ${
+            className={`block text-lg sm:text-xl md:text-2xl font-semibold mb-2 ${
               theme === "light" ? "text-gray-700" : "text-gray-200"
             }`}
           >
@@ -116,7 +115,7 @@ const BookingBox: React.FC<{
             type="date"
             value={checkIn}
             onChange={(e) => setCheckIn(e.target.value)}
-            className={`mt-1 block w-56 rounded-lg border shadow-md focus:outline-none focus:ring-2 text-2xl py-3 px-4 transition-all duration-300 ${
+            className={`mt-1 block w-full rounded-lg border shadow-md focus:outline-none focus:ring-2 text-base sm:text-lg md:text-xl py-2 px-3 transition-all duration-300 ${
               theme === "light"
                 ? "border-gray-300 text-black focus:border-indigo-500 focus:ring-indigo-500"
                 : "border-gray-600 text-gray-100 bg-gray-700 focus:border-indigo-400 focus:ring-indigo-400"
@@ -126,7 +125,7 @@ const BookingBox: React.FC<{
         </div>
         <div>
           <label
-            className={`block text-2xl font-semibold mb-2 ${
+            className={`block text-lg sm:text-xl md:text-2xl font-semibold mb-2 ${
               theme === "light" ? "text-gray-700" : "text-gray-200"
             }`}
           >
@@ -136,7 +135,7 @@ const BookingBox: React.FC<{
             type="date"
             value={checkOut}
             onChange={(e) => setCheckOut(e.target.value)}
-            className={`mt-1 block w-56 rounded-lg border shadow-md focus:outline-none focus:ring-2 text-2xl py-3 px-4 transition-all duration-300 ${
+            className={`mt-1 block w-full rounded-lg border shadow-md focus:outline-none focus:ring-2 text-base sm:text-lg md:text-xl py-2 px-3 transition-all duration-300 ${
               theme === "light"
                 ? "border-gray-300 text-black focus:border-indigo-500 focus:ring-indigo-500"
                 : "border-gray-600 text-gray-100 bg-gray-700 focus:border-indigo-400 focus:ring-indigo-400"
@@ -146,7 +145,7 @@ const BookingBox: React.FC<{
         </div>
         <div>
           <label
-            className={`block text-2xl font-semibold mb-2 ${
+            className={`block text-lg sm:text-xl md:text-2xl font-semibold mb-2 ${
               theme === "light" ? "text-gray-700" : "text-gray-200"
             }`}
           >
@@ -155,9 +154,9 @@ const BookingBox: React.FC<{
           <select
             value={roomTypeId}
             onChange={(e) => setRoomTypeId(Number(e.target.value))}
-            className={`mt-1 block w-56 rounded-lg border shadow-md focus:outline-none focus:ring-2 text-2xl py-4 px-4 transition-all duration-300 ${
+            className={`mt-1 block w-full rounded-lg border shadow-md focus:outline-none focus:ring-2 text-base sm:text-lg md:text-xl py-2 px-3 transition-all duration-300 ${
               theme === "light"
-                ? "border-gray-300 text-black focus:border-indigo-500 focus:ring-indigo-500"
+                ? "border-gray-300 text-black focus:border-indigo-500 focus:ring-indigo Liang-500"
                 : "border-gray-600 text-gray-100 bg-gray-700 focus:border-indigo-400 focus:ring-indigo-400"
             }`}
             required
@@ -172,11 +171,11 @@ const BookingBox: React.FC<{
         <div className="flex items-end">
           <button
             type="submit"
-            className={`w-full text-white text-2xl font-bold py-3 px-6 rounded-lg shadow-lg transition-all duration-200 ${
+            className={`w-full text-lg sm:text-xl md:text-2xl font-bold py-2 px-4 rounded-lg shadow-lg transition-all duration-200 ${
               theme === "light"
-                ? "bg-indigo-600 hover:bg-indigo-700"
-                : "bg-indigo-700 hover:bg-indigo-800"
-            }`}
+                ? "bg-blue-600 hover:bg-blue-700"
+                : "bg-blue-700 hover:bg-blue-800"
+            } text-white`}
           >
             Tìm phòng
           </button>
@@ -246,7 +245,6 @@ const RoomCard: React.FC<{
       } catch (error) {
         console.error(`Failed to fetch reviews for room ${room.id}:`, error);
         setStarRating(0);
-        setStarRating(0);
       }
     };
     fetchReviews();
@@ -258,41 +256,41 @@ const RoomCard: React.FC<{
 
   return (
     <div
-      className={`rounded-lg shadow-md overflow-hidden w-full max-w-md mx-auto transition-all duration-300 ${
+      className={`rounded-lg shadow-md overflow-hidden w-full max-w-sm sm:max-w-md mx-auto transition-all duration-300 ${
         theme === "light" ? "bg-white" : "bg-gray-800"
       }`}
     >
       <img
         src={imageUrl}
         alt={room.name}
-        className="w-full h-52 object-cover"
+        className="w-full h-40 sm:h-48 md:h-52 object-cover"
         onError={() => setImageUrl(DEFAULT_IMAGE)}
       />
       <div className="p-4">
-        <div className="flex justify-between items-center mb-2">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2">
           <div>
             <p
-              className={`text-2xl font-semibold truncate ${
+              className={`text-lg sm:text-xl md:text-2xl font-semibold truncate ${
                 theme === "light" ? "text-gray-900" : "text-gray-100"
               }`}
             >
               Tên phòng: {room.name}
             </p>
             <p
-              className={`text-base ${
+              className={`text-sm sm:text-base ${
                 theme === "light" ? "text-gray-600" : "text-gray-300"
               }`}
             >
               Loại phòng: {room.roomTypeName}
             </p>
           </div>
-          <div className="flex items-center mb-6">
+          <div className="flex items-center mt-2 sm:mt-0">
             {[...Array(5)].map((_, i) => (
-              <span key={i} className="text-yellow-400 text-xl">
+              <span key={i} className="text-yellow-400 text-base sm:text-lg">
                 <img
                   src={i < starRating ? starIcon : starIconEmpty}
                   alt="star"
-                  className="w-4 h-4"
+                  className="w-3 h-3 sm:w-4 h-4"
                 />
               </span>
             ))}
@@ -307,26 +305,26 @@ const RoomCard: React.FC<{
             <img
               src={totalBookingIcon}
               alt="totalBooking"
-              className="w-4 h-4"
+              className="w-3 h-3 sm:w-4 h-4"
             />
           </span>
           <p
-            className={`text-base truncate ${
+            className={`text-sm sm:text-base truncate ${
               theme === "light" ? "text-gray-600" : "text-gray-300"
             }`}
           >
             {room.note || "Không có ghi chú"}
           </p>
         </div>
-        <div className="mt-4 flex justify-between items-center">
+        <div className="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center">
           <p
-            className={`text-2xl font-semibold ${
+            className={`text-lg sm:text-xl md:text-2xl font-semibold ${
               theme === "light" ? "text-gray-600" : "text-gray-300"
             }`}
           >
             {room.roomTypePrice?.toLocaleString("vi-VN")}VNĐ/
             <span
-              className={`text-base ${
+              className={`text-sm sm:text-base ${
                 theme === "light" ? "text-gray-600" : "text-gray-300"
               }`}
             >
@@ -335,7 +333,7 @@ const RoomCard: React.FC<{
           </p>
           <button
             onClick={handleBookingClick}
-            className={`text-lg py-2 px-4 rounded-md border transition-all duration-200 ${
+            className={`mt-2 sm:mt-0 text-base sm:text-lg py-2 px-4 rounded-md border transition-all duration-200 ${
               theme === "light"
                 ? "bg-transparent border-transparent hover:border-gray-400 text-black"
                 : "bg-transparent border-transparent hover:border-gray-500 text-white"
@@ -367,7 +365,7 @@ const ReviewCard: React.FC<{
   const roomName = roomNames[roomId] || "Phòng không xác định";
   return (
     <div
-      className={`rounded-lg shadow-md p-4 mb-4 transition-all duration-300 ${
+      className={`rounded-lg shadow-md p-4 transition-all duration-300 ${
         theme === "light" ? "bg-white" : "bg-gray-800"
       }`}
     >
@@ -375,31 +373,31 @@ const ReviewCard: React.FC<{
         <img
           src={userimageLink[Math.floor(Math.random() * userimageLink.length)]}
           alt="user"
-          className="w-16 h-16 rounded-full ml-4 mt-4"
+          className="w-12 h-12 sm:w-14 h-14 md:w-16 h-16 rounded-full ml-2 sm:ml-4 mt-2 sm:mt-4"
         />
         <h3
-          className={`text-2xl font-playfair font-semibold mb-2 ml-5 mt-5 ${
+          className={`text-lg sm:text-xl md:text-2xl font-playfair font-semibold mb-2 ml-3 sm:ml-5 mt-3 sm:mt-5 ${
             theme === "light" ? "text-gray-900" : "text-gray-100"
           }`}
         >
           {guestName}
         </h3>
       </div>
-      <p className="text-gray-600 text-lg mb-2 ml-4">
+      <p className="text-sm sm:text-base md:text-lg mb-2 ml-2 sm:ml-4 text-gray-600">
         Đánh giá cho phòng {roomName}
       </p>
-      <div className="flex items-center mb-2 ml-4">
+      <div className="flex items-center mb-2 ml-2 sm:ml-4">
         {[...Array(5)].map((_, i) => (
           <img
             key={i}
             src={i < review.rating ? starIcon : starIconEmpty}
             alt="star"
-            className="w-6 h-6 mr-1"
+            className="w-4 h-4 sm:w-5 h-5 md:w-6 h-6 mr-1"
           />
         ))}
       </div>
       <p
-        className={`text-lg italic ml-4 ${
+        className={`text-sm sm:text-base md:text-lg italic ml-2 sm:ml-4 ${
           theme === "light" ? "text-gray-600" : "text-gray-300"
         }`}
       >
@@ -503,7 +501,6 @@ const Home: React.FC = () => {
       const availableRooms = mappedRooms.filter((room) => {
         const currentDate = new Date();
         currentDate.setHours(0, 0, 0, 0);
-        currentDate.setHours(0, 0, 0, 0);
 
         const isCurrentlyBooked = bookingForms.some(
           (form: ResponseBookingConfirmationFormDTO) => {
@@ -565,7 +562,6 @@ const Home: React.FC = () => {
   useEffect(() => {
     fetchData();
     getAllRoomTypes().then(setRoomTypes);
-    // Lấy toàn bộ danh sách phòng để tạo allRoomNames
     getAllRooms().then((allRooms) => {
       const names: Record<number, string> = {};
       allRooms.forEach((room) => {
@@ -633,7 +629,6 @@ const Home: React.FC = () => {
   }, [rooms]);
 
   useEffect(() => {
-    // Tạo object roomNames từ rooms
     const roomNames: Record<number, string> = {};
     rooms.forEach((room) => {
       roomNames[room.id] = room.name;
@@ -653,10 +648,10 @@ const Home: React.FC = () => {
         entries.forEach((entry) => {
           const card = entry.target as HTMLDivElement;
           if (entry.isIntersecting) {
-            card.style.width = "320px";
+            card.style.width = "100%";
             card.style.transform = "scale(1)";
           } else {
-            card.style.width = "240px";
+            card.style.width = "75%";
             card.style.transform = "scale(0.75)";
           }
         });
@@ -726,21 +721,22 @@ const Home: React.FC = () => {
           backgroundImage: `url(${backgroundImage})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
-          minHeight: "100vh",
+          minHeight: "80vh sm:min-h-screen",
         }}
       >
         <div className="absolute inset-0 bg-black/70"></div>
-        <div className="relative z-10 text-left text-white px-4 py-10 pl-56 mt-52 ">
-          <span className="inline-block bg-green-200 bg-opacity-50 text-blue-800 text-2xl font-semibold px-6 py-2 rounded-full mb-6">
+        <div className="relative z-10 text-left text-white mb-24 px-8 sm:pl-12 md:pl-16 lg:pl-58 py-8 sm:py-10 mt-20 sm:mt-32 md:mt-40 lg:mt-52">
+          <span className="inline-block bg-blue-600/30 text-yellow-200 text-lg sm:text-xl md:text-2xl font-semibold px-4 sm:px-6 py-2 rounded-full mb-4 sm:mb-6">
             Trải nghiệm khách sạn đẳng cấp
           </span>
-          <h1 className="text-5xl text-yellow-500 italic md:text-6xl font-bold mb-6 font-playfair">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 font-playfair text-yellow-500">
             <span>Rong chơi bốn phương,</span>
-            <span className="block mt-6">"giá" vẫn yêu thương</span>
+            <span className="block mt-2 sm:mt-4 md:mt-6">
+              "giá" vẫn yêu thương
+            </span>
           </h1>
-
           <p
-            className={`text-xl md:text-xl mb-8 max-w-2xl font-semibold ${
+            className={`text-base sm:text-lg md:text-xl mb-6 sm:mb-8 max-w-xl md:max-w-2xl text-yellow-200 ${
               theme === "light" ? "text-white" : "text-gray-200"
             }`}
           >
@@ -748,33 +744,32 @@ const Home: React.FC = () => {
             sạn đẳng cấp nhất thế giới. Hãy bắt đầu hành trình của bạn ngay hôm
             nay.
           </p>
-
-          <div className="mt-32 pr-256">
+          <div className="mt-16 sm:mt-24 md:mt-36 pr-0 sm:pr-2 md:pr-192">
             <BookingBox onSearch={handleSearch} roomTypes={roomTypes} />
           </div>
         </div>
       </div>
       <div
-        className={`max-w-8xl mx-auto py-32 px-48 transition-all duration-300 ${
+        className={`max-w-full mx-auto py-12 sm:py-20 md:py-24 lg:py-32 px-4 sm:px-6 md:px-8 lg:px-12 transition-all duration-300 ${
           theme === "light" ? "bg-gray-100" : "bg-gray-900"
         }`}
       >
         <h2
-          className={`text-5xl font-playfair mb-8 text-center ${
+          className={`text-3xl sm:text-4xl md:text-5xl font-playfair mb-6 sm:mb-8 text-center ${
             theme === "light" ? "text-gray-900" : "text-gray-100"
           }`}
         >
           Các phòng đang có sẵn
         </h2>
         <h2
-          className={`text-2xl italic text-center ${
+          className={`text-lg sm:text-xl md:text-2xl italic text-center ${
             theme === "light" ? "text-gray-600" : "text-gray-300"
           }`}
         >
           Tận hưởng kỳ nghỉ hoàn hảo với những căn phòng đẳng cấp
         </h2>
         <h2
-          className={`text-2xl italic text-center mb-12 ${
+          className={`text-lg sm:text-xl md:text-2xl italic text-center mb-8 sm:mb-12 ${
             theme === "light" ? "text-gray-600" : "text-gray-300"
           }`}
         >
@@ -799,7 +794,7 @@ const Home: React.FC = () => {
         )}
         {error && (
           <p
-            className={`text-center ${
+            className={`text-center text-base sm:text-lg ${
               theme === "light" ? "text-red-600" : "text-red-400"
             }`}
           >
@@ -808,7 +803,7 @@ const Home: React.FC = () => {
         )}
         {!loading && !error && rooms.length === 0 && (
           <p
-            className={`text-center ${
+            className={`text-center text-base sm:text-lg ${
               theme === "light" ? "text-gray-600" : "text-gray-300"
             }`}
           >
@@ -818,7 +813,7 @@ const Home: React.FC = () => {
         <div className="relative">
           <button
             onClick={scrollLeft}
-            className={`absolute -left-16 top-1/2 -translate-y-1/2 z-10 shadow rounded-full p-2 transition-all duration-200 w-12 h-12 ${
+            className={`hidden sm:block absolute -left-4 sm:-left-8 md:-left-12 lg:-left-8 top-1/2 -translate-y-1/2 z-10 shadow rounded-full p-2 transition-all duration-200 w-10 h-10 sm:w-12 h-12 ${
               theme === "light"
                 ? "bg-white hover:bg-gray-200"
                 : "bg-gray-800 hover:bg-gray-700"
@@ -829,14 +824,13 @@ const Home: React.FC = () => {
           </button>
           <div
             ref={sliderRef}
-            className="flex gap-8 py-2 overflow-x-auto no-scrollbar"
+            className="flex gap-4 sm:gap-6 md:gap-8 py-2 overflow-x-auto no-scrollbar snap-x snap-mandatory"
             style={{ scrollBehavior: "smooth" }}
           >
             {rooms.map((room, index) => (
               <div
                 key={room.id}
-                className="flex-shrink-0 transition-all duration-500"
-                style={{ width: 320 }}
+                className="flex-shrink-0 transition-all duration-500 w-full sm:w-64 md:w-72 lg:w-80 xl:w-96 max-w-[400px] snap-center"
                 ref={(el) => {
                   if (el) cardRefs.current[index] = el;
                 }}
@@ -857,7 +851,7 @@ const Home: React.FC = () => {
           </div>
           <button
             onClick={scrollRight}
-            className={`absolute -right-16 top-1/2 -translate-y-1/2 z-10 shadow rounded-full p-2 transition-all duration-200 w-12 h-12 ${
+            className={`hidden sm:block absolute -right-4 sm:-right-8 md:-right-12 lg:-right-8 top-1/2 -translate-y-1/2 z-10 shadow rounded-full p-2 transition-all duration-200 w-10 h-10 sm:w-12 h-12 ${
               theme === "light"
                 ? "bg-white hover:bg-gray-200"
                 : "bg-gray-800 hover:bg-gray-700"
@@ -868,14 +862,14 @@ const Home: React.FC = () => {
           </button>
         </div>
         <h2
-          className={`text-5xl font-playfair mb-8 text-center mt-20 ${
+          className={`text-3xl sm:text-4xl md:text-5xl font-playfair mb-6 sm:mb-8 text-center mt-12 sm:mt-16 md:mt-20 ${
             theme === "light" ? "text-gray-900" : "text-gray-100"
           }`}
         >
           Đánh giá từ khách hàng
         </h2>
         <h2
-          className={`text-2xl italic text-center mb-12 ${
+          className={`text-lg sm:text-xl md:text-2xl italic text-center mb-8 sm:mb-12 ${
             theme === "light" ? "text-gray-600" : "text-gray-300"
           }`}
         >
@@ -883,7 +877,7 @@ const Home: React.FC = () => {
           <br />
           cho các chỗ ở sang trọng và đẳng cấp.
         </h2>
-        <div className="grid grid-cols-3 gap-6 flex overflow-hidden">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {Object.values(reviewsByRoom)
             .flat()
             .map((review) => (
@@ -897,12 +891,12 @@ const Home: React.FC = () => {
             ))}
           {Object.values(reviewsByRoom).every((reviews) => !reviews.length) && (
             <div
-              className={`rounded-lg shadow-md p-4 text-center col-span-3 transition-all duration-300 ${
+              className={`rounded-lg shadow-md p-4 text-center col-span-full transition-all duration-300 ${
                 theme === "light" ? "bg-white" : "bg-gray-800"
               }`}
             >
               <p
-                className={`${
+                className={`text-base sm:text-lg ${
                   theme === "light" ? "text-gray-600" : "text-gray-300"
                 }`}
               >
@@ -919,12 +913,12 @@ const Home: React.FC = () => {
           }`}
         >
           <div
-            className={`rounded-lg shadow-lg p-8 w-full max-w-lg relative transition-all duration-300 ${
+            className={`rounded-lg shadow-lg p-4 sm:p-6 md:p-8 w-full max-w-md sm:max-w-lg relative transition-all duration-300 ${
               theme === "light" ? "bg-white" : "bg-gray-800"
             }`}
           >
             <button
-              className={`absolute top-4 right-4 text-2xl font-bold w-10 h-10 flex items-center justify-center rounded-full transition-all duration-200 ${
+              className={`absolute top-2 sm:top-4 right-2 sm:right-4 text-xl sm:text-2xl font-bold w-8 sm:w-10 h-8 sm:h-10 flex items-center justify-center rounded-full transition-all duration-200 ${
                 theme === "light"
                   ? "text-gray-500 hover:text-black hover:bg-gray-100"
                   : "text-gray-300 hover:text-white hover:bg-gray-700"
@@ -934,16 +928,16 @@ const Home: React.FC = () => {
               ×
             </button>
             <h3
-              className={`text-2xl font-bold mb-6 text-center ${
+              className={`text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center ${
                 theme === "light" ? "text-gray-900" : "text-gray-100"
               }`}
             >
               Chọn ngày nhận và trả phòng
             </h3>
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div>
                 <label
-                  className={`block text-xl font-semibold mb-2 ${
+                  className={`block text-base sm:text-lg md:text-xl font-semibold mb-2 ${
                     theme === "light" ? "text-gray-700" : "text-gray-200"
                   }`}
                 >
@@ -953,7 +947,7 @@ const Home: React.FC = () => {
                   type="date"
                   value={modalCheckIn}
                   onChange={(e) => setModalCheckIn(e.target.value)}
-                  className={`w-full text-xl border rounded px-3 py-2 transition-all duration-300 ${
+                  className={`w-full text-base sm:text-lg md:text-xl border rounded px-3 py-2 transition-all duration-300 ${
                     theme === "light"
                       ? "text-black border-gray-300"
                       : "text-gray-100 border-gray-600 bg-gray-700"
@@ -962,7 +956,7 @@ const Home: React.FC = () => {
               </div>
               <div>
                 <label
-                  className={`block text-xl font-semibold mb-2 ${
+                  className={`block text-base sm:text-lg md:text-xl font-semibold mb-2 ${
                     theme === "light" ? "text-gray-700" : "text-gray-200"
                   }`}
                 >
@@ -972,7 +966,7 @@ const Home: React.FC = () => {
                   type="date"
                   value={modalCheckOut}
                   onChange={(e) => setModalCheckOut(e.target.value)}
-                  className={`w-full text-xl border rounded px-3 py-2 transition-all duration-300 ${
+                  className={`w-full text-base sm:text-lg md:text-xl border rounded px-3 py-2 transition-all duration-300 ${
                     theme === "light"
                       ? "text-black border-gray-300"
                       : "text-gray-100 border-gray-600 bg-gray-700"
@@ -980,7 +974,7 @@ const Home: React.FC = () => {
                 />
               </div>
               <button
-                className={`w-full text-white py-3 rounded transition-all duration-200 ${
+                className={`w-full text-white py-2 sm:py-3 rounded transition-all duration-200 text-base sm:text-lg ${
                   theme === "light"
                     ? "bg-green-600 hover:bg-green-700"
                     : "bg-green-700 hover:bg-green-800"
@@ -1003,7 +997,7 @@ const Home: React.FC = () => {
           </div>
         </div>
       )}
-      <Chatbot /> {/* Thêm component Chatbot */}
+      <Chatbot />
     </div>
   );
 };
