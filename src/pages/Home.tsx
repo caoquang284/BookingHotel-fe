@@ -705,7 +705,7 @@ const Home: React.FC = () => {
             sạn đẳng cấp nhất thế giới. Hãy bắt đầu hành trình của bạn ngay hôm
             nay.
           </p>
-          <div className="mt-16 sm:mt-24 md:mt-36 pr-256 sm:pr-2 md:pr-4">
+          <div className="mt-16 sm:mt-24 md:mt-36 pr-0 sm:pr-2 md:pr-192">
             <BookingBox onSearch={handleSearch} roomTypes={roomTypes} />
           </div>
         </div>
