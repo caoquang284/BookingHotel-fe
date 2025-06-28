@@ -1,11 +1,17 @@
-import React, { createContext, useContext, useState, useEffect, type ReactNode } from "react";
-import { login, refreshToken } from "../services/apis/auth"; 
-import type { ResponseLoginDTO, RefreshResultDTO } from "../types"; 
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  type ReactNode,
+} from "react";
+import { login, refreshToken } from "../services/apis/auth";
+import type { ResponseLoginDTO, RefreshResultDTO } from "../types";
 
 export interface User {
   id: number;
   username: string;
-  role: string; 
+  role: string;
 }
 
 interface AuthContextType {
@@ -18,41 +24,64 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
   refreshAccessToken: () => Promise<void>;
+  isInitialized: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
-  const [accessToken, setAccessToken] = useState<string | null>(localStorage.getItem("accessToken"));
-  const [storedRefreshToken, setRefreshToken] = useState<string | null>(localStorage.getItem("refreshToken"));
+  const [accessToken, setAccessToken] = useState<string | null>(
+    localStorage.getItem("accessToken")
+  );
+  const [storedRefreshToken, setRefreshToken] = useState<string | null>(
+    localStorage.getItem("refreshToken")
+  );
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    const storedToken = localStorage.getItem("accessToken");
-    const storedRefreshToken = localStorage.getItem("refreshToken");
-    console.log('Restoring state:', { storedUser, storedToken, storedRefreshToken });
+    const initializeAuth = async () => {
+      const storedUser = localStorage.getItem("user");
+      const storedToken = localStorage.getItem("accessToken");
+      const storedRefreshToken = localStorage.getItem("refreshToken");
 
-    if (storedUser && !user) {
-      setUser(JSON.parse(storedUser));
-    } else if (storedToken) {
-      // Tái tạo user từ accessToken nếu có
-      try {
-        const payload = JSON.parse(atob(storedToken.split(".")[1]));
-        const userInfo: User = {
-          id: parseInt(payload.sub),
-          username: payload.username || "Unknown",
-          role: payload.role || "Guest",
-        };
-        setUser(userInfo);
-      } catch (error) {
-        console.error('Failed to parse user from token:', error);
+      console.log("Restoring state:", {
+        storedUser,
+        storedToken,
+        storedRefreshToken,
+      });
+
+      if (storedUser && !user) {
+        setUser(JSON.parse(storedUser));
+      } else if (storedToken) {
+        try {
+          const payload = JSON.parse(atob(storedToken.split(".")[1]));
+          const userInfo: User = {
+            id: parseInt(payload.sub),
+            username: payload.username || "Unknown",
+            role: payload.role || "Guest",
+          };
+          setUser(userInfo);
+        } catch (error) {
+          console.error("Failed to parse user from token:", error);
+        }
       }
-    }
 
-    if (!accessToken && storedRefreshToken) {
-      handleRefreshToken().catch((error) => console.error('Refresh failed:', error));
-    }
+      if (!accessToken && storedRefreshToken) {
+        try {
+          await handleRefreshToken();
+        } catch (error) {
+          console.error("Refresh failed:", error);
+          handleLogout();
+        }
+      }
+
+      setIsInitialized(true);
+    };
+
+    initializeAuth();
   }, []); // Chạy một lần khi mount
 
   const handleLogin = async (username: string, password: string) => {
@@ -65,12 +94,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       const payload = JSON.parse(atob(response.accessToken.split(".")[1]));
       const userInfo: User = {
-        id: parseInt(payload.sub), 
+        id: parseInt(payload.sub),
         username,
-        role: payload.role || "Guest", 
+        role: payload.role || "Guest",
       };
       setUser(userInfo);
-      localStorage.setItem("user", JSON.stringify(userInfo)); 
+      localStorage.setItem("user", JSON.stringify(userInfo));
     } catch (error: any) {
       throw new Error(error.message || "Đăng nhập thất bại!");
     }
@@ -88,10 +117,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const handleRefreshToken = async () => {
     if (!storedRefreshToken) throw new Error("Không có refresh token!");
     try {
-      const response: RefreshResultDTO = await refreshToken({ refreshToken: storedRefreshToken });
+      const response: RefreshResultDTO = await refreshToken({
+        refreshToken: storedRefreshToken,
+      });
       localStorage.setItem("accessToken", response.accessToken);
       setAccessToken(response.accessToken);
-      console.log('Token refreshed successfully');
+      console.log("Token refreshed successfully");
 
       // Cập nhật user từ accessToken mới
       const payload = JSON.parse(atob(response.accessToken.split(".")[1]));
@@ -104,7 +135,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       localStorage.setItem("user", JSON.stringify(userInfo));
     } catch (error: any) {
       handleLogout();
-      console.error('Refresh token failed:', error.message);
+      console.error("Refresh token failed:", error.message);
     }
   };
 
@@ -120,6 +151,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         login: handleLogin,
         logout: handleLogout,
         refreshAccessToken: handleRefreshToken,
+        isInitialized,
       }}
     >
       {children}

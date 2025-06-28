@@ -22,7 +22,7 @@ import { createInvoice } from "../services/apis/invoice";
 import { createInvoiceDetail } from "../services/apis/invoicedetail";
 
 const BookingHistory: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isInitialized } = useAuth();
   const { theme } = useTheme();
   const [guestId, setGuestId] = useState<number | null>(null);
   const [bookings, setBookings] = useState<
@@ -65,6 +65,10 @@ const BookingHistory: React.FC = () => {
 
   useEffect(() => {
     const fetchBookingHistory = async () => {
+      if (!isInitialized) {
+        return;
+      }
+
       if (!user?.id) {
         setError("Vui lòng đăng nhập để xem lịch sử đặt phòng");
         setLoading(false);
@@ -99,7 +103,7 @@ const BookingHistory: React.FC = () => {
     };
 
     fetchBookingHistory();
-  }, [user?.id]);
+  }, [user?.id, isInitialized]);
 
   const handleCancelBooking = async (bookingId: number) => {
     if (!user?.id) {

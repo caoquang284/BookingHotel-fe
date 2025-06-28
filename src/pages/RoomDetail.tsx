@@ -550,6 +550,22 @@ const RoomDetail: React.FC = () => {
       toast.error("Không tìm thấy ID phòng!");
       return;
     }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+    if (
+      !checkIn ||
+      !checkOut ||
+      checkInDate < today ||
+      checkOutDate < today ||
+      checkOutDate <= checkInDate
+    ) {
+      toast.error(
+        "Ngày đến và ngày đi phải lớn hơn hôm nay và ngày đi phải lớn hơn ngày đến"
+      );
+      return;
+    }
     navigate(
       `/booking?roomId=${id}&checkIn=${checkIn}&checkOut=${checkOut}&guests=1`
     );
