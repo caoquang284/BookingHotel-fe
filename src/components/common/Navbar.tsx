@@ -86,38 +86,42 @@ const Navbar: React.FC = () => {
 
   return (
     <nav
-      className={`fixed w-full top-0 z-30 px-2 sm:px-4 py-7 transition-all duration-300 shadow-md ${
+      className={`fixed w-full top-0 z-30 px-2 sm:px-4 lg:px-8 py-3 sm:py-5 md:py-7 transition-all duration-300 shadow-md ${
         isScrolled
           ? isLight
             ? "bg-white text-black"
             : "bg-gray-900 text-gray-100"
           : isLight
-            ? "bg-transparent text-black"
-            : "bg-transparent text-gray-100"
+          ? "bg-transparent text-black"
+          : "bg-transparent text-gray-100"
       }`}
     >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center pl-52">
-          <img src={logo} alt="Roomify Logo" className="h-12 w-auto mt-2" />
+      <div className="flex items-center justify-between max-w-8xl mx-auto">
+        <div className="flex items-center pl-2 sm:pl-4 md:pl-8 lg:pl-52">
+          <img
+            src={logo}
+            alt="Roomify Logo"
+            className="h-8 sm:h-10 md:h-12 w-auto mt-1 sm:mt-2"
+          />
           <div
-            className={`text-2xl md:text-5xl font-bold font-playfair ml-2 ${
+            className={`text-lg sm:text-xl md:text-3xl lg:text-5xl font-bold font-playfair ml-1 sm:ml-2 ${
               isLight ? "text-black" : "text-gray-100"
             }`}
           >
             Roomify
           </div>
         </div>
-        <div className="hidden sm:flex flex-1 justify-center gap-6 font-medium">
+        <div className="hidden md:flex flex-1 justify-center gap-3 sm:gap-4 md:gap-6 font-medium">
           {navItems.map((item) => (
             <Link
               key={item.path}
               to={item.path}
-              className={`py-2 px-4 text-lg md:text-3xl font-medium rounded-md transition-all duration-300 group ${
+              className={`py-1 sm:py-2 px-2 sm:px-3 md:px-4 text-sm sm:text-base md:text-lg lg:text-2xl xl:text-3xl font-medium rounded-md transition-all duration-300 group ${
                 location.pathname === item.path
                   ? "font-bold text-blue-600"
                   : isLight
-                    ? "text-black"
-                    : "text-gray-100"
+                  ? "text-black"
+                  : "text-gray-100"
               }`}
             >
               <span className="relative">
@@ -127,24 +131,24 @@ const Navbar: React.FC = () => {
                     location.pathname === item.path
                       ? "bg-blue-600"
                       : isLight
-                        ? "bg-black"
-                        : "bg-gray-100"
+                      ? "bg-black"
+                      : "bg-gray-100"
                   }`}
                 ></span>
               </span>
             </Link>
           ))}
         </div>
-        <div className="flex items-center gap-4 pr-52">
-          <div className="hidden sm:flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-4 pr-2 sm:pr-4 md:pr-8 lg:pr-52">
+          <div className="hidden md:flex items-center gap-2 sm:gap-3 md:gap-4">
             {authItems.map((item) =>
               "path" in item ? (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${item.className} ${
-                    isLight ? "text-black" : "text-gray-100"
-                  } relative`}
+                  className={`py-1 sm:py-2 px-2 sm:px-3 md:px-4 text-sm sm:text-base md:text-lg lg:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${
+                    item.className
+                  } ${isLight ? "text-black" : "text-gray-100"} relative`}
                 >
                   <span className="relative">
                     {item.label}
@@ -159,9 +163,9 @@ const Navbar: React.FC = () => {
                 <button
                   key={item.label}
                   onClick={item.action}
-                  className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${item.className} ${
-                    isLight ? "text-black" : "text-gray-100"
-                  } relative`}
+                  className={`py-1 sm:py-2 px-2 sm:px-3 md:px-4 text-sm sm:text-base md:text-lg lg:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${
+                    item.className
+                  } ${isLight ? "text-black" : "text-gray-100"} relative`}
                 >
                   <span className="relative">
                     {item.label}
@@ -177,17 +181,17 @@ const Navbar: React.FC = () => {
           </div>
           <ThemeToggle />
         </div>
-        <div className="sm:hidden">
+        <div className="md:hidden">
           <button
             onClick={toggleMobileMenu}
-            className={`p-2 transition-all duration-300 ${
+            className={`p-1 sm:p-2 transition-all duration-300 ${
               isLight
                 ? "text-black hover:text-gray-600"
                 : "text-gray-100 hover:text-gray-400"
             } focus:outline-none`}
           >
             <svg
-              className="w-6 h-6"
+              className="w-5 h-5 sm:w-6 sm:h-6"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -210,22 +214,22 @@ const Navbar: React.FC = () => {
 
       {isMobileMenuOpen && (
         <div
-          className={`sm:hidden mt-2 rounded-lg transition-all duration-300 ${
+          className={`md:hidden mt-2 rounded-lg transition-all duration-300 ${
             isLight ? "bg-white text-black" : "bg-gray-900 text-gray-100"
           }`}
         >
-          <div className="flex flex-col px-4 py-2">
+          <div className="flex flex-col px-3 sm:px-4 py-2">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 group ${
+                className={`py-2 sm:py-3 px-3 sm:px-4 text-base sm:text-lg font-medium rounded-md transition-all duration-300 group ${
                   location.pathname === item.path
                     ? "font-bold text-blue-600"
                     : isLight
-                      ? "text-black"
-                      : "text-gray-100"
+                    ? "text-black"
+                    : "text-gray-100"
                 }`}
               >
                 <span className="relative">
@@ -235,8 +239,8 @@ const Navbar: React.FC = () => {
                       location.pathname === item.path
                         ? "bg-blue-600"
                         : isLight
-                          ? "bg-black"
-                          : "bg-gray-100"
+                        ? "bg-black"
+                        : "bg-gray-100"
                     }`}
                   ></span>
                 </span>
@@ -248,9 +252,9 @@ const Navbar: React.FC = () => {
                   key={item.path}
                   to={item.path}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${item.className} ${
-                    isLight ? "text-black" : "text-gray-100"
-                  }`}
+                  className={`py-2 sm:py-3 px-3 sm:px-4 text-base sm:text-lg font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${
+                    item.className
+                  } ${isLight ? "text-black" : "text-gray-100"}`}
                 >
                   <span className="relative">
                     {item.label}
@@ -268,9 +272,9 @@ const Navbar: React.FC = () => {
                     item.action();
                     setIsMobileMenuOpen(false);
                   }}
-                  className={`py-2 px-4 text-lg md:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${item.className} ${
-                    isLight ? "text-black" : "text-gray-100"
-                  }`}
+                  className={`py-2 sm:py-3 px-3 sm:px-4 text-base sm:text-lg font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${
+                    item.className
+                  } ${isLight ? "text-black" : "text-gray-100"}`}
                 >
                   <span className="relative">
                     {item.label}
@@ -283,7 +287,7 @@ const Navbar: React.FC = () => {
                 </button>
               )
             )}
-            <div className="py-2 px-4">
+            <div className="py-2 sm:py-3 px-3 sm:px-4">
               <ThemeToggle />
             </div>
           </div>
