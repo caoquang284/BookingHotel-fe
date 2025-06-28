@@ -18,6 +18,7 @@ import mapIcon from "../assets/Icon/locationIcon.svg";
 import starIcon from "../assets/Icon/starIconFilled.svg";
 import starIconEmpty from "../assets/Icon/starIconOutlined.svg";
 import { toast } from "react-toastify";
+import { useScrollToTop } from "../hooks/useScrollToTop";
 
 // Placeholder ảnh mặc định
 const DEFAULT_IMAGE = "https://via.placeholder.com/400x300?text=No+Image";
@@ -230,7 +231,7 @@ const RoomDetail: React.FC = () => {
   const [reviewCount, setReviewCount] = useState<number>(0);
   const [reviews, setReviews] = useState<ResponseReviewDto[]>([]);
   const [guests, setGuests] = useState<Record<number, ResponseGuestDTO>>({});
-
+  useScrollToTop();
   useEffect(() => {
     const fetchData = async () => {
       try {

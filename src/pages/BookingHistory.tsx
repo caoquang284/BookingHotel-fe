@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
+import { useScrollToTop } from "../hooks/useScrollToTop";
 import { getGuestByAccountId } from "../services/apis/guest";
 import { getRoomById, updateRoom } from "../services/apis/room";
 import { getAllBookingConfirmationForms } from "../services/apis/bookingconfirm";
 import { deleteBookingConfirmationForm } from "../services/apis/bookingconfirm";
 import { createReview } from "../services/apis/review"; // Thêm API tạo đánh giá
+import { getImagesByRoomId } from "../services/apis/image"; // Thêm API lấy hình ảnh
 import type { ResponseGuestDTO } from "../types/index.ts";
 import type { ResponseBookingConfirmationFormDTO } from "../types";
 import { getRoomTypeById } from "../services/apis/roomType";
@@ -24,6 +26,7 @@ import { createInvoiceDetail } from "../services/apis/invoicedetail";
 const BookingHistory: React.FC = () => {
   const { user, isInitialized } = useAuth();
   const { theme } = useTheme();
+  useScrollToTop();
   const [guestId, setGuestId] = useState<number | null>(null);
   const [bookings, setBookings] = useState<
     ResponseBookingConfirmationFormDTO[]
@@ -40,6 +43,9 @@ const BookingHistory: React.FC = () => {
     useState<ResponseBookingConfirmationFormDTO | null>(null);
   const [qrPrice, setQrPrice] = useState<number>(0);
   const [rentalForms, setRentalForms] = useState<any[]>([]);
+  const [roomImages, setRoomImages] = useState<{ [roomId: number]: string }>(
+    {}
+  ); // State lưu hình ảnh phòng
   const bookingState = {
     PENDING: "Chờ xác nhận",
     COMMITED: "Đã xác nhận",
@@ -89,6 +95,22 @@ const BookingHistory: React.FC = () => {
           const roomType = await getRoomTypeById(room.roomTypeId);
           booking.roomName = room.name;
           booking.roomTypeName = roomType.name;
+
+          // Lấy hình ảnh phòng
+          try {
+            const images = await getImagesByRoomId(booking.roomId);
+            if (images && images.length > 0) {
+              setRoomImages((prev) => ({
+                ...prev,
+                [booking.roomId]: images[0].url, // Lấy ảnh đầu tiên
+              }));
+            }
+          } catch (err) {
+            console.error(
+              `Error fetching images for room ${booking.roomId}:`,
+              err
+            );
+          }
         }
         setBookings(userBookings);
         // Lấy toàn bộ rental form
@@ -398,101 +420,137 @@ const BookingHistory: React.FC = () => {
                   theme === "light" ? "bg-white" : "bg-gray-800"
                 }`}
               >
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 gap-2 sm:gap-0">
-                  <span
-                    className={`text-base sm:text-lg md:text-xl lg:text-2xl ${
-                      theme === "light" ? "text-gray-600" : "text-gray-300"
-                    }`}
-                  >
-                    <span className="font-semibold">Mã phiếu:</span>{" "}
-                    {booking.id}
-                  </span>
-                  <span
-                    className={`text-base sm:text-lg md:text-xl lg:text-2xl ${
-                      theme === "light" ? "text-gray-600" : "text-gray-300"
-                    }`}
-                  >
-                    <span className="font-semibold">Trạng thái:</span>{" "}
-                    <span
-                      className={`${bookingStateColor[booking.bookingState]}`}
-                    >
-                      {bookingState[booking.bookingState]}
-                    </span>
-                  </span>
-                </div>
-                <p
-                  className={`text-base sm:text-lg md:text-xl lg:text-2xl mb-2 sm:mb-3 ${
-                    theme === "light" ? "text-gray-600" : "text-gray-300"
-                  }`}
-                >
-                  <span className="font-semibold">Phòng:</span>{" "}
-                  {booking.roomName} - {booking.roomTypeName}
-                </p>
-                <p
-                  className={`text-base sm:text-lg md:text-xl lg:text-2xl mb-2 sm:mb-3 ${
-                    theme === "light" ? "text-gray-600" : "text-gray-300"
-                  }`}
-                >
-                  <span className="font-semibold">Ngày đặt:</span>{" "}
-                  {new Date(booking.createdAt).toLocaleDateString("vi-VN")}
-                </p>
-                <p
-                  className={`text-base sm:text-lg md:text-xl lg:text-2xl mb-2 sm:mb-3 ${
-                    theme === "light" ? "text-gray-600" : "text-gray-300"
-                  }`}
-                >
-                  <span className="font-semibold">Ngày nhận phòng:</span>{" "}
-                  {new Date(booking.bookingDate).toLocaleDateString("vi-VN")}
-                </p>
-                <p
-                  className={`text-base sm:text-lg md:text-xl lg:text-2xl mb-2 sm:mb-3 ${
-                    theme === "light" ? "text-gray-600" : "text-gray-300"
-                  }`}
-                >
-                  <span className="font-semibold">Số ngày thuê:</span>{" "}
-                  {booking.rentalDays}
-                </p>
-                {booking.bookingState === "PENDING" &&
-                  canShowCancelButton(booking.createdAt) && (
-                    <div className="flex justify-end gap-2 sm:gap-4 mt-4">
-                      <button
-                        onClick={() => handleCancelBooking(booking.id)}
-                        className="bg-red-500 text-white text-sm sm:text-base md:text-lg lg:text-xl font-semibold py-1 sm:py-2 px-3 sm:px-4 md:px-6 rounded-lg hover:bg-red-600 transition"
+                <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
+                  {/* Hình ảnh phòng bên trái */}
+                  <div className="lg:w-1/3">
+                    {roomImages[booking.roomId] ? (
+                      <img
+                        src={roomImages[booking.roomId]}
+                        alt={`Phòng ${booking.roomName}`}
+                        className="w-full h-48 sm:h-56 md:h-64 lg:h-68 object-cover rounded-lg shadow-md"
+                      />
+                    ) : (
+                      <div
+                        className={`w-full h-48 sm:h-56 md:h-64 lg:h-48 rounded-lg shadow-md flex items-center justify-center ${
+                          theme === "light" ? "bg-gray-200" : "bg-gray-700"
+                        }`}
                       >
-                        Hủy
-                      </button>
-                    </div>
-                  )}
-                {booking.bookingState === "COMMITED" && (
-                  <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4 mt-4">
-                    {!isPaid && (
-                      <>
-                        <button
-                          onClick={() => setShowReviewForm(booking.id)}
-                          className="bg-blue-500 text-white text-sm sm:text-base md:text-lg lg:text-xl font-semibold py-1 sm:py-2 px-3 sm:px-4 md:px-6 rounded-lg hover:bg-blue-600 transition"
+                        <span
+                          className={`text-sm sm:text-base md:text-lg ${
+                            theme === "light"
+                              ? "text-gray-500"
+                              : "text-gray-400"
+                          }`}
                         >
-                          Đánh giá
-                        </button>
-                        <button
-                          onClick={() => handleShowQRModal(booking)}
-                          className="bg-green-500 text-white text-sm sm:text-base md:text-lg lg:text-xl font-semibold py-1 sm:py-2 px-3 sm:px-4 md:px-6 rounded-lg hover:bg-green-600 transition"
-                        >
-                          Check Out
-                        </button>
-                      </>
+                          Không có hình ảnh
+                        </span>
+                      </div>
                     )}
                   </div>
-                )}
-                {isPaid && (
-                  <div className="flex justify-end mt-4">
-                    <button
-                      className="bg-gray-400 text-white text-sm sm:text-base md:text-lg lg:text-xl font-semibold py-1 sm:py-2 px-3 sm:px-4 md:px-6 rounded-lg cursor-not-allowed"
-                      disabled
+
+                  {/* Thông tin đặt phòng bên phải */}
+                  <div className="lg:w-2/3">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 gap-2 sm:gap-0">
+                      <span
+                        className={`text-base sm:text-lg md:text-xl lg:text-2xl ${
+                          theme === "light" ? "text-gray-600" : "text-gray-300"
+                        }`}
+                      >
+                        <span className="font-semibold">Mã phiếu:</span>{" "}
+                        {booking.id}
+                      </span>
+                      <span
+                        className={`text-base sm:text-lg md:text-xl lg:text-2xl ${
+                          theme === "light" ? "text-gray-600" : "text-gray-300"
+                        }`}
+                      >
+                        <span className="font-semibold">Trạng thái:</span>{" "}
+                        <span
+                          className={`${
+                            bookingStateColor[booking.bookingState]
+                          }`}
+                        >
+                          {bookingState[booking.bookingState]}
+                        </span>
+                      </span>
+                    </div>
+                    <p
+                      className={`text-base sm:text-lg md:text-xl lg:text-2xl mb-2 sm:mb-3 ${
+                        theme === "light" ? "text-gray-600" : "text-gray-300"
+                      }`}
                     >
-                      Đã thanh toán
-                    </button>
+                      <span className="font-semibold">Phòng:</span>{" "}
+                      {booking.roomName} - {booking.roomTypeName}
+                    </p>
+                    <p
+                      className={`text-base sm:text-lg md:text-xl lg:text-2xl mb-2 sm:mb-3 ${
+                        theme === "light" ? "text-gray-600" : "text-gray-300"
+                      }`}
+                    >
+                      <span className="font-semibold">Ngày đặt:</span>{" "}
+                      {new Date(booking.createdAt).toLocaleDateString("vi-VN")}
+                    </p>
+                    <p
+                      className={`text-base sm:text-lg md:text-xl lg:text-2xl mb-2 sm:mb-3 ${
+                        theme === "light" ? "text-gray-600" : "text-gray-300"
+                      }`}
+                    >
+                      <span className="font-semibold">Ngày nhận phòng:</span>{" "}
+                      {new Date(booking.bookingDate).toLocaleDateString(
+                        "vi-VN"
+                      )}
+                    </p>
+                    <p
+                      className={`text-base sm:text-lg md:text-xl lg:text-2xl mb-2 sm:mb-3 ${
+                        theme === "light" ? "text-gray-600" : "text-gray-300"
+                      }`}
+                    >
+                      <span className="font-semibold">Số ngày thuê:</span>{" "}
+                      {booking.rentalDays}
+                    </p>
+                    {booking.bookingState === "PENDING" &&
+                      canShowCancelButton(booking.createdAt) && (
+                        <div className="flex justify-end gap-2 sm:gap-4 mt-4">
+                          <button
+                            onClick={() => handleCancelBooking(booking.id)}
+                            className="bg-red-500 text-white text-sm sm:text-base md:text-lg lg:text-xl font-semibold py-1 sm:py-2 px-3 sm:px-4 md:px-6 rounded-lg hover:bg-red-600 transition"
+                          >
+                            Hủy
+                          </button>
+                        </div>
+                      )}
+                    {booking.bookingState === "COMMITED" && (
+                      <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4 mt-4">
+                        {!isPaid && (
+                          <>
+                            <button
+                              onClick={() => setShowReviewForm(booking.id)}
+                              className="bg-blue-500 text-white text-sm sm:text-base md:text-lg lg:text-xl font-semibold py-1 sm:py-2 px-3 sm:px-4 md:px-6 rounded-lg hover:bg-blue-600 transition"
+                            >
+                              Đánh giá
+                            </button>
+                            <button
+                              onClick={() => handleShowQRModal(booking)}
+                              className="bg-green-500 text-white text-sm sm:text-base md:text-lg lg:text-xl font-semibold py-1 sm:py-2 px-3 sm:px-4 md:px-6 rounded-lg hover:bg-green-600 transition"
+                            >
+                              Check Out
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                    {isPaid && (
+                      <div className="flex justify-end mt-4">
+                        <button
+                          className="bg-gray-400 text-white text-sm sm:text-base md:text-lg lg:text-xl font-semibold py-1 sm:py-2 px-3 sm:px-4 md:px-6 rounded-lg cursor-not-allowed"
+                          disabled
+                        >
+                          Đã thanh toán
+                        </button>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
                 {/* Form đánh giá */}
                 {showReviewForm === booking.id && (
                   <div

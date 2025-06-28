@@ -31,6 +31,7 @@ import { getReviewsByRoomId } from "../services/apis/review";
 import { getGuestById } from "../services/apis/guest";
 import { toast } from "react-toastify";
 import Chatbot from "../components/chatBox";
+import { useScrollToTop } from "../hooks/useScrollToTop";
 
 const DEFAULT_IMAGE = "https://via.placeholder.com/400x300?text=No+Image";
 
@@ -519,7 +520,7 @@ const Home: React.FC = () => {
       setLoading(false);
     }
   };
-
+  useScrollToTop();
   useEffect(() => {
     fetchData();
     getAllRoomTypes().then(setRoomTypes);
