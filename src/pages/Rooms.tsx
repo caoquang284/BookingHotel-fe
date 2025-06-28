@@ -16,6 +16,7 @@ import type {
   ResponseImageDto,
 } from "../types/index.ts";
 import { RoomStates } from "../types/index.ts";
+import { useScrollToTop } from "../hooks/useScrollToTop";
 
 // Định nghĩa interface cho payload phân trang
 interface PaginatedResponse {
@@ -237,7 +238,7 @@ const Rooms: React.FC = () => {
   const [priceRange, setPriceRange] = useState<string>("");
   const [sortOrder, setSortOrder] = useState<string>("");
   const [starRating, setStarRating] = useState<number | null>(null);
-
+  useScrollToTop();
   useEffect(() => {
     const fetchData = async () => {
       try {

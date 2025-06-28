@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getGuestByAccountId } from '../services/apis/guest';
-import { changePassword } from '../services/apis/auth';
-import { useAuth } from '../contexts/AuthContext';
-import { useTheme } from '../contexts/ThemeContext';
-import type { GuestDTO, Sex } from '../types';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { getGuestByAccountId } from "../services/apis/guest";
+import { changePassword } from "../services/apis/auth";
+import { useAuth } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
+import type { GuestDTO, Sex } from "../types";
+import { useScrollToTop } from "../hooks/useScrollToTop";
 
 interface GuestFormData {
   id?: number;
@@ -40,50 +41,52 @@ const Profile: React.FC = () => {
   const navigate = useNavigate();
   const [guest, setGuest] = useState<GuestFormData>({
     id: undefined,
-    name: '',
-    sex: 'MALE',
+    name: "",
+    sex: "MALE",
     age: 18,
-    identificationNumber: '',
-    phoneNumber: '',
-    email: '',
+    identificationNumber: "",
+    phoneNumber: "",
+    email: "",
   });
   const [passwordData, setPasswordData] = useState<PasswordFormData>({
-    oldPassword: '',
-    newPassword: '',
-    confirmPassword: '',
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
   const [errors, setErrors] = useState<Errors>({});
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (!user?.id || !accessToken) {
-      console.warn('User or accessToken missing, redirecting to login');
-      navigate('/login');
+      console.warn("User or accessToken missing, redirecting to login");
+      navigate("/login");
       return;
     }
 
     const fetchGuest = async () => {
       try {
         setLoading(true);
-        console.log('Fetching guest data for account ID:', user.id);
+        console.log("Fetching guest data for account ID:", user.id);
         const guestData = await getGuestByAccountId(user.id);
-        console.log('Guest data received:', guestData);
-        if (!guestData || typeof guestData.id === 'undefined') {
-          throw new Error('Không tìm thấy thông tin khách hàng hoặc ID không hợp lệ');
+        console.log("Guest data received:", guestData);
+        if (!guestData || typeof guestData.id === "undefined") {
+          throw new Error(
+            "Không tìm thấy thông tin khách hàng hoặc ID không hợp lệ"
+          );
         }
         setGuest({
           id: guestData.id,
-          name: guestData.name || '',
-          sex: guestData.sex || 'MALE',
+          name: guestData.name || "",
+          sex: guestData.sex || "MALE",
           age: guestData.age || 18,
-          identificationNumber: guestData.identificationNumber || '',
-          phoneNumber: guestData.phoneNumber || '',
-          email: guestData.email || '',
+          identificationNumber: guestData.identificationNumber || "",
+          phoneNumber: guestData.phoneNumber || "",
+          email: guestData.email || "",
         });
       } catch (error) {
-        console.error('Error fetching guest data:', error);
-        alert('Không thể tải thông tin hồ sơ: ' + (error as Error).message);
-        navigate('/login');
+        console.error("Error fetching guest data:", error);
+        alert("Không thể tải thông tin hồ sơ: " + (error as Error).message);
+        navigate("/login");
       } finally {
         setLoading(false);
       }
@@ -96,19 +99,19 @@ const Profile: React.FC = () => {
     const newErrors: Errors = {};
 
     if (!guest.name.trim()) {
-      newErrors.name = 'Họ và tên không được để trống!';
+      newErrors.name = "Họ và tên không được để trống!";
     }
     if (!/^[0-9]{12}$/.test(guest.identificationNumber)) {
-      newErrors.identificationNumber = 'Số CCCD phải là 12 chữ số!';
+      newErrors.identificationNumber = "Số CCCD phải là 12 chữ số!";
     }
     if (!/^\d{10,11}$/.test(guest.phoneNumber)) {
-      newErrors.phoneNumber = 'Số điện thoại phải có 10 hoặc 11 chữ số!';
+      newErrors.phoneNumber = "Số điện thoại phải có 10 hoặc 11 chữ số!";
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guest.email)) {
-      newErrors.email = 'Email không hợp lệ!';
+      newErrors.email = "Email không hợp lệ!";
     }
     if (guest.age < 18) {
-      newErrors.age = 'Tuổi phải lớn hơn hoặc bằng 18!';
+      newErrors.age = "Tuổi phải lớn hơn hoặc bằng 18!";
     }
 
     setErrors(newErrors);
@@ -119,67 +122,74 @@ const Profile: React.FC = () => {
     const newErrors: Errors = {};
 
     if (!passwordData.oldPassword) {
-      newErrors.oldPassword = 'Mật khẩu cũ không được để trống!';
+      newErrors.oldPassword = "Mật khẩu cũ không được để trống!";
     }
     if (passwordData.newPassword.length < 6) {
-      newErrors.newPassword = 'Mật khẩu mới phải có ít nhất 6 ký tự!';
+      newErrors.newPassword = "Mật khẩu mới phải có ít nhất 6 ký tự!";
     }
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      newErrors.confirmPassword = 'Mật khẩu xác nhận không khớp!';
+      newErrors.confirmPassword = "Mật khẩu xác nhận không khớp!";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
-  const handleGuestInputChange = (field: keyof GuestFormData, value: string | number | Sex) => {
+  useScrollToTop();
+  const handleGuestInputChange = (
+    field: keyof GuestFormData,
+    value: string | number | Sex
+  ) => {
     setGuest((prev) => ({ ...prev, [field]: value }));
     const newErrors = { ...errors };
     switch (field) {
-      case 'name':
-        if (!String(value).trim()) newErrors.name = 'Họ và tên không được để trống!';
+      case "name":
+        if (!String(value).trim())
+          newErrors.name = "Họ và tên không được để trống!";
         else delete newErrors.name;
         break;
-      case 'identificationNumber':
+      case "identificationNumber":
         if (!/^[0-9]{12}$/.test(String(value))) {
-          newErrors.identificationNumber = 'Số CCCD phải là 12 chữ số!';
+          newErrors.identificationNumber = "Số CCCD phải là 12 chữ số!";
         } else delete newErrors.identificationNumber;
         break;
-      case 'phoneNumber':
+      case "phoneNumber":
         if (!/^\d{10,11}$/.test(String(value))) {
-          newErrors.phoneNumber = 'Số điện thoại phải có 10 hoặc 11 chữ số!';
+          newErrors.phoneNumber = "Số điện thoại phải có 10 hoặc 11 chữ số!";
         } else delete newErrors.phoneNumber;
         break;
-      case 'email':
+      case "email":
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value))) {
-          newErrors.email = 'Email không hợp lệ!';
+          newErrors.email = "Email không hợp lệ!";
         } else delete newErrors.email;
         break;
-      case 'age':
+      case "age":
         if (Number(value) < 18) {
-          newErrors.age = 'Tuổi phải lớn hơn hoặc bằng 18!';
+          newErrors.age = "Tuổi phải lớn hơn hoặc bằng 18!";
         } else delete newErrors.age;
         break;
     }
     setErrors(newErrors);
   };
 
-  const handlePasswordInputChange = (field: keyof PasswordFormData, value: string) => {
+  const handlePasswordInputChange = (
+    field: keyof PasswordFormData,
+    value: string
+  ) => {
     setPasswordData((prev) => ({ ...prev, [field]: value }));
     const newErrors = { ...errors };
     switch (field) {
-      case 'oldPassword':
-        if (!value) newErrors.oldPassword = 'Mật khẩu cũ không được để trống!';
+      case "oldPassword":
+        if (!value) newErrors.oldPassword = "Mật khẩu cũ không được để trống!";
         else delete newErrors.oldPassword;
         break;
-      case 'newPassword':
+      case "newPassword":
         if (value.length < 6) {
-          newErrors.newPassword = 'Mật khẩu mới phải có ít nhất 6 ký tự!';
+          newErrors.newPassword = "Mật khẩu mới phải có ít nhất 6 ký tự!";
         } else delete newErrors.newPassword;
         break;
-      case 'confirmPassword':
+      case "confirmPassword":
         if (value !== passwordData.newPassword) {
-          newErrors.confirmPassword = 'Mật khẩu xác nhận không khớp!';
+          newErrors.confirmPassword = "Mật khẩu xác nhận không khớp!";
         } else delete newErrors.confirmPassword;
         break;
     }
@@ -189,7 +199,9 @@ const Profile: React.FC = () => {
   const handleGuestInfoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateGuestInfo() || !user?.id || !accessToken || !guest.id) {
-      alert('Vui lòng kiểm tra thông tin hoặc tải lại trang để lấy thông tin khách hàng.');
+      alert(
+        "Vui lòng kiểm tra thông tin hoặc tải lại trang để lấy thông tin khách hàng."
+      );
       return;
     }
     try {
@@ -203,22 +215,25 @@ const Profile: React.FC = () => {
         email: guest.email,
         accountId: user.id,
       };
-      const response = await fetch(`http://localhost:8081/api/guest/${guest.id}/${user.id}/GUEST`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(updatedGuest),
-      });
+      const response = await fetch(
+        `http://localhost:8081/api/guest/${guest.id}/${user.id}/GUEST`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(updatedGuest),
+        }
+      );
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || 'Cập nhật thông tin thất bại');
+        throw new Error(errorText || "Cập nhật thông tin thất bại");
       }
-      alert('Cập nhật thông tin thành công!');
+      alert("Cập nhật thông tin thành công!");
     } catch (error) {
-      console.error('Error updating guest:', error);
-      alert('Cập nhật thông tin thất bại: ' + (error as Error).message);
+      console.error("Error updating guest:", error);
+      alert("Cập nhật thông tin thất bại: " + (error as Error).message);
     } finally {
       setLoading(false);
     }
@@ -227,14 +242,18 @@ const Profile: React.FC = () => {
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validatePasswordInfo() || !accessToken) {
-      alert('Vui lòng kiểm tra thông tin.');
+      alert("Vui lòng kiểm tra thông tin.");
       return;
     }
     try {
       setLoading(true);
       await changePassword(passwordData, accessToken);
-      alert('Thay đổi mật khẩu thành công!');
-      setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
+      alert("Thay đổi mật khẩu thành công!");
+      setPasswordData({
+        oldPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
     } catch (error) {
       alert((error as Error).message);
     } finally {
@@ -244,12 +263,20 @@ const Profile: React.FC = () => {
 
   if (loading) {
     return (
-      <div className={`flex justify-center items-center h-screen ${
-        theme === 'light' ? 'bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100' : 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700'
-      }`}>
-        <div className={`text-center text-lg font-semibold ${
-          theme === 'light' ? 'text-gray-800' : 'text-gray-100'
-        }`}>Đang tải...</div>
+      <div
+        className={`flex justify-center items-center h-screen ${
+          theme === "light"
+            ? "bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100"
+            : "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700"
+        }`}
+      >
+        <div
+          className={`text-center text-lg font-semibold ${
+            theme === "light" ? "text-gray-800" : "text-gray-100"
+          }`}
+        >
+          Đang tải...
+        </div>
       </div>
     );
   }
@@ -257,32 +284,32 @@ const Profile: React.FC = () => {
   return (
     <div
       className={`relative min-h-screen flex items-center justify-center transition-all duration-300 pt-35 pb-8 ${
-        theme === 'light'
-          ? 'bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100'
-          : 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700'
+        theme === "light"
+          ? "bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100"
+          : "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700"
       } overflow-hidden`}
     >
       <div className="absolute inset-0 -z-10">
         <div
           className={`absolute w-64 h-64 opacity-20 rounded-full blur-3xl animate-pulse top-20 left-20 ${
-            theme === 'light' ? 'bg-indigo-200' : 'bg-indigo-900'
+            theme === "light" ? "bg-indigo-200" : "bg-indigo-900"
           }`}
         ></div>
         <div
           className={`absolute w-80 h-80 opacity-20 rounded-full blur-3xl animate-pulse bottom-20 right-20 ${
-            theme === 'light' ? 'bg-pink-200' : 'bg-pink-900'
+            theme === "light" ? "bg-pink-200" : "bg-pink-900"
           }`}
         ></div>
       </div>
 
       <div
         className={`p-8 rounded-2xl shadow-xl w-full max-w-4xl z-10 ${
-          theme === 'light' ? 'bg-white' : 'bg-gray-800'
+          theme === "light" ? "bg-white" : "bg-gray-800"
         }`}
       >
         <h2
           className={`text-3xl font-bold text-center mb-6 ${
-            theme === 'light' ? 'text-gray-800' : 'text-gray-100'
+            theme === "light" ? "text-gray-800" : "text-gray-100"
           }`}
         >
           Hồ Sơ Cá Nhân
@@ -291,16 +318,19 @@ const Profile: React.FC = () => {
         <div className="mb-12">
           <h3
             className={`text-xl font-semibold mb-4 ${
-              theme === 'light' ? 'text-gray-700' : 'text-gray-200'
+              theme === "light" ? "text-gray-700" : "text-gray-200"
             }`}
           >
             Thông Tin Cá Nhân
           </h3>
-          <form onSubmit={handleGuestInfoSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <form
+            onSubmit={handleGuestInfoSubmit}
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          >
             <div className="relative">
               <label
                 className={`block text-sm font-medium mb-2 ${
-                  theme === 'light' ? 'text-gray-700' : 'text-gray-200'
+                  theme === "light" ? "text-gray-700" : "text-gray-200"
                 }`}
               >
                 Họ và tên
@@ -308,7 +338,7 @@ const Profile: React.FC = () => {
               <div className="flex items-center">
                 <span
                   className={`absolute left-3 ${
-                    theme === 'light' ? 'text-gray-400' : 'text-gray-300'
+                    theme === "light" ? "text-gray-400" : "text-gray-300"
                   }`}
                 >
                   <svg
@@ -329,14 +359,16 @@ const Profile: React.FC = () => {
                 <input
                   type="text"
                   value={guest.name}
-                  onChange={(e) => handleGuestInputChange('name', e.target.value)}
+                  onChange={(e) =>
+                    handleGuestInputChange("name", e.target.value)
+                  }
                   className={`pl-10 pr-4 py-3 w-full rounded-lg border transition-all duration-300 ${
-                    theme === 'light'
+                    theme === "light"
                       ? `border-gray-200 bg-white text-gray-900 focus:ring-indigo-500 ${
-                          errors.name ? 'border-red-500' : ''
+                          errors.name ? "border-red-500" : ""
                         }`
                       : `border-gray-600 bg-gray-700 text-gray-100 focus:ring-indigo-400 ${
-                          errors.name ? 'border-red-400' : ''
+                          errors.name ? "border-red-400" : ""
                         }`
                   } focus:outline-none focus:ring-2 text-sm`}
                   placeholder="Họ và tên"
@@ -346,7 +378,7 @@ const Profile: React.FC = () => {
               {errors.name && (
                 <p
                   className={`text-sm mt-1 ${
-                    theme === 'light' ? 'text-red-500' : 'text-red-400'
+                    theme === "light" ? "text-red-500" : "text-red-400"
                   }`}
                 >
                   {errors.name}
@@ -356,7 +388,7 @@ const Profile: React.FC = () => {
             <div className="relative">
               <label
                 className={`block text-sm font-medium mb-2 ${
-                  theme === 'light' ? 'text-gray-700' : 'text-gray-200'
+                  theme === "light" ? "text-gray-700" : "text-gray-200"
                 }`}
               >
                 Giới tính
@@ -364,7 +396,7 @@ const Profile: React.FC = () => {
               <div className="flex items-center">
                 <span
                   className={`absolute left-3 ${
-                    theme === 'light' ? 'text-gray-400' : 'text-gray-300'
+                    theme === "light" ? "text-gray-400" : "text-gray-300"
                   }`}
                 >
                   <svg
@@ -384,11 +416,13 @@ const Profile: React.FC = () => {
                 </span>
                 <select
                   value={guest.sex}
-                  onChange={(e) => handleGuestInputChange('sex', e.target.value as Sex)}
+                  onChange={(e) =>
+                    handleGuestInputChange("sex", e.target.value as Sex)
+                  }
                   className={`pl-10 pr-4 py-3 w-full rounded-lg border transition-all duration-300 ${
-                    theme === 'light'
-                      ? 'border-gray-200 bg-white text-gray-900 focus:ring-indigo-500'
-                      : 'border-gray-600 bg-gray-700 text-gray-100 focus:ring-indigo-400'
+                    theme === "light"
+                      ? "border-gray-200 bg-white text-gray-900 focus:ring-indigo-500"
+                      : "border-gray-600 bg-gray-700 text-gray-100 focus:ring-indigo-400"
                   } focus:outline-none focus:ring-2 text-sm`}
                   aria-label="Giới tính"
                 >
@@ -401,7 +435,7 @@ const Profile: React.FC = () => {
             <div className="relative">
               <label
                 className={`block text-sm font-medium mb-2 ${
-                  theme === 'light' ? 'text-gray-700' : 'text-gray-200'
+                  theme === "light" ? "text-gray-700" : "text-gray-200"
                 }`}
               >
                 Tuổi
@@ -409,7 +443,7 @@ const Profile: React.FC = () => {
               <div className="flex items-center">
                 <span
                   className={`absolute left-3 ${
-                    theme === 'light' ? 'text-gray-400' : 'text-gray-300'
+                    theme === "light" ? "text-gray-400" : "text-gray-300"
                   }`}
                 >
                   <svg
@@ -430,14 +464,16 @@ const Profile: React.FC = () => {
                 <input
                   type="number"
                   value={guest.age}
-                  onChange={(e) => handleGuestInputChange('age', parseInt(e.target.value))}
+                  onChange={(e) =>
+                    handleGuestInputChange("age", parseInt(e.target.value))
+                  }
                   className={`pl-10 pr-4 py-3 w-full rounded-lg border transition-all duration-300 ${
-                    theme === 'light'
+                    theme === "light"
                       ? `border-gray-200 bg-white text-gray-900 focus:ring-indigo-500 ${
-                          errors.age ? 'border-red-500' : ''
+                          errors.age ? "border-red-500" : ""
                         }`
                       : `border-gray-600 bg-gray-700 text-gray-100 focus:ring-indigo-400 ${
-                          errors.age ? 'border-red-400' : ''
+                          errors.age ? "border-red-400" : ""
                         }`
                   } focus:outline-none focus:ring-2 text-sm`}
                   placeholder="Tuổi"
@@ -448,7 +484,7 @@ const Profile: React.FC = () => {
               {errors.age && (
                 <p
                   className={`text-sm mt-1 ${
-                    theme === 'light' ? 'text-red-500' : 'text-red-400'
+                    theme === "light" ? "text-red-500" : "text-red-400"
                   }`}
                 >
                   {errors.age}
@@ -458,7 +494,7 @@ const Profile: React.FC = () => {
             <div className="relative">
               <label
                 className={`block text-sm font-medium mb-2 ${
-                  theme === 'light' ? 'text-gray-700' : 'text-gray-200'
+                  theme === "light" ? "text-gray-700" : "text-gray-200"
                 }`}
               >
                 CCCD
@@ -466,7 +502,7 @@ const Profile: React.FC = () => {
               <div className="flex items-center">
                 <span
                   className={`absolute left-3 ${
-                    theme === 'light' ? 'text-gray-400' : 'text-gray-300'
+                    theme === "light" ? "text-gray-400" : "text-gray-300"
                   }`}
                 >
                   <svg
@@ -487,14 +523,19 @@ const Profile: React.FC = () => {
                 <input
                   type="text"
                   value={guest.identificationNumber}
-                  onChange={(e) => handleGuestInputChange('identificationNumber', e.target.value)}
+                  onChange={(e) =>
+                    handleGuestInputChange(
+                      "identificationNumber",
+                      e.target.value
+                    )
+                  }
                   className={`pl-10 pr-4 py-3 w-full rounded-lg border transition-all duration-300 ${
-                    theme === 'light'
+                    theme === "light"
                       ? `border-gray-200 bg-white text-gray-900 focus:ring-indigo-500 ${
-                          errors.identificationNumber ? 'border-red-500' : ''
+                          errors.identificationNumber ? "border-red-500" : ""
                         }`
                       : `border-gray-600 bg-gray-700 text-gray-100 focus:ring-indigo-400 ${
-                          errors.identificationNumber ? 'border-red-400' : ''
+                          errors.identificationNumber ? "border-red-400" : ""
                         }`
                   } focus:outline-none focus:ring-2 text-sm`}
                   placeholder="Số CCCD"
@@ -504,7 +545,7 @@ const Profile: React.FC = () => {
               {errors.identificationNumber && (
                 <p
                   className={`text-sm mt-1 ${
-                    theme === 'light' ? 'text-red-500' : 'text-red-400'
+                    theme === "light" ? "text-red-500" : "text-red-400"
                   }`}
                 >
                   {errors.identificationNumber}
@@ -514,7 +555,7 @@ const Profile: React.FC = () => {
             <div className="relative">
               <label
                 className={`block text-sm font-medium mb-2 ${
-                  theme === 'light' ? 'text-gray-700' : 'text-gray-200'
+                  theme === "light" ? "text-gray-700" : "text-gray-200"
                 }`}
               >
                 Số điện thoại
@@ -522,7 +563,7 @@ const Profile: React.FC = () => {
               <div className="flex items-center">
                 <span
                   className={`absolute left-3 ${
-                    theme === 'light' ? 'text-gray-400' : 'text-gray-300'
+                    theme === "light" ? "text-gray-400" : "text-gray-300"
                   }`}
                 >
                   <svg
@@ -543,14 +584,16 @@ const Profile: React.FC = () => {
                 <input
                   type="text"
                   value={guest.phoneNumber}
-                  onChange={(e) => handleGuestInputChange('phoneNumber', e.target.value)}
+                  onChange={(e) =>
+                    handleGuestInputChange("phoneNumber", e.target.value)
+                  }
                   className={`pl-10 pr-4 py-3 w-full rounded-lg border transition-all duration-300 ${
-                    theme === 'light'
+                    theme === "light"
                       ? `border-gray-200 bg-white text-gray-900 focus:ring-indigo-500 ${
-                          errors.phoneNumber ? 'border-red-500' : ''
+                          errors.phoneNumber ? "border-red-500" : ""
                         }`
                       : `border-gray-600 bg-gray-700 text-gray-100 focus:ring-indigo-400 ${
-                          errors.phoneNumber ? 'border-red-400' : ''
+                          errors.phoneNumber ? "border-red-400" : ""
                         }`
                   } focus:outline-none focus:ring-2 text-sm`}
                   placeholder="Số điện thoại"
@@ -560,7 +603,7 @@ const Profile: React.FC = () => {
               {errors.phoneNumber && (
                 <p
                   className={`text-sm mt-1 ${
-                    theme === 'light' ? 'text-red-500' : 'text-red-400'
+                    theme === "light" ? "text-red-500" : "text-red-400"
                   }`}
                 >
                   {errors.phoneNumber}
@@ -570,7 +613,7 @@ const Profile: React.FC = () => {
             <div className="relative">
               <label
                 className={`block text-sm font-medium mb-2 ${
-                  theme === 'light' ? 'text-gray-700' : 'text-gray-200'
+                  theme === "light" ? "text-gray-700" : "text-gray-200"
                 }`}
               >
                 Email
@@ -578,7 +621,7 @@ const Profile: React.FC = () => {
               <div className="flex items-center">
                 <span
                   className={`absolute left-3 ${
-                    theme === 'light' ? 'text-gray-400' : 'text-gray-300'
+                    theme === "light" ? "text-gray-400" : "text-gray-300"
                   }`}
                 >
                   <svg
@@ -599,14 +642,16 @@ const Profile: React.FC = () => {
                 <input
                   type="email"
                   value={guest.email}
-                  onChange={(e) => handleGuestInputChange('email', e.target.value)}
+                  onChange={(e) =>
+                    handleGuestInputChange("email", e.target.value)
+                  }
                   className={`pl-10 pr-4 py-3 w-full rounded-lg border transition-all duration-300 ${
-                    theme === 'light'
+                    theme === "light"
                       ? `border-gray-200 bg-white text-gray-900 focus:ring-indigo-500 ${
-                          errors.email ? 'border-red-500' : ''
+                          errors.email ? "border-red-500" : ""
                         }`
                       : `border-gray-600 bg-gray-700 text-gray-100 focus:ring-indigo-400 ${
-                          errors.email ? 'border-red-400' : ''
+                          errors.email ? "border-red-400" : ""
                         }`
                   } focus:outline-none focus:ring-2 text-sm`}
                   placeholder="Email"
@@ -616,7 +661,7 @@ const Profile: React.FC = () => {
               {errors.email && (
                 <p
                   className={`text-sm mt-1 ${
-                    theme === 'light' ? 'text-red-500' : 'text-red-400'
+                    theme === "light" ? "text-red-500" : "text-red-400"
                   }`}
                 >
                   {errors.email}
@@ -628,12 +673,12 @@ const Profile: React.FC = () => {
                 type="submit"
                 disabled={loading}
                 className={`bg-gradient-to-r text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 ${
-                  theme === 'light'
-                    ? 'from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600'
-                    : 'from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700'
+                  theme === "light"
+                    ? "from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600"
+                    : "from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
                 }`}
               >
-                {loading ? 'Đang cập nhật...' : 'Cập nhật thông tin'}
+                {loading ? "Đang cập nhật..." : "Cập nhật thông tin"}
               </button>
             </div>
           </form>
@@ -642,16 +687,19 @@ const Profile: React.FC = () => {
         <div>
           <h3
             className={`text-xl font-semibold mb-4 ${
-              theme === 'light' ? 'text-gray-700' : 'text-gray-200'
+              theme === "light" ? "text-gray-700" : "text-gray-200"
             }`}
           >
             Thay Đổi Mật Khẩu
           </h3>
-          <form onSubmit={handlePasswordSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <form
+            onSubmit={handlePasswordSubmit}
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          >
             <div className="relative">
               <label
                 className={`block text-sm font-medium mb-2 ${
-                  theme === 'light' ? 'text-gray-700' : 'text-gray-200'
+                  theme === "light" ? "text-gray-700" : "text-gray-200"
                 }`}
               >
                 Mật khẩu cũ
@@ -659,7 +707,7 @@ const Profile: React.FC = () => {
               <div className="flex items-center">
                 <span
                   className={`absolute left-3 ${
-                    theme === 'light' ? 'text-gray-400' : 'text-gray-300'
+                    theme === "light" ? "text-gray-400" : "text-gray-300"
                   }`}
                 >
                   <svg
@@ -680,14 +728,16 @@ const Profile: React.FC = () => {
                 <input
                   type="password"
                   value={passwordData.oldPassword}
-                  onChange={(e) => handlePasswordInputChange('oldPassword', e.target.value)}
+                  onChange={(e) =>
+                    handlePasswordInputChange("oldPassword", e.target.value)
+                  }
                   className={`pl-10 pr-4 py-3 w-full rounded-lg border transition-all duration-300 ${
-                    theme === 'light'
+                    theme === "light"
                       ? `border-gray-200 bg-white text-gray-900 focus:ring-indigo-500 ${
-                          errors.oldPassword ? 'border-red-500' : ''
+                          errors.oldPassword ? "border-red-500" : ""
                         }`
                       : `border-gray-600 bg-gray-700 text-gray-100 focus:ring-indigo-400 ${
-                          errors.oldPassword ? 'border-red-400' : ''
+                          errors.oldPassword ? "border-red-400" : ""
                         }`
                   } focus:outline-none focus:ring-2 text-sm`}
                   placeholder="Mật khẩu cũ"
@@ -697,7 +747,7 @@ const Profile: React.FC = () => {
               {errors.oldPassword && (
                 <p
                   className={`text-sm mt-1 ${
-                    theme === 'light' ? 'text-red-500' : 'text-red-400'
+                    theme === "light" ? "text-red-500" : "text-red-400"
                   }`}
                 >
                   {errors.oldPassword}
@@ -707,7 +757,7 @@ const Profile: React.FC = () => {
             <div className="relative">
               <label
                 className={`block text-sm font-medium mb-2 ${
-                  theme === 'light' ? 'text-gray-700' : 'text-gray-200'
+                  theme === "light" ? "text-gray-700" : "text-gray-200"
                 }`}
               >
                 Mật khẩu mới
@@ -715,7 +765,7 @@ const Profile: React.FC = () => {
               <div className="flex items-center">
                 <span
                   className={`absolute left-3 ${
-                    theme === 'light' ? 'text-gray-400' : 'text-gray-300'
+                    theme === "light" ? "text-gray-400" : "text-gray-300"
                   }`}
                 >
                   <svg
@@ -736,14 +786,16 @@ const Profile: React.FC = () => {
                 <input
                   type="password"
                   value={passwordData.newPassword}
-                  onChange={(e) => handlePasswordInputChange('newPassword', e.target.value)}
+                  onChange={(e) =>
+                    handlePasswordInputChange("newPassword", e.target.value)
+                  }
                   className={`pl-10 pr-4 py-3 w-full rounded-lg border transition-all duration-300 ${
-                    theme === 'light'
+                    theme === "light"
                       ? `border-gray-200 bg-white text-gray-900 focus:ring-indigo-500 ${
-                          errors.newPassword ? 'border-red-500' : ''
+                          errors.newPassword ? "border-red-500" : ""
                         }`
                       : `border-gray-600 bg-gray-700 text-gray-100 focus:ring-indigo-400 ${
-                          errors.newPassword ? 'border-red-400' : ''
+                          errors.newPassword ? "border-red-400" : ""
                         }`
                   } focus:outline-none focus:ring-2 text-sm`}
                   placeholder="Mật khẩu mới"
@@ -753,7 +805,7 @@ const Profile: React.FC = () => {
               {errors.newPassword && (
                 <p
                   className={`text-sm mt-1 ${
-                    theme === 'light' ? 'text-red-500' : 'text-red-400'
+                    theme === "light" ? "text-red-500" : "text-red-400"
                   }`}
                 >
                   {errors.newPassword}
@@ -763,7 +815,7 @@ const Profile: React.FC = () => {
             <div className="relative">
               <label
                 className={`block text-sm font-medium mb-2 ${
-                  theme === 'light' ? 'text-gray-700' : 'text-gray-200'
+                  theme === "light" ? "text-gray-700" : "text-gray-200"
                 }`}
               >
                 Xác nhận mật khẩu
@@ -771,7 +823,7 @@ const Profile: React.FC = () => {
               <div className="flex items-center">
                 <span
                   className={`absolute left-3 ${
-                    theme === 'light' ? 'text-gray-400' : 'text-gray-300'
+                    theme === "light" ? "text-gray-400" : "text-gray-300"
                   }`}
                 >
                   <svg
@@ -792,14 +844,16 @@ const Profile: React.FC = () => {
                 <input
                   type="password"
                   value={passwordData.confirmPassword}
-                  onChange={(e) => handlePasswordInputChange('confirmPassword', e.target.value)}
+                  onChange={(e) =>
+                    handlePasswordInputChange("confirmPassword", e.target.value)
+                  }
                   className={`pl-10 pr-4 py-3 w-full rounded-lg border transition-all duration-300 ${
-                    theme === 'light'
+                    theme === "light"
                       ? `border-gray-200 bg-white text-gray-900 focus:ring-indigo-500 ${
-                          errors.confirmPassword ? 'border-red-500' : ''
+                          errors.confirmPassword ? "border-red-500" : ""
                         }`
                       : `border-gray-600 bg-gray-700 text-gray-100 focus:ring-indigo-400 ${
-                          errors.confirmPassword ? 'border-red-400' : ''
+                          errors.confirmPassword ? "border-red-400" : ""
                         }`
                   } focus:outline-none focus:ring-2 text-sm`}
                   placeholder="Xác nhận mật khẩu"
@@ -809,7 +863,7 @@ const Profile: React.FC = () => {
               {errors.confirmPassword && (
                 <p
                   className={`text-sm mt-1 ${
-                    theme === 'light' ? 'text-red-500' : 'text-red-400'
+                    theme === "light" ? "text-red-500" : "text-red-400"
                   }`}
                 >
                   {errors.confirmPassword}
@@ -821,12 +875,12 @@ const Profile: React.FC = () => {
                 type="submit"
                 disabled={loading}
                 className={`bg-gradient-to-r text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 ${
-                  theme === 'light'
-                    ? 'from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600'
-                    : 'from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700'
+                  theme === "light"
+                    ? "from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600"
+                    : "from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
                 }`}
               >
-                {loading ? 'Đang thay đổi...' : 'Thay đổi mật khẩu'}
+                {loading ? "Đang thay đổi..." : "Thay đổi mật khẩu"}
               </button>
             </div>
           </form>

@@ -31,6 +31,7 @@ import { getReviewsByRoomId } from "../services/apis/review";
 import { getGuestById } from "../services/apis/guest";
 import { toast } from "react-toastify";
 import Chatbot from "../components/chatBox";
+import { useScrollToTop } from "../hooks/useScrollToTop";
 
 const DEFAULT_IMAGE = "https://via.placeholder.com/400x300?text=No+Image";
 
@@ -558,7 +559,7 @@ const Home: React.FC = () => {
       setLoading(false);
     }
   };
-
+  useScrollToTop();
   useEffect(() => {
     fetchData();
     getAllRoomTypes().then(setRoomTypes);
@@ -638,7 +639,7 @@ const Home: React.FC = () => {
 
   const sliderRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
-
+  const reviewCardRefs = useRef<(HTMLDivElement | null)[]>([]); // Thêm ref cho ReviewCard
   useEffect(() => {
     const slider = sliderRef.current;
     if (!slider) return;
@@ -676,6 +677,84 @@ const Home: React.FC = () => {
   useEffect(() => {
     cardRefs.current = new Array(rooms.length).fill(null);
   }, [rooms]);
+
+  // IntersectionObserver cho RoomCard
+  useEffect(() => {
+    const slider = sliderRef.current;
+    if (!slider) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const card = entry.target as HTMLDivElement;
+          if (entry.isIntersecting) {
+            card.classList.add("fade-slide-in", "visible");
+            card.classList.remove("fade-slide-out");
+            card.style.width = "100%";
+            card.style.transform = "scale(1)";
+          } else {
+            card.classList.remove("visible");
+            card.classList.add("fade-slide-out");
+            card.style.width = "75%";
+            card.style.transform = "scale(0.75)";
+          }
+        });
+      },
+      {
+        root: slider,
+        threshold: 0.5,
+      }
+    );
+
+    cardRefs.current.forEach((card) => {
+      if (card) observer.observe(card);
+    });
+
+    return () => {
+      cardRefs.current.forEach((card) => {
+        if (card) observer.unobserve(card);
+      });
+    };
+  }, [rooms]);
+
+  // IntersectionObserver cho ReviewCard
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const card = entry.target as HTMLDivElement;
+          if (entry.isIntersecting) {
+            card.classList.add("fade-slide-in", "visible");
+            card.classList.remove("fade-slide-out");
+          } else {
+            card.classList.remove("visible");
+            card.classList.add("fade-slide-out");
+          }
+        });
+      },
+      {
+        root: null, // Sử dụng viewport làm root
+        threshold: 0.1, // Kích hoạt khi 10% thẻ nằm trong viewport
+      }
+    );
+
+    reviewCardRefs.current.forEach((card) => {
+      if (card) observer.observe(card);
+    });
+
+    return () => {
+      reviewCardRefs.current.forEach((card) => {
+        if (card) observer.unobserve(card);
+      });
+    };
+  }, [reviewsByRoom]);
+
+  useEffect(() => {
+    cardRefs.current = new Array(rooms.length).fill(null);
+    reviewCardRefs.current = new Array(
+      Object.values(reviewsByRoom).flat().length
+    ).fill(null); // Khởi tạo refs cho ReviewCard
+  }, [rooms, reviewsByRoom]);
 
   const scrollLeft = () => {
     if (sliderRef.current) {
@@ -880,20 +959,28 @@ const Home: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {Object.values(reviewsByRoom)
             .flat()
-            .map((review) => (
-              <ReviewCard
+            .map((review, index) => (
+              <div
                 key={review.id}
-                review={review}
-                guests={guests}
-                roomId={review.roomId}
-                roomNames={allRoomNames}
-              />
+                className="fade-slide-in"
+                ref={(el) => {
+                  if (el) reviewCardRefs.current[index] = el;
+                }}
+              >
+                <ReviewCard
+                  review={review}
+                  guests={guests}
+                  roomId={review.roomId}
+                  roomNames={allRoomNames}
+                />
+              </div>
             ))}
           {Object.values(reviewsByRoom).every((reviews) => !reviews.length) && (
             <div
-              className={`rounded-lg shadow-md p-4 text-center col-span-full transition-all duration-300 ${
-                theme === "light" ? "bg-white" : "bg-gray-800"
-              }`}
+              className={`rounded-lg shadow-md p-4 text-center col-span-full transition-all duration-300 fade-slide-in`}
+              ref={(el) => {
+                if (el) reviewCardRefs.current[0] = el;
+              }}
             >
               <p
                 className={`text-base sm:text-lg ${

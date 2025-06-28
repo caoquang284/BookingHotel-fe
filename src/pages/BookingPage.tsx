@@ -9,6 +9,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { createBookingConfirmationForm } from "../services/apis/bookingconfirm";
 import type { ResponseRoomDTO, BookingConfirmationFormDTO } from "../types";
+import { useScrollToTop } from "../hooks/useScrollToTop";
 
 const formatVND = (amount: number) =>
   amount.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
@@ -39,7 +40,7 @@ const BookingPage: React.FC = () => {
   );
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [isGeneratingQR, setIsGeneratingQR] = useState(false);
-
+  useScrollToTop();
   useEffect(() => {
     const fetchData = async () => {
       if (!roomId) {

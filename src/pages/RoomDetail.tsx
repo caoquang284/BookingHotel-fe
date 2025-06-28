@@ -18,6 +18,7 @@ import mapIcon from "../assets/Icon/locationIcon.svg";
 import starIcon from "../assets/Icon/starIconFilled.svg";
 import starIconEmpty from "../assets/Icon/starIconOutlined.svg";
 import { toast } from "react-toastify";
+import { useScrollToTop } from "../hooks/useScrollToTop";
 
 // Placeholder ảnh mặc định
 const DEFAULT_IMAGE = "https://via.placeholder.com/400x300?text=No+Image";
@@ -230,7 +231,7 @@ const RoomDetail: React.FC = () => {
   const [reviewCount, setReviewCount] = useState<number>(0);
   const [reviews, setReviews] = useState<ResponseReviewDto[]>([]);
   const [guests, setGuests] = useState<Record<number, ResponseGuestDTO>>({});
-
+  useScrollToTop();
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -548,6 +549,22 @@ const RoomDetail: React.FC = () => {
   ) => {
     if (!id) {
       toast.error("Không tìm thấy ID phòng!");
+      return;
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+    if (
+      !checkIn ||
+      !checkOut ||
+      checkInDate < today ||
+      checkOutDate < today ||
+      checkOutDate <= checkInDate
+    ) {
+      toast.error(
+        "Ngày đến và ngày đi phải lớn hơn hôm nay và ngày đi phải lớn hơn ngày đến"
+      );
       return;
     }
     navigate(

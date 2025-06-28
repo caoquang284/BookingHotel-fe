@@ -141,4 +141,3 @@ export async function buildRooms(): Promise<string> {
 
   return kb + '\n';
 }
-
