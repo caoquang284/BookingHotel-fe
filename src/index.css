@@ -13,6 +13,44 @@
   }
 }
 
+/* Hiệu ứng trôi nổi */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Lớp tùy chỉnh cho kích thước và độ mờ của hình ảnh */
+@layer utilities {
+  .img-size-full {
+    width: 100%;
+  }
+  .img-size-three-quarter {
+    width: 75%;
+  }
+  .img-size-half {
+    width: 50%;
+  }
+  .img-opacity-full {
+    opacity: 1;
+  }
+  .img-opacity-medium {
+    opacity: 0.8;
+  }
+  .img-opacity-low {
+    opacity: 0.6;
+  }
+}
 /* File: src/index.css hoặc src/App.css */
 .fade-slide-in {
   opacity: 0;
