@@ -642,7 +642,7 @@ const BookingHistory: React.FC = () => {
       {/* Modal QR Code */}
       {showQRModal && selectedBookingForQR && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+          <div className="absolute inset-0 bg-opacity-50"></div>
           <div
             className={`rounded-2xl shadow-2xl max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl w-full p-4 sm:p-6 relative transition-all duration-300 ${
               theme === "light" ? "bg-white" : "bg-gray-800"
