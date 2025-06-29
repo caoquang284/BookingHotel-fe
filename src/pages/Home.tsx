@@ -24,6 +24,7 @@ import type {
   ResponseBookingConfirmationFormDTO,
 } from "../types";
 import backgroundImage from "../assets/Image/bg.jpg";
+import backgroundImage1 from "../assets/Image/bg1.jpg";
 import starIcon from "../assets/Icon/starIconFilled.svg";
 import starIconEmpty from "../assets/Icon/starIconOutlined.svg";
 import totalBookingIcon from "../assets/Icon/totalBookingIcon.svg";
@@ -34,7 +35,8 @@ import Chatbot from "../components/chatBox";
 import { useScrollToTop } from "../hooks/useScrollToTop";
 
 const DEFAULT_IMAGE = "https://via.placeholder.com/400x300?text=No+Image";
-
+import CountUp from "react-countup";
+import { useInView } from "react-intersection-observer";
 interface PaginatedResponse {
   content: ResponseRoomDTO[];
   empty: boolean;
@@ -97,7 +99,7 @@ const BookingBox: React.FC<{
   return (
     <div
       className={`shadow-2xl rounded-2xl p-4 sm:p-6 md:p-8 lg:p-10 w-full max-w-5xl mx-auto -mt-16 sm:-mt-20 md:-mt-24 relative z-10 transition-all duration-300 ${
-        theme === "light" ? "bg-white" : "bg-gray-800"
+        theme === "light" ? "bg-gray-200" : "bg-gray-800"
       }`}
     >
       <form
@@ -454,22 +456,26 @@ const About: React.FC<{
   averageRating: number;
 }> = ({ totalRooms, totalBookings, averageRating }) => {
   const { theme } = useTheme();
+  const imageRefs = useRef<(HTMLImageElement | null)[]>([]);
 
   const aboutItems = [
     {
       icon: "🏨",
-      count: `${totalRooms}+`,
+      count: totalRooms,
       text: "Phòng sang trọng",
+      hasSuffix: true,
     },
     {
       icon: "👥",
-      count: `${totalBookings}+`,
+      count: totalBookings,
       text: "Đặt phòng thành công",
+      hasSuffix: true,
     },
     {
       icon: "⭐",
-      count: averageRating.toFixed(1),
+      count: averageRating,
       text: "Đánh giá trung bình",
+      hasSuffix: false,
     },
   ];
 
@@ -480,10 +486,47 @@ const About: React.FC<{
     "https://www.signatureluxurytravel.com.au/wp-content/uploads/2000/02/CTS-RM-8888-A-TRRCE-FINAL-01A.jpg",
   ];
 
+  // Intersection Observer cho hình ảnh
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const img = entry.target as HTMLImageElement;
+          if (entry.isIntersecting) {
+            img.classList.add("fade-slide-in", "visible");
+            img.classList.remove("fade-slide-out");
+          } else {
+            img.classList.remove("visible");
+            img.classList.add("fade-slide-out");
+          }
+        });
+      },
+      {
+        root: null,
+        threshold: 0.3,
+        rootMargin: "0px 0px -50px 0px",
+      }
+    );
+
+    imageRefs.current.forEach((img) => {
+      if (img) observer.observe(img);
+    });
+
+    return () => {
+      imageRefs.current.forEach((img) => {
+        if (img) observer.unobserve(img);
+      });
+    };
+  }, []);
+
+  useEffect(() => {
+    imageRefs.current = new Array(4).fill(null);
+  }, []);
+
   return (
     <div
       className={`py-12 sm:py-20 md:py-24 lg:py-32 transition-all duration-300 ${
-        theme === "light" ? "bg-gray-100" : "bg-gray-800"
+        theme === "light" ? "bg-gray-200" : "bg-gray-900"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -518,7 +561,7 @@ const About: React.FC<{
 
             <p
               className={`text-base sm:text-lg md:text-xl leading-relaxed ${
-                theme === "light" ? "text-gray-600" : "text-gray-300"
+                theme === "light" ? "text-gray-600" : "text-gray-400"
               }`}
             >
               Roomify là điểm đến lý tưởng cho những ai đang tìm kiếm trải
@@ -530,34 +573,58 @@ const About: React.FC<{
 
             {/* Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-              {aboutItems.map((item, index) => (
-                <div
-                  key={index}
-                  className={`p-4 sm:p-6 rounded-lg border transition-all duration-300 ${
-                    theme === "light"
-                      ? "bg-gray-50 border-gray-200 hover:border-blue-300"
-                      : "bg-gray-700 border-gray-600 hover:border-blue-500"
-                  }`}
-                >
-                  <div className="text-center">
-                    <div className="text-3xl sm:text-4xl mb-4">{item.icon}</div>
-                    <h3
-                      className={`text-2xl sm:text-5xl font-bold mb-4 ${
-                        theme === "light" ? "text-gray-900" : "text-gray-100"
-                      }`}
-                    >
-                      {item.count}
-                    </h3>
-                    <p
-                      className={`text-sm sm:text-base ${
-                        theme === "light" ? "text-gray-600" : "text-gray-300"
-                      }`}
-                    >
-                      {item.text}
-                    </p>
+              {aboutItems.map((item, index) => {
+                const { ref, inView } = useInView({
+                  triggerOnce: true,
+                  threshold: 0.3,
+                });
+                return (
+                  <div
+                    key={index}
+                    className={`p-4 sm:p-6 rounded-lg border transition-all duration-300 ${
+                      theme === "light"
+                        ? "bg-gray-50 border-gray-200 hover:border-blue-300"
+                        : "bg-gray-700 border-gray-600 hover:border-blue-500"
+                    }`}
+                  >
+                    <div className="text-center" ref={ref}>
+                      <div className="text-3xl sm:text-4xl mb-4">
+                        {item.icon}
+                      </div>
+                      <h3
+                        className={`text-2xl sm:text-5xl font-bold mb-4 ${
+                          theme === "light" ? "text-gray-900" : "text-gray-100"
+                        }`}
+                      >
+                        {inView ? (
+                          <CountUp
+                            start={0}
+                            end={
+                              typeof item.count === "number"
+                                ? item.count
+                                : parseFloat(item.count)
+                            }
+                            duration={2}
+                            decimals={
+                              item.text === "Đánh giá trung bình" ? 1 : 0
+                            }
+                            suffix={item.hasSuffix ? "+" : ""}
+                          />
+                        ) : (
+                          "0"
+                        )}
+                      </h3>
+                      <p
+                        className={`text-sm sm:text-base ${
+                          theme === "light" ? "text-gray-600" : "text-gray-300"
+                        }`}
+                      >
+                        {item.text}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <button
@@ -576,32 +643,44 @@ const About: React.FC<{
             <div className="space-y-4 sm:space-y-6">
               <div className="text-right">
                 <img
+                  ref={(el) => {
+                    if (el) imageRefs.current[0] = el;
+                  }}
                   src={imageLinks[0]}
                   alt="Luxury Hotel Exterior"
-                  className="ml-8 max-w-88 rounded-lg shadow-lg object-cover h-40 sm:h-48 md:h-64 lg:h-64"
+                  className="ml-8 max-w-88 rounded-lg shadow-lg object-cover h-40 sm:h-48 md:h-64 lg:h-64 fade-slide-in-right"
                 />
               </div>
               <div className="text-left">
                 <img
+                  ref={(el) => {
+                    if (el) imageRefs.current[1] = el;
+                  }}
                   src={imageLinks[1]}
                   alt="Hotel Interior"
-                  className="w-full ml-28 rounded-lg shadow-lg object-cover h-40 sm:h-48 md:h-64 lg:h-64"
+                  className="w-full ml-28 rounded-lg shadow-lg object-cover h-40 sm:h-48 md:h-64 lg:h-64 fade-slide-in"
                 />
               </div>
             </div>
             <div className="space-y-4 sm:space-y-6 pt-8 sm:pt-12 lg:pt-16">
               <div className="text-right">
                 <img
+                  ref={(el) => {
+                    if (el) imageRefs.current[2] = el;
+                  }}
                   src={imageLinks[2]}
                   alt="Hotel Room"
-                  className="ml-26 rounded-lg shadow-lg object-cover h-40 sm:h-48 md:h-64 lg:h-64"
+                  className="ml-26 rounded-lg shadow-lg object-cover h-40 sm:h-48 md:h-64 lg:h-64 fade-slide-in-right"
                 />
               </div>
               <div className="text-left">
                 <img
+                  ref={(el) => {
+                    if (el) imageRefs.current[3] = el;
+                  }}
                   src={imageLinks[3]}
                   alt="Hotel Amenities"
-                  className="max-w-88 ml-26 rounded-lg shadow-lg object-cover h-40 sm:h-48 md:h-64 lg:h-64"
+                  className="max-w-88 ml-26 rounded-lg shadow-lg object-cover h-40 sm:h-48 md:h-64 lg:h-64 fade-slide-in"
                 />
               </div>
             </div>
@@ -1000,7 +1079,7 @@ const Home: React.FC = () => {
       <div
         className="relative w-full flex flex-col bg-center"
         style={{
-          backgroundImage: `url(${backgroundImage})`,
+          backgroundImage: `url(${backgroundImage1})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           minHeight: "80vh sm:min-h-screen",
@@ -1008,19 +1087,19 @@ const Home: React.FC = () => {
       >
         <div className="absolute inset-0 bg-black/40"></div>
         <div className="relative z-10 text-left text-white mb-24 px-8 sm:pl-12 md:pl-16 lg:pl-58 py-8 sm:py-10 mt-20 sm:mt-32 md:mt-40 lg:mt-52">
-          <span className="inline-block bg-blue-600/30 text-yellow-200 text-lg sm:text-xl md:text-2xl font-semibold px-4 sm:px-6 py-2 rounded-full mb-4 sm:mb-6">
+          <span className="inline-block bg-blue-600/30 text-blue-200 text-lg sm:text-xl md:text-2xl font-semibold px-4 sm:px-6 py-2 rounded-full mb-4 sm:mb-6">
             Trải nghiệm khách sạn đẳng cấp
           </span>
-          <div className="bg-black/40 w-160 rounded-lg py-4 mb-4">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl italic lg:text-6xl font-bold font-playfair text-yellow-500">
-              <span>Rong chơi bốn phương,</span>
-              <span className="block mt-2 sm:mt-4 md:mt-6">
-                "giá" vẫn yêu thương
-              </span>
-            </h1>
-          </div>
+          {/* <div className="bg-black/40 w-160 rounded-lg py-4 mb-4"> */}
+          <h1 className="text-3xl sm:text-4xl md:text-5xl italic lg:text-6xl font-bold font-playfair text-blue-200 mb-6">
+            <span>Rong chơi bốn phương,</span>
+            <span className="block mt-2 sm:mt-4 md:mt-6">
+              "giá" vẫn yêu thương
+            </span>
+          </h1>
+          {/* </div> */}
           <p
-            className={`text-base sm:text-lg md:text-xl mb-6 sm:mb-8 max-w-xl md:max-w-2xl text-yellow-200 ${
+            className={`text-base sm:text-lg md:text-xl max-w-xl md:max-w-2xl text-blue-200 ${
               theme === "light" ? "text-white" : "text-gray-200"
             }`}
           >
@@ -1028,7 +1107,7 @@ const Home: React.FC = () => {
             sạn đẳng cấp nhất thế giới. Hãy bắt đầu hành trình của bạn ngay hôm
             nay.
           </p>
-          <div className="mt-16 sm:mt-24 md:mt-36 pr-0 sm:pr-2 md:pr-192">
+          <div className="mt-14 sm:mt-24 md:mt-32 pr-0 sm:pr-2 md:pr-192">
             <BookingBox onSearch={handleSearch} roomTypes={roomTypes} />
           </div>
         </div>
@@ -1041,13 +1120,21 @@ const Home: React.FC = () => {
         averageRating={averageRating}
       />
 
-      <div className="flex justify-center">
-        <div className="h-0.5 w-full max-w-6xl mx-auto transition-all duration-300 bg-gray-600"></div>
+      <div
+        className={`flex justify-center ${
+          theme === "light" ? "bg-gray-200" : "bg-gray-900"
+        }`}
+      >
+        <div
+          className={`h-0.5 w-full max-w-6xl mx-auto transition-all duration-300 ${
+            theme === "light" ? "bg-gray-600" : "bg-gray-300"
+          }`}
+        ></div>
       </div>
 
       <div
         className={`max-w-full mx-auto py-12 sm:py-20 md:py-24 lg:py-32 px-4 sm:px-6 md:px-8 lg:px-12 transition-all duration-300 ${
-          theme === "light" ? "bg-gray-100" : "bg-gray-900"
+          theme === "light" ? "bg-gray-200" : "bg-gray-900"
         }`}
       >
         <h2

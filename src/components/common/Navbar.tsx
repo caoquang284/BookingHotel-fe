@@ -118,9 +118,9 @@ const Navbar: React.FC = () => {
               to={item.path}
               className={`py-1 sm:py-2 px-2 sm:px-3 md:px-4 text-sm sm:text-base md:text-lg lg:text-2xl xl:text-3xl font-medium rounded-md transition-all duration-300 group ${
                 location.pathname === item.path
-                  ? "font-bold text-blue-600"
+                  ? "font-bold text-blue-800"
                   : isLight
-                  ? "text-black"
+                  ? "text-blue-400"
                   : "text-gray-100"
               }`}
             >
@@ -129,9 +129,9 @@ const Navbar: React.FC = () => {
                 <span
                   className={`absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full ${
                     location.pathname === item.path
-                      ? "bg-blue-600"
+                      ? "bg-blue-800"
                       : isLight
-                      ? "bg-black"
+                      ? "bg-blue-400"
                       : "bg-gray-100"
                   }`}
                 ></span>
