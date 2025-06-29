@@ -33,6 +33,7 @@ import {
   getDayRemains,
   getRentalExtensionFormsByRentalFormId,
 } from "../services/apis/rentalFormExtension";
+import { updateRentalForm } from "../services/apis/rentalform";
 
 const BookingHistory: React.FC = () => {
   const { user, isInitialized } = useAuth();
@@ -64,6 +65,11 @@ const BookingHistory: React.FC = () => {
   const [existingRentalFormId, setExistingRentalFormId] = useState<
     number | null
   >(null);
+  const [extensionInfo, setExtensionInfo] = useState<{
+    totalDays: number;
+    extensionDays: number;
+    extensionCost: number;
+  } | null>(null);
   const bookingState = {
     PENDING: "Chờ xác nhận",
     COMMITED: "Đã xác nhận",
@@ -301,14 +307,59 @@ const BookingHistory: React.FC = () => {
     setShowQRModal(true);
     setQrCodeUrl("");
     setQrPrice(0);
+    setExtensionInfo(null);
+
     // Lấy thông tin phòng từ API
     try {
       const room = await getRoomById(booking.roomId);
       const roomType = await getRoomTypeById(room.roomTypeId);
       const price = roomType.price ?? 0;
       setQrPrice(price);
-      const amount = (booking.rentalDays || 1) * price;
-      await generateQRCode(amount, booking.id);
+
+      // Kiểm tra xem có rental form và extension forms không
+      const allRentalForms = await getAllRentalFormsNoPage();
+      const guestRentalFormDetails = await getAllRentalFormDetailsByUserId(
+        booking.guestId
+      );
+
+      const guestRentalFormIds = guestRentalFormDetails.map(
+        (detail: any) => detail.rentalFormId
+      );
+
+      const existingRentalForm = allRentalForms.find(
+        (rental: any) =>
+          guestRentalFormIds.includes(rental.id) &&
+          rental.roomId === booking.roomId &&
+          rental.numberOfRentalDays === booking.rentalDays
+      );
+
+      if (existingRentalForm) {
+        // Tính toán thông tin gia hạn
+        const extensionForms = await getRentalExtensionFormsByRentalFormId(
+          existingRentalForm.id
+        );
+        const extensionDays = extensionForms.reduce(
+          (
+            total: number,
+            ext: import("../types").ResponseRentalExtensionFormDTO
+          ) => total + ext.numberOfRentalDays,
+          0
+        );
+        const extensionCost = extensionDays * price;
+        const totalDays = booking.rentalDays + extensionDays;
+
+        setExtensionInfo({
+          totalDays,
+          extensionDays,
+          extensionCost,
+        });
+
+        const totalAmount = totalDays * price;
+        await generateQRCode(totalAmount, booking.id);
+      } else {
+        const amount = (booking.rentalDays || 1) * price;
+        await generateQRCode(amount, booking.id);
+      }
     } catch (error) {
       toast.error("Không thể lấy thông tin phòng để tạo mã QR");
       setQrCodeUrl("");
@@ -333,7 +384,7 @@ const BookingHistory: React.FC = () => {
         (rental: any) =>
           guestRentalFormIds.includes(rental.id) &&
           rental.roomId === booking.roomId &&
-          rental.rentalDate === booking.bookingDate
+          rental.numberOfRentalDays === booking.rentalDays
       );
 
       if (!existingRentalForm) {
@@ -471,13 +522,21 @@ const BookingHistory: React.FC = () => {
         <div className="grid gap-4 sm:gap-6">
           {bookings.map((booking) => {
             // Tìm rental form khớp với booking
-            const rentalForm = rentalForms.find(
-              (rf) =>
+            const rentalForm = rentalForms.find((rf) => {
+              // Kiểm tra xem rental form có thuộc về guest này không bằng cách kiểm tra guestId
+              const hasGuestDetail =
+                rf.rentalFormDetailIds && rf.rentalFormDetailIds.length > 0;
+
+              return (
+                hasGuestDetail &&
                 rf.roomId === booking.roomId &&
-                rf.rentalDate === booking.bookingDate &&
                 rf.numberOfRentalDays === booking.rentalDays
-            );
+              );
+            });
+
+            console.log(rentalForm);
             const isPaid = rentalForm && rentalForm.isPaidAt;
+            console.log(new Date(isPaid));
             return (
               <div
                 key={booking.id}
@@ -608,16 +667,14 @@ const BookingHistory: React.FC = () => {
                             </button>
                           </>
                         )}
-                      </div>
-                    )}
-                    {isPaid && (
-                      <div className="flex justify-end mt-4">
-                        <button
-                          className="bg-gray-400 text-white text-sm sm:text-base md:text-lg lg:text-xl font-semibold py-1 sm:py-2 px-3 sm:px-4 md:px-6 rounded-lg cursor-not-allowed"
-                          disabled
-                        >
-                          Đã thanh toán
-                        </button>
+                        {isPaid && (
+                          <button
+                            className="bg-gray-400 text-white text-sm sm:text-base md:text-lg lg:text-xl font-semibold py-1 sm:py-2 px-3 sm:px-4 md:px-6 rounded-lg cursor-not-allowed"
+                            disabled
+                          >
+                            Đã thanh toán
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
@@ -715,7 +772,7 @@ const BookingHistory: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-opacity-50"></div>
           <div
-            className={`rounded-2xl shadow-2xl max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl w-full p-4 sm:p-6 relative transition-all duration-300 ${
+            className={`rounded-2xl shadow-2xl max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl w-full p-3 sm:p-4 relative transition-all duration-300 ${
               theme === "light" ? "bg-white" : "bg-gray-800"
             }`}
           >
@@ -726,14 +783,14 @@ const BookingHistory: React.FC = () => {
                 setQrPrice(0);
                 setSelectedBookingForQR(null);
               }}
-              className={`absolute top-2 sm:top-4 right-2 sm:right-4 transition-all duration-300 ${
+              className={`absolute top-2 sm:top-3 right-2 sm:right-3 transition-all duration-300 ${
                 theme === "light"
                   ? "text-gray-500 hover:text-gray-700"
                   : "text-gray-400 hover:text-gray-200"
               }`}
             >
               <svg
-                className="h-5 w-5 sm:h-6 sm:w-6"
+                className="h-4 w-4 sm:h-5 sm:w-5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -748,7 +805,7 @@ const BookingHistory: React.FC = () => {
             </button>
 
             <h3
-              className={`text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 md:mb-8 text-center transition-all duration-300 ${
+              className={`text-lg sm:text-xl md:text-2xl font-bold mb-3 sm:mb-4 text-center transition-all duration-300 ${
                 theme === "light" ? "text-gray-800" : "text-gray-200"
               }`}
             >
@@ -756,7 +813,7 @@ const BookingHistory: React.FC = () => {
             </h3>
 
             <div
-              className={`mb-4 sm:mb-6 md:mb-8 text-center text-sm sm:text-base md:text-lg lg:text-2xl space-y-2 sm:space-y-3 ${
+              className={`mb-3 sm:mb-4 text-center text-sm sm:text-base md:text-lg space-y-1 sm:space-y-2 ${
                 theme === "light" ? "text-gray-800" : "text-gray-200"
               }`}
             >
@@ -778,27 +835,47 @@ const BookingHistory: React.FC = () => {
                 </b>
               </div>
               <div>
-                Số ngày thuê: <b>{selectedBookingForQR.rentalDays}</b>
+                Số ngày thuê gốc: <b>{selectedBookingForQR.rentalDays}</b>
               </div>
+              {extensionInfo && extensionInfo.extensionDays > 0 && (
+                <>
+                  <div>
+                    Số ngày gia hạn: <b>{extensionInfo.extensionDays}</b>
+                  </div>
+                  <div>
+                    Tổng số ngày thuê: <b>{extensionInfo.totalDays}</b>
+                  </div>
+                  <div>
+                    Chi phí gia hạn:{" "}
+                    <b>
+                      {extensionInfo.extensionCost.toLocaleString("vi-VN")} VNĐ
+                    </b>
+                  </div>
+                </>
+              )}
               <div
                 className={`text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold ${
                   theme === "light" ? "text-green-600" : "text-green-400"
                 }`}
               >
-                Số tiền:{" "}
+                Tổng số tiền:{" "}
                 <b>
-                  {(
-                    (selectedBookingForQR.rentalDays || 1) * qrPrice
-                  ).toLocaleString("vi-VN")}{" "}
+                  {extensionInfo
+                    ? (extensionInfo.totalDays * qrPrice).toLocaleString(
+                        "vi-VN"
+                      )
+                    : (
+                        (selectedBookingForQR.rentalDays || 1) * qrPrice
+                      ).toLocaleString("vi-VN")}{" "}
                   VNĐ
                 </b>
               </div>
             </div>
 
-            <div className="flex flex-col items-center space-y-4">
+            <div className="flex flex-col items-center space-y-3">
               {isGeneratingQR ? (
                 <div
-                  className={`animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 border-t-4 transition-all duration-300 ${
+                  className={`animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 border-t-4 transition-all duration-300 ${
                     theme === "light" ? "border-blue-500" : "border-blue-400"
                   }`}
                 ></div>
@@ -807,10 +884,10 @@ const BookingHistory: React.FC = () => {
                   <img
                     src={qrCodeUrl}
                     alt="QR Code"
-                    className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 object-contain rounded-lg shadow-md mb-4 sm:mb-6"
+                    className="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 object-contain rounded-lg shadow-md mb-3"
                   />
                   <p
-                    className={`text-sm sm:text-base md:text-lg lg:text-2xl text-center transition-all duration-300 ${
+                    className={`text-sm sm:text-base md:text-lg text-center transition-all duration-300 ${
                       theme === "light" ? "text-gray-800" : "text-gray-200"
                     }`}
                   >
@@ -828,7 +905,7 @@ const BookingHistory: React.FC = () => {
               )}
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 mt-4 sm:mt-6 md:mt-8">
+            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 mt-3 sm:mt-4">
               <button
                 onClick={() => {
                   setShowQRModal(false);
@@ -865,7 +942,8 @@ const BookingHistory: React.FC = () => {
                       (rental: any) =>
                         guestRentalFormIds.includes(rental.id) &&
                         rental.roomId === selectedBookingForQR.roomId &&
-                        rental.rentalDate === selectedBookingForQR.bookingDate
+                        rental.numberOfRentalDays ===
+                          selectedBookingForQR.rentalDays
                     );
 
                     if (!existingRentalForm) {
@@ -883,19 +961,10 @@ const BookingHistory: React.FC = () => {
                     const totalCost =
                       (selectedBookingForQR.rentalDays || 1) * qrPrice;
 
-                    // Cộng thêm chi phí gia hạn nếu có
-                    const extensionForms =
-                      await getRentalExtensionFormsByRentalFormId(
-                        existingRentalForm.id
-                      );
-                    const extensionCost = extensionForms.reduce(
-                      (
-                        total: number,
-                        ext: import("../types").ResponseRentalExtensionFormDTO
-                      ) => total + ext.numberOfRentalDays * qrPrice,
-                      0
-                    );
-                    const finalTotalCost = totalCost + extensionCost;
+                    // Sử dụng thông tin gia hạn đã tính toán
+                    const finalTotalCost = extensionInfo
+                      ? extensionInfo.totalDays * qrPrice
+                      : totalCost;
 
                     const invoiceData = {
                       totalReservationCost: finalTotalCost,
@@ -910,7 +979,9 @@ const BookingHistory: React.FC = () => {
 
                     // Bước 3: Tạo invoice detail
                     const invoiceDetailData = {
-                      numberOfRentalDays: selectedBookingForQR.rentalDays,
+                      numberOfRentalDays: extensionInfo
+                        ? extensionInfo.totalDays
+                        : selectedBookingForQR.rentalDays,
                       invoiceId: invoice.id,
                       reservationCost: finalTotalCost,
                       rentalFormId: existingRentalForm.id,
@@ -932,7 +1003,6 @@ const BookingHistory: React.FC = () => {
                     toast.success(
                       "Thanh toán thành công, Roomify xin cảm ơn và hẹn gặp lại quý khách!"
                     );
-                    window.location.reload();
                   } catch (error) {
                     toast.error("Lỗi khi tạo hóa đơn: " + error);
                   }
@@ -1000,7 +1070,7 @@ const BookingHistory: React.FC = () => {
       {/* Modal Gia hạn */}
       {showExtensionModal && selectedBookingForExtension && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+          <div className="absolute inset-0 bg-opacity-50"></div>
           <div
             className={`rounded-2xl shadow-2xl max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl w-full p-4 sm:p-6 relative transition-all duration-300 ${
               theme === "light" ? "bg-white" : "bg-gray-800"
@@ -1122,12 +1192,11 @@ const BookingHistory: React.FC = () => {
                       staffId: 1,
                     };
 
-                    // TODO: Gọi API createRentalExtensionForm khi có import
-                    // const extensionForm = await createRentalExtensionForm(
-                    //   extensionData,
-                    //   1,
-                    //   "MANAGER"
-                    // );
+                    const extensionForm = await createRentalExtensionForm(
+                      extensionData,
+                      1,
+                      "MANAGER"
+                    );
 
                     toast.success(
                       `Gia hạn thành công thêm ${extensionDays} ngày!`
