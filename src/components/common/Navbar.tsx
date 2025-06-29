@@ -57,6 +57,7 @@ const Navbar: React.FC = () => {
           { path: "/booking-history", label: "Lịch sử đặt phòng" },
           { path: "/rental-history", label: "Lịch sử thuê phòng" },
           { path: "/profile", label: "Hồ sơ" },
+          { path: "/rooms", label: "Rooms"},
         ]
       : []),
   ];
@@ -98,7 +99,7 @@ const Navbar: React.FC = () => {
       }`}
     >
       <div className="flex items-center justify-between max-w-8xl mx-auto">
-        <div className="flex items-center pl-2 sm:pl-4 md:pl-8 lg:pl-52">
+        <div className="flex items-center sm:pl-4 md:pl-8 lg:pl-10 ">
           <img
             src={logo}
             alt="Roomify Logo"
@@ -117,7 +118,7 @@ const Navbar: React.FC = () => {
             <Link
               key={item.path}
               to={item.path}
-              className={`py-1 sm:py-2 px-2 sm:px-3 md:px-4 text-sm sm:text-base md:text-lg lg:text-2xl xl:text-3xl font-medium rounded-md transition-all duration-300 group ${
+              className={`py-1 sm:py-2 px-2 sm:px-3 md:px-4 text-sm sm:text-base md:text-lg lg:text-2xl xl:text-2xl font-medium rounded-md transition-all duration-300 group ${
                 location.pathname === item.path
                   ? "font-bold text-blue-800"
                   : isLight
@@ -140,7 +141,7 @@ const Navbar: React.FC = () => {
             </Link>
           ))}
         </div>
-        <div className="flex items-center gap-2 sm:gap-3 md:gap-4 pr-2 sm:pr-4 md:pr-8 lg:pr-52">
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-4 pr-2 sm:pr-4 md:pr-8 lg:pr-10">
           <div className="hidden md:flex items-center gap-2 sm:gap-3 md:gap-4">
             {authItems.map((item) =>
               "path" in item ? (

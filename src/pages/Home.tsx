@@ -98,13 +98,8 @@ const BookingBox: React.FC<{
 
   return (
     <div
-<<<<<<< HEAD
       className={`shadow-2xl rounded-2xl p-10 w-256 mx-auto -mt-24 relative z-10 transition-all duration-300 ${
         theme === "light" ? "bg-white" : "bg-gray-800"
-=======
-      className={`shadow-2xl rounded-2xl p-4 sm:p-6 md:p-8 lg:p-10 w-full max-w-5xl mx-auto -mt-16 sm:-mt-20 md:-mt-24 relative z-10 transition-all duration-300 ${
-        theme === "light" ? "bg-gray-200" : "bg-gray-800"
->>>>>>> 74e9df7ec868072514eb77743ba4b6d6dbd28129
       }`}
     >
       <form
@@ -1090,7 +1085,6 @@ const Home: React.FC = () => {
           minHeight: "80vh",
         }}
       >
-<<<<<<< HEAD
         <div className="relative z-10 text-left px-1 py-10 pl-56 mt-52">
           <span
             className={`inline-block text-2xl font-semibold px-6 py-2 rounded-full mb-6 ${
@@ -1128,31 +1122,6 @@ const Home: React.FC = () => {
             </div>
           </div>
           <div className="mt-32 pr-256">
-=======
-        <div className="absolute inset-0 bg-black/10"></div>
-        <div className="relative z-10 text-left text-white mb-24 px-8 sm:pl-12 md:pl-16 lg:pl-58 py-8 sm:py-10 mt-20 sm:mt-32 md:mt-40 lg:mt-52">
-          <span className="inline-block bg-blue-600/30 text-blue-200 text-lg sm:text-xl md:text-2xl font-semibold px-4 sm:px-6 py-2 rounded-full mb-4 sm:mb-6">
-            Trải nghiệm khách sạn đẳng cấp
-          </span>
-          {/* <div className="bg-black/40 w-160 rounded-lg py-4 mb-4"> */}
-          <h1 className="text-3xl sm:text-4xl md:text-5xl italic lg:text-6xl font-bold font-playfair text-blue-200 mb-6">
-            <span>Rong chơi bốn phương,</span>
-            <span className="block mt-2 sm:mt-4 md:mt-6">
-              "giá" vẫn yêu thương
-            </span>
-          </h1>
-          {/* </div> */}
-          <p
-            className={`text-base sm:text-lg md:text-xl max-w-xl md:max-w-2xl text-blue-200 ${
-              theme === "light" ? "text-white" : "text-gray-200"
-            }`}
-          >
-            Sự sang trọng và tiện nghi vô song đang chờ đón bạn tại những khách
-            sạn đẳng cấp nhất thế giới. Hãy bắt đầu hành trình của bạn ngay hôm
-            nay.
-          </p>
-          <div className="mt-14 sm:mt-24 md:mt-32 pr-0 sm:pr-2 md:pr-192">
->>>>>>> 74e9df7ec868072514eb77743ba4b6d6dbd28129
             <BookingBox onSearch={handleSearch} roomTypes={roomTypes} />
           </div>
         </div>
