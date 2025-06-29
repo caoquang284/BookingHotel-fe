@@ -69,6 +69,7 @@ const Navbar: React.FC = () => {
               { path: "/rental-history", label: "Lịch sử thuê phòng" },
             ],
           },
+          { path: "/rooms", label: "Phòng"}
         ]
       : []),
   ];
