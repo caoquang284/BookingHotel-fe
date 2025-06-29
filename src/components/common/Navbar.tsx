@@ -55,6 +55,7 @@ const Navbar: React.FC = () => {
     ...(user
       ? [
           { path: "/booking-history", label: "Lịch sử đặt phòng" },
+          { path: "/rental-history", label: "Lịch sử thuê phòng" },
           { path: "/profile", label: "Hồ sơ" },
         ]
       : []),
