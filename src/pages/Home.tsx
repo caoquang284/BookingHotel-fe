@@ -454,7 +454,8 @@ const About: React.FC<{
   totalRooms: number;
   totalBookings: number;
   averageRating: number;
-}> = ({ totalRooms, totalBookings, averageRating }) => {
+  navigate: (path: string) => void;
+}> = ({ totalRooms, totalBookings, averageRating, navigate }) => {
   const { theme } = useTheme();
   const imageRefs = useRef<(HTMLImageElement | null)[]>([]);
 
@@ -628,6 +629,7 @@ const About: React.FC<{
             </div>
 
             <button
+              onClick={() => navigate("/policy")}
               className={`px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg transition-all duration-300 ${
                 theme === "light"
                   ? "bg-blue-600 hover:bg-blue-700 text-white"
@@ -1132,6 +1134,7 @@ const Home: React.FC = () => {
         totalRooms={totalRooms}
         totalBookings={totalBookings}
         averageRating={averageRating}
+        navigate={navigate}
       />
 
       <div
