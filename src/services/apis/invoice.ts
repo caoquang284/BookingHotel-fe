@@ -164,3 +164,38 @@ export async function getAllInvoicesByUserId(id: number): Promise<ResponseInvoic
 
     return await response.json();
 } 
+export async function getTodayMoneyAmount(): Promise<number> {
+    const response = await fetch(`${BASE_URL}/today-money-amount`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`Failed to fetch today's money amount: ${error}`);
+    }
+
+    return await response.json();
+}
+
+export async function sendEmailToGuests(
+    invoiceId: number,
+    impactorId: number,
+    impactor: string
+): Promise<string> {
+    const response = await fetch(`${BASE_URL}/send-email/${invoiceId}/${impactorId}/${impactor}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`Failed to send email for invoice ${invoiceId}: ${error}`);
+    }
+
+    return await response.text();
+}
