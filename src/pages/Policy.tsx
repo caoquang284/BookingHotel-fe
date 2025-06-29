@@ -1,18 +1,21 @@
 import React from "react";
+import { useTheme } from "../contexts/ThemeContext";
 
 const HotelPolicy: React.FC = () => {
+  const { theme } = useTheme();
+
   return (
-    <div className="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-lg p-8 mt-18">
-        <h1 className="text-4xl font-bold text-center text-blue-900 mb-8 font-playfair">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+      <div className="max-w-7xl mx-auto bg-[var(--card)] text-[var(--card-foreground)] rounded-lg shadow-lg p-8 mt-18">
+        <h1 className="text-4xl font-bold text-center text-[var(--primary)] mb-8 font-playfair transition-colors duration-300">
           CHÍNH SÁCH KHÁCH SẠN ROOMIFY
         </h1>
 
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold text-blue-800 mb-4">
+          <h2 className="text-2xl font-semibold text-[var(--primary)] mb-4 transition-colors duration-300">
             1. Quy định chung
           </h2>
-          <ul className="list-decimal pl-6 space-y-2 text-gray-700">
+          <ul className="list-decimal pl-6 space-y-2 text-[var(--foreground)] transition-colors duration-300">
             <li>Tên khách sạn: Roomify</li>
             <li>Địa chỉ: Linh Xuân, Thủ Đức, Hồ Chí Minh</li>
             <li>Số điện thoại liên hệ: 0123456789</li>
@@ -20,7 +23,7 @@ const HotelPolicy: React.FC = () => {
               Email hỗ trợ:{" "}
               <a
                 href="mailto:roomify@gmail.com"
-                className="text-blue-600 hover:underline"
+                className="text-[var(--primary)] hover:underline transition-colors duration-300"
               >
                 roomify@gmail.com
               </a>
@@ -30,10 +33,10 @@ const HotelPolicy: React.FC = () => {
         </section>
 
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold text-blue-800 mb-4">
+          <h2 className="text-2xl font-semibold text-[var(--primary)] mb-4 transition-colors duration-300">
             2. Đặt phòng/Gia hạn & Thanh toán
           </h2>
-          <ul className="list-decimal pl-6 space-y-2 text-gray-700">
+          <ul className="list-decimal pl-6 space-y-2 text-[var(--foreground)] transition-colors duration-300">
             <li>Đặt phòng qua website, hoặc điện thoại.</li>
             <li>
               Khách đặt phòng phải cung cấp thông tin cá nhân chính xác: họ tên,
@@ -65,10 +68,10 @@ const HotelPolicy: React.FC = () => {
         </section>
 
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold text-blue-800 mb-4">
+          <h2 className="text-2xl font-semibold text-[var(--primary)] mb-4 transition-colors duration-300">
             3. Giờ nhận & Trả phòng
           </h2>
-          <ul className="list-decimal pl-6 space-y-2 text-gray-700">
+          <ul className="list-decimal pl-6 space-y-2 text-[var(--foreground)] transition-colors duration-300">
             <li>
               Giờ nhận phòng (check-in): tự do, khách sạn hoạt động 24/24, nhận
               phòng trực tiếp tại quầy lễ tân.
@@ -92,10 +95,10 @@ const HotelPolicy: React.FC = () => {
         </section>
 
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold text-blue-800 mb-4">
+          <h2 className="text-2xl font-semibold text-[var(--primary)] mb-4 transition-colors duration-300">
             4. Hủy phòng & Không đến
           </h2>
-          <ul className="list-decimal pl-6 space-y-2 text-gray-700">
+          <ul className="list-decimal pl-6 space-y-2 text-[var(--foreground)] transition-colors duration-300">
             <li>
               Quy định hủy phòng:
               <ul className="list-disc pl-6 mt-2">
@@ -117,10 +120,10 @@ const HotelPolicy: React.FC = () => {
         </section>
 
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold text-blue-800 mb-4">
+          <h2 className="text-2xl font-semibold text-[var(--primary)] mb-4 transition-colors duration-300">
             5. Quy định trẻ em & giường phụ
           </h2>
-          <ul className="list-decimal pl-6 space-y-2 text-gray-700">
+          <ul className="list-decimal pl-6 space-y-2 text-[var(--foreground)] transition-colors duration-300">
             <li>Trẻ em dưới 6 tuổi: miễn phí, ngủ chung giường với bố mẹ.</li>
             <li>
               Trẻ em từ 6–12 tuổi: phụ thu 50% giá phòng (bao gồm ăn sáng).
@@ -133,10 +136,10 @@ const HotelPolicy: React.FC = () => {
         </section>
 
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold text-blue-800 mb-4">
+          <h2 className="text-2xl font-semibold text-[var(--primary)] mb-4 transition-colors duration-300">
             6. Chính sách thú cưng
           </h2>
-          <ul className="list-decimal pl-6 space-y-2 text-gray-700">
+          <ul className="list-decimal pl-6 space-y-2 text-[var(--foreground)] transition-colors duration-300">
             <li>
               Không nhận chó mèo hoặc bất kỳ vật nuôi nào (trừ dịch vụ chuyên
               biệt “Pet-friendly”).
@@ -149,10 +152,10 @@ const HotelPolicy: React.FC = () => {
         </section>
 
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold text-blue-800 mb-4">
+          <h2 className="text-2xl font-semibold text-[var(--primary)] mb-4 transition-colors duration-300">
             7. Chính sách hút thuốc
           </h2>
-          <ul className="list-decimal pl-6 space-y-2 text-gray-700">
+          <ul className="list-decimal pl-6 space-y-2 text-[var(--foreground)] transition-colors duration-300">
             <li>
               Toàn bộ khu vực phòng nghỉ: <strong>cấm hút thuốc</strong>.
             </li>
@@ -162,10 +165,10 @@ const HotelPolicy: React.FC = () => {
         </section>
 
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold text-blue-800 mb-4">
+          <h2 className="text-2xl font-semibold text-[var(--primary)] mb-4 transition-colors duration-300">
             8. Dọn phòng & Giặt ủi
           </h2>
-          <ul className="list-decimal pl-6 space-y-2 text-gray-700">
+          <ul className="list-decimal pl-6 space-y-2 text-[var(--foreground)] transition-colors duration-300">
             <li>Dịch vụ dọn phòng hàng ngày từ 09:00–17:00.</li>
             <li>
               Khách có thể chọn không làm phiền bằng cách treo biển "Do Not
@@ -176,10 +179,10 @@ const HotelPolicy: React.FC = () => {
         </section>
 
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold text-blue-800 mb-4">
+          <h2 className="text-2xl font-semibold text-[var(--primary)] mb-4 transition-colors duration-300">
             9. An toàn & Bảo mật
           </h2>
-          <ul className="list-decimal pl-6 space-y-2 text-gray-700">
+          <ul className="list-decimal pl-6 space-y-2 text-[var(--foreground)] transition-colors duration-300">
             <li>
               Khách sạn không chịu trách nhiệm về tài sản quý giá để trong
               phòng; khuyến khích sử dụng két an toàn.
@@ -195,10 +198,10 @@ const HotelPolicy: React.FC = () => {
         </section>
 
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold text-blue-800 mb-4">
+          <h2 className="text-2xl font-semibold text-[var(--primary)] mb-4 transition-colors duration-300">
             10. Quyền riêng tư & Bảo vệ dữ liệu
           </h2>
-          <ul className="list-decimal pl-6 space-y-2 text-gray-700">
+          <ul className="list-decimal pl-6 space-y-2 text-[var(--foreground)] transition-colors duration-300">
             <li>
               Thông tin cá nhân của khách được bảo mật theo quy định của pháp
               luật Việt Nam và khách sạn.
@@ -211,10 +214,10 @@ const HotelPolicy: React.FC = () => {
         </section>
 
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold text-blue-800 mb-4">
+          <h2 className="text-2xl font-semibold text-[var(--primary)] mb-4 transition-colors duration-300">
             11. Điều khoản bất khả kháng
           </h2>
-          <ul className="list-decimal pl-6 space-y-2 text-gray-700">
+          <ul className="list-decimal pl-6 space-y-2 text-[var(--foreground)] transition-colors duration-300">
             <li>
               Khách sạn miễn trách nhiệm khi không thể cung cấp dịch vụ do thiên
               tai, chiến tranh, đình công, lực lượng ngoại lệ...
@@ -227,10 +230,10 @@ const HotelPolicy: React.FC = () => {
         </section>
 
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold text-blue-800 mb-4">
+          <h2 className="text-2xl font-semibold text-[var(--primary)] mb-4 transition-colors duration-300">
             12. Hiệu lực & Sửa đổi
           </h2>
-          <ul className="list-decimal pl-6 space-y-2 text-gray-700">
+          <ul className="list-decimal pl-6 space-y-2 text-[var(--foreground)] transition-colors duration-300">
             <li>Chính sách này có hiệu lực từ ngày ban hành.</li>
             <li>
               Mọi sửa đổi, bổ sung phải được ban giám đốc phê duyệt và thông báo
@@ -239,7 +242,7 @@ const HotelPolicy: React.FC = () => {
           </ul>
         </section>
 
-        <p className="text-center text-gray-600 italic">
+        <p className="text-center text-[var(--muted-foreground)] italic transition-colors duration-300">
           Quý khách có thắc mắc xin vui lòng liên hệ lễ tân để được hỗ trợ sớm
           nhất. Trân trọng.
         </p>
