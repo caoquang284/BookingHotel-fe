@@ -43,6 +43,10 @@ const Navbar: React.FC = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
@@ -55,8 +59,6 @@ const Navbar: React.FC = () => {
     { path: "/", label: "Trang chủ" },
     ...(user
       ? [
-          { path: "/booking-history", label: "Lịch sử đặt phòng" },
-          { path: "/rental-history", label: "Lịch sử thuê phòng" },
           { path: "/profile", label: "Hồ sơ" },
           { path: "/policy", label: "Chính sách" },
           { path: "/hotel-detail", label: "Về chúng tôi" },
@@ -104,7 +106,7 @@ const Navbar: React.FC = () => {
       }`}
     >
       <div className="flex items-center justify-between max-w-8xl mx-auto">
-        <div className="flex items-center sm:pl-4 md:pl-8 lg:pl-10 ">
+        <div className="flex items-center pl-2 sm:pl-4 md:pl-8 lg:pl-52">
           <img
             src={logo}
             alt="Roomify Logo"
@@ -172,7 +174,7 @@ const Navbar: React.FC = () => {
             ) : null
           )}
         </div>
-        <div className="flex items-center gap-2 sm:gap-3 md:gap-4 pr-2 sm:pr-4 md:pr-8 lg:pr-10">
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-4 pr-2 sm:pr-4 md:pr-8 lg:pr-52">
           <div className="hidden md:flex items-center gap-2 sm:gap-3 md:gap-4">
             {authItems.map((item) =>
               "path" in item ? (
