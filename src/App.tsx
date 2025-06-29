@@ -14,6 +14,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Profile from "./pages/Profile";
 import RentalHistory from "./pages/RentalHistory";
 import Policy from "./pages/Policy";
+import HotelDetail from "./pages/HotelDetail";
 const router = createBrowserRouter([
   {
     element: <AppLayout />,
@@ -32,6 +33,7 @@ const router = createBrowserRouter([
       { path: "/profile", element: <Profile /> },
       { path: "/rental-history", element: <RentalHistory /> },
       { path: "/policy", element: <Policy /> },
+      { path: "/hotel-detail", element: <HotelDetail /> },
     ],
   },
 ]);

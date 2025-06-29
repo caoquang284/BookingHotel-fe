@@ -62,6 +62,7 @@ const Navbar: React.FC = () => {
       ? [
           { path: "/profile", label: "Hồ sơ" },
           { path: "/policy", label: "Chính sách" },
+          { path: "/hotel-detail", label: "Về chúng tôi" },
           {
             label: "Lịch sử",
             dropdown: [
