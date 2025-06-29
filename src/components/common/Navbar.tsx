@@ -6,9 +6,10 @@ import logo from "../../assets/Image/logo.png";
 import ThemeToggle from "./ThemeToggle";
 
 interface NavItem {
-  path: string;
+  path?: string; // path không bắt buộc vì dropdown không cần path trực tiếp
   label: string;
   className?: string;
+  dropdown?: NavItem[]; // Thêm thuộc tính dropdown cho các mục con
 }
 
 interface AuthItemLink {
@@ -32,6 +33,7 @@ const Navbar: React.FC = () => {
   const isLight = theme === "light";
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Trạng thái dropdown
 
   const handleLogout = () => {
     logout();
@@ -40,6 +42,10 @@ const Navbar: React.FC = () => {
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
   };
 
   useEffect(() => {
@@ -54,9 +60,15 @@ const Navbar: React.FC = () => {
     { path: "/", label: "Trang chủ" },
     ...(user
       ? [
-          { path: "/booking-history", label: "Lịch sử đặt phòng" },
-          { path: "/rental-history", label: "Lịch sử thuê phòng" },
           { path: "/profile", label: "Hồ sơ" },
+          { path: "/policy", label: "Chính sách" },
+          {
+            label: "Lịch sử",
+            dropdown: [
+              { path: "/booking-history", label: "Lịch sử đặt phòng" },
+              { path: "/rental-history", label: "Lịch sử thuê phòng" },
+            ],
+          },
         ]
       : []),
   ];
@@ -113,32 +125,73 @@ const Navbar: React.FC = () => {
           </div>
         </div>
         <div className="hidden md:flex flex-1 justify-center gap-3 sm:gap-4 md:gap-6 font-medium">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`py-1 sm:py-2 px-2 sm:px-3 md:px-4 text-sm sm:text-base md:text-lg lg:text-2xl xl:text-3xl font-medium rounded-md transition-all duration-300 group ${
-                location.pathname === item.path
-                  ? "font-bold text-blue-800"
-                  : isLight
-                  ? "text-blue-400"
-                  : "text-gray-100"
-              }`}
-            >
-              <span className="relative">
-                {item.label}
-                <span
-                  className={`absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full ${
-                    location.pathname === item.path
-                      ? "bg-blue-800"
-                      : isLight
-                      ? "bg-blue-400"
-                      : "bg-gray-100"
+          {navItems.map((item, index) =>
+            item.dropdown ? (
+              <div key={index} className="relative group">
+                <button
+                  className={`py-1 sm:py-2 px-2 sm:px-3 md:px-4 text-sm sm:text-base md:text-lg lg:text-2xl xl:text-3xl font-medium rounded-md transition-all duration-300 ${
+                    isLight ? "text-blue-400" : "text-gray-100"
                   }`}
-                ></span>
-              </span>
-            </Link>
-          ))}
+                  onClick={toggleDropdown}
+                >
+                  <span className="relative">
+                    {item.label}
+                    <span
+                      className={`absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full ${
+                        isLight ? "bg-blue-400" : "bg-gray-100"
+                      }`}
+                    ></span>
+                  </span>
+                </button>
+                <div
+                  className={`absolute left-0 mt-2 w-48 rounded-md shadow-lg ${
+                    isLight ? "bg-white" : "bg-gray-900"
+                  } hidden group-hover:block`}
+                >
+                  {item.dropdown.map((subItem) => (
+                    <Link
+                      key={subItem.path}
+                      to={subItem.path!}
+                      className={`block py-2 px-4 text-sm ${
+                        location.pathname === subItem.path
+                          ? "font-bold text-blue-800"
+                          : isLight
+                          ? "text-black hover:bg-gray-100"
+                          : "text-gray-100 hover:bg-gray-800"
+                      }`}
+                    >
+                      {subItem.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ) : item.path ? (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`py-1 sm:py-2 px-2 sm:px-3 md:px-4 text-sm sm:text-base md:text-lg lg:text-2xl xl:text-3xl font-medium rounded-md transition-all duration-300 group ${
+                  location.pathname === item.path
+                    ? "font-bold text-blue-800"
+                    : isLight
+                    ? "text-blue-400"
+                    : "text-gray-100"
+                }`}
+              >
+                <span className="relative">
+                  {item.label}
+                  <span
+                    className={`absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full ${
+                      location.pathname === item.path
+                        ? "bg-blue-800"
+                        : isLight
+                        ? "bg-blue-400"
+                        : "bg-gray-100"
+                    }`}
+                  ></span>
+                </span>
+              </Link>
+            ) : null
+          )}
         </div>
         <div className="flex items-center gap-2 sm:gap-3 md:gap-4 pr-2 sm:pr-4 md:pr-8 lg:pr-52">
           <div className="hidden md:flex items-center gap-2 sm:gap-3 md:gap-4">
@@ -220,33 +273,71 @@ const Navbar: React.FC = () => {
           }`}
         >
           <div className="flex flex-col px-3 sm:px-4 py-2">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`py-2 sm:py-3 px-3 sm:px-4 text-base sm:text-lg font-medium rounded-md transition-all duration-300 group ${
-                  location.pathname === item.path
-                    ? "font-bold text-blue-600"
-                    : isLight
-                    ? "text-black"
-                    : "text-gray-100"
-                }`}
-              >
-                <span className="relative">
-                  {item.label}
-                  <span
-                    className={`absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full ${
-                      location.pathname === item.path
-                        ? "bg-blue-600"
-                        : isLight
-                        ? "bg-black"
-                        : "bg-gray-100"
+            {navItems.map((item, index) =>
+              item.dropdown ? (
+                <div key={index} className="relative">
+                  <button
+                    onClick={toggleDropdown}
+                    className={`py-2 sm:py-3 px-3 sm:px-4 text-base sm:text-lg font-medium rounded-md transition-all duration-300 w-full text-left ${
+                      isLight ? "text-black" : "text-gray-100"
                     }`}
-                  ></span>
-                </span>
-              </Link>
-            ))}
+                  >
+                    {item.label}
+                    <span className="ml-2 inline-block">
+                      {isDropdownOpen ? "▲" : "▼"}
+                    </span>
+                  </button>
+                  {isDropdownOpen && (
+                    <div className="pl-4">
+                      {item.dropdown.map((subItem) => (
+                        <Link
+                          key={subItem.path}
+                          to={subItem.path!}
+                          onClick={() => {
+                            setIsMobileMenuOpen(false);
+                            setIsDropdownOpen(false);
+                          }}
+                          className={`block py-2 px-4 text-sm ${
+                            location.pathname === subItem.path
+                              ? "font-bold text-blue-600"
+                              : isLight
+                              ? "text-black hover:bg-gray-100"
+                              : "text-gray-100 hover:bg-gray-800"
+                          }`}
+                        >
+                          {subItem.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : item.path ? (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`py-1 sm:py-2 px-2 sm:px-3 md:px-4 text-sm sm:text-base md:text-lg lg:text-2xl xl:text-3xl font-medium rounded-md transition-all duration-300 group ${
+                    location.pathname === item.path
+                      ? "font-bold text-blue-800"
+                      : isLight
+                      ? "text-blue-400"
+                      : "text-gray-100"
+                  }`}
+                >
+                  <span className="relative">
+                    {item.label}
+                    <span
+                      className={`absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full ${
+                        location.pathname === item.path
+                          ? "bg-blue-800"
+                          : isLight
+                          ? "bg-blue-400"
+                          : "bg-gray-100"
+                      }`}
+                    ></span>
+                  </span>
+                </Link>
+              ) : null
+            )}
             {authItems.map((item) =>
               "path" in item ? (
                 <Link
