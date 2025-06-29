@@ -447,6 +447,171 @@ const SkeletonReviewCard = () => (
   </div>
 );
 
+// About component
+const About: React.FC<{
+  totalRooms: number;
+  totalBookings: number;
+  averageRating: number;
+}> = ({ totalRooms, totalBookings, averageRating }) => {
+  const { theme } = useTheme();
+
+  const aboutItems = [
+    {
+      icon: "🏨",
+      count: `${totalRooms}+`,
+      text: "Phòng sang trọng",
+    },
+    {
+      icon: "👥",
+      count: `${totalBookings}+`,
+      text: "Đặt phòng thành công",
+    },
+    {
+      icon: "⭐",
+      count: averageRating.toFixed(1),
+      text: "Đánh giá trung bình",
+    },
+  ];
+
+  const imageLinks = [
+    "https://static.independent.co.uk/2025/04/07/14/09/HS-MBH-Exterior-03.jpg",
+    "https://luxuryescapes.com/inspiration/wp-content/uploads/2023/06/nh999jb5bo61avqid5c-e1687143719181.webp",
+    "https://i0.wp.com/theluxurytravelexpert.com/wp-content/uploads/2019/11/best-luxury-and-most-exclusive-hotels-brands-in-the-world.jpg?fit=1300%2C731&ssl=1",
+    "https://www.signatureluxurytravel.com.au/wp-content/uploads/2000/02/CTS-RM-8888-A-TRRCE-FINAL-01A.jpg",
+  ];
+
+  return (
+    <div
+      className={`py-12 sm:py-20 md:py-24 lg:py-32 transition-all duration-300 ${
+        theme === "light" ? "bg-gray-100" : "bg-gray-800"
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
+          {/* Left side - Content */}
+          <div className="space-y-6 sm:space-y-8">
+            <div>
+              <span
+                className={`inline-block text-sm sm:text-base font-semibold px-4 py-2 rounded-full mb-4 ${
+                  theme === "light"
+                    ? "bg-blue-100 text-blue-600"
+                    : "bg-blue-900 text-blue-300"
+                }`}
+              >
+                Về chúng tôi
+              </span>
+              <h2
+                className={`text-3xl sm:text-4xl md:text-5xl font-playfair font-bold mb-4 sm:mb-6 ${
+                  theme === "light" ? "text-gray-900" : "text-gray-100"
+                }`}
+              >
+                Chào mừng đến với{" "}
+                <span
+                  className={`${
+                    theme === "light" ? "text-blue-600" : "text-blue-400"
+                  }`}
+                >
+                  Roomify
+                </span>
+              </h2>
+            </div>
+
+            <p
+              className={`text-base sm:text-lg md:text-xl leading-relaxed ${
+                theme === "light" ? "text-gray-600" : "text-gray-300"
+              }`}
+            >
+              Roomify là điểm đến lý tưởng cho những ai đang tìm kiếm trải
+              nghiệm lưu trú đẳng cấp và dịch vụ chuyên nghiệp. Với hệ thống
+              phòng hiện đại, tiện nghi sang trọng và đội ngũ nhân viên tận tâm,
+              chúng tôi cam kết mang đến cho quý khách những kỳ nghỉ hoàn hảo và
+              đáng nhớ nhất.
+            </p>
+
+            {/* Stats */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+              {aboutItems.map((item, index) => (
+                <div
+                  key={index}
+                  className={`p-4 sm:p-6 rounded-lg border transition-all duration-300 ${
+                    theme === "light"
+                      ? "bg-gray-50 border-gray-200 hover:border-blue-300"
+                      : "bg-gray-700 border-gray-600 hover:border-blue-500"
+                  }`}
+                >
+                  <div className="text-center">
+                    <div className="text-3xl sm:text-4xl mb-4">{item.icon}</div>
+                    <h3
+                      className={`text-2xl sm:text-5xl font-bold mb-4 ${
+                        theme === "light" ? "text-gray-900" : "text-gray-100"
+                      }`}
+                    >
+                      {item.count}
+                    </h3>
+                    <p
+                      className={`text-sm sm:text-base ${
+                        theme === "light" ? "text-gray-600" : "text-gray-300"
+                      }`}
+                    >
+                      {item.text}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button
+              className={`px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg transition-all duration-300 ${
+                theme === "light"
+                  ? "bg-blue-600 hover:bg-blue-700 text-white"
+                  : "bg-blue-600 hover:bg-blue-700 text-white"
+              }`}
+            >
+              Khám phá thêm
+            </button>
+          </div>
+
+          {/* Right side - Images */}
+          <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+            <div className="space-y-4 sm:space-y-6">
+              <div className="text-right">
+                <img
+                  src={imageLinks[0]}
+                  alt="Luxury Hotel Exterior"
+                  className="ml-8 max-w-88 rounded-lg shadow-lg object-cover h-40 sm:h-48 md:h-64 lg:h-64"
+                />
+              </div>
+              <div className="text-left">
+                <img
+                  src={imageLinks[1]}
+                  alt="Hotel Interior"
+                  className="w-full ml-28 rounded-lg shadow-lg object-cover h-40 sm:h-48 md:h-64 lg:h-64"
+                />
+              </div>
+            </div>
+            <div className="space-y-4 sm:space-y-6 pt-8 sm:pt-12 lg:pt-16">
+              <div className="text-right">
+                <img
+                  src={imageLinks[2]}
+                  alt="Hotel Room"
+                  className="ml-26 rounded-lg shadow-lg object-cover h-40 sm:h-48 md:h-64 lg:h-64"
+                />
+              </div>
+              <div className="text-left">
+                <img
+                  src={imageLinks[3]}
+                  alt="Hotel Amenities"
+                  className="max-w-88 ml-26 rounded-lg shadow-lg object-cover h-40 sm:h-48 md:h-64 lg:h-64"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const { theme } = useTheme();
@@ -470,6 +635,9 @@ const Home: React.FC = () => {
   const [guests, setGuests] = useState<Record<number, ResponseGuestDTO>>({});
   const [roomNames, setRoomNames] = useState<Record<number, string>>({});
   const [allRoomNames, setAllRoomNames] = useState<Record<number, string>>({});
+  const [totalBookings, setTotalBookings] = useState<number>(0);
+  const [averageRating, setAverageRating] = useState<number>(0);
+  const [totalRooms, setTotalRooms] = useState<number>(0);
 
   const fetchData = async (
     checkInDate?: string,
@@ -756,6 +924,41 @@ const Home: React.FC = () => {
     ).fill(null); // Khởi tạo refs cho ReviewCard
   }, [rooms, reviewsByRoom]);
 
+  // Calculate total bookings and average rating
+  useEffect(() => {
+    const calculateStats = async () => {
+      try {
+        // Get all rooms
+        const allRooms = await getAllRooms();
+        setTotalRooms(allRooms.length);
+
+        // Get all booking confirmation forms
+        const allBookings = await getAllBookingConfirmationForms();
+        setTotalBookings(allBookings.length);
+
+        // Calculate average rating from all reviews
+        const allReviews = Object.values(reviewsByRoom).flat();
+        if (allReviews.length > 0) {
+          const totalRating = allReviews.reduce(
+            (sum, review) => sum + review.rating,
+            0
+          );
+          const avgRating = totalRating / allReviews.length;
+          setAverageRating(avgRating);
+        } else {
+          setAverageRating(0);
+        }
+      } catch (error) {
+        console.error("Error calculating stats:", error);
+        setTotalRooms(0);
+        setTotalBookings(0);
+        setAverageRating(0);
+      }
+    };
+
+    calculateStats();
+  }, [reviewsByRoom]);
+
   const scrollLeft = () => {
     if (sliderRef.current) {
       const slider = sliderRef.current;
@@ -803,17 +1006,19 @@ const Home: React.FC = () => {
           minHeight: "80vh sm:min-h-screen",
         }}
       >
-        <div className="absolute inset-0 bg-black/70"></div>
+        <div className="absolute inset-0 bg-black/40"></div>
         <div className="relative z-10 text-left text-white mb-24 px-8 sm:pl-12 md:pl-16 lg:pl-58 py-8 sm:py-10 mt-20 sm:mt-32 md:mt-40 lg:mt-52">
           <span className="inline-block bg-blue-600/30 text-yellow-200 text-lg sm:text-xl md:text-2xl font-semibold px-4 sm:px-6 py-2 rounded-full mb-4 sm:mb-6">
             Trải nghiệm khách sạn đẳng cấp
           </span>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 font-playfair text-yellow-500">
-            <span>Rong chơi bốn phương,</span>
-            <span className="block mt-2 sm:mt-4 md:mt-6">
-              "giá" vẫn yêu thương
-            </span>
-          </h1>
+          <div className="bg-black/40 w-160 rounded-lg py-4 mb-4">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl italic lg:text-6xl font-bold font-playfair text-yellow-500">
+              <span>Rong chơi bốn phương,</span>
+              <span className="block mt-2 sm:mt-4 md:mt-6">
+                "giá" vẫn yêu thương
+              </span>
+            </h1>
+          </div>
           <p
             className={`text-base sm:text-lg md:text-xl mb-6 sm:mb-8 max-w-xl md:max-w-2xl text-yellow-200 ${
               theme === "light" ? "text-white" : "text-gray-200"
@@ -828,6 +1033,18 @@ const Home: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* About Section */}
+      <About
+        totalRooms={totalRooms}
+        totalBookings={totalBookings}
+        averageRating={averageRating}
+      />
+
+      <div className="flex justify-center">
+        <div className="h-0.5 w-full max-w-6xl mx-auto transition-all duration-300 bg-gray-600"></div>
+      </div>
+
       <div
         className={`max-w-full mx-auto py-12 sm:py-20 md:py-24 lg:py-32 px-4 sm:px-6 md:px-8 lg:px-12 transition-all duration-300 ${
           theme === "light" ? "bg-gray-100" : "bg-gray-900"
