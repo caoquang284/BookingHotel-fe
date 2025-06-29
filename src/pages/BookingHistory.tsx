@@ -4,7 +4,10 @@ import { useTheme } from "../contexts/ThemeContext";
 import { useScrollToTop } from "../hooks/useScrollToTop";
 import { getGuestByAccountId } from "../services/apis/guest";
 import { getRoomById, updateRoom } from "../services/apis/room";
-import { getAllBookingConfirmationForms } from "../services/apis/bookingconfirm";
+import {
+  getAllBookingConfirmationForms,
+  getBookingConfirmationFormById,
+} from "../services/apis/bookingconfirm";
 import { deleteBookingConfirmationForm } from "../services/apis/bookingconfirm";
 import { createReview } from "../services/apis/review"; // Thêm API tạo đánh giá
 import { getImagesByRoomId } from "../services/apis/image"; // Thêm API lấy hình ảnh
@@ -19,9 +22,17 @@ import {
   createRentalForm,
   getAllRentalFormsNoPage,
 } from "../services/apis/rentalform";
-import { createRentalFormDetail } from "../services/apis/rentalFormDetail";
+import {
+  createRentalFormDetail,
+  getAllRentalFormDetailsByUserId,
+} from "../services/apis/rentalFormDetail";
 import { createInvoice } from "../services/apis/invoice";
 import { createInvoiceDetail } from "../services/apis/invoicedetail";
+import {
+  createRentalExtensionForm,
+  getDayRemains,
+  getRentalExtensionFormsByRentalFormId,
+} from "../services/apis/rentalFormExtension";
 
 const BookingHistory: React.FC = () => {
   const { user, isInitialized } = useAuth();
@@ -46,6 +57,13 @@ const BookingHistory: React.FC = () => {
   const [roomImages, setRoomImages] = useState<{ [roomId: number]: string }>(
     {}
   ); // State lưu hình ảnh phòng
+  const [showExtensionModal, setShowExtensionModal] = useState(false);
+  const [selectedBookingForExtension, setSelectedBookingForExtension] =
+    useState<ResponseBookingConfirmationFormDTO | null>(null);
+  const [extensionDays, setExtensionDays] = useState<number>(1);
+  const [existingRentalFormId, setExistingRentalFormId] = useState<
+    number | null
+  >(null);
   const bookingState = {
     PENDING: "Chờ xác nhận",
     COMMITED: "Đã xác nhận",
@@ -155,11 +173,21 @@ const BookingHistory: React.FC = () => {
             onClick={async () => {
               if (toastId) toast.dismiss(toastId);
               try {
+                const booking = await getBookingConfirmationFormById(bookingId);
+                const room = await getRoomById(booking.roomId);
                 await deleteBookingConfirmationForm(
                   bookingId,
                   user.id,
                   "GUEST"
                 );
+                const updatedRoom = {
+                  name: room.name,
+                  note: room.note,
+                  roomState: "READY_TO_SERVE" as import("../types").RoomState,
+                  roomTypeId: room.roomTypeId,
+                  floorId: room.floorId,
+                };
+                await updateRoom(room.id, updatedRoom, 1, "MANAGER");
                 setBookings(
                   bookings.filter((booking) => booking.id !== bookingId)
                 );
@@ -284,6 +312,43 @@ const BookingHistory: React.FC = () => {
     } catch (error) {
       toast.error("Không thể lấy thông tin phòng để tạo mã QR");
       setQrCodeUrl("");
+    }
+  };
+
+  const handleShowExtensionModal = async (
+    booking: ResponseBookingConfirmationFormDTO
+  ) => {
+    try {
+      // Kiểm tra xem khách đã checkin chưa
+      const allRentalForms = await getAllRentalFormsNoPage();
+      const guestRentalFormDetails = await getAllRentalFormDetailsByUserId(
+        booking.guestId
+      );
+
+      const guestRentalFormIds = guestRentalFormDetails.map(
+        (detail: any) => detail.rentalFormId
+      );
+
+      const existingRentalForm = allRentalForms.find(
+        (rental: any) =>
+          guestRentalFormIds.includes(rental.id) &&
+          rental.roomId === booking.roomId &&
+          rental.rentalDate === booking.bookingDate
+      );
+
+      if (!existingRentalForm) {
+        toast.error(
+          "Bạn phải checkin tại khách sạn trước rồi mới được gia hạn!"
+        );
+        return;
+      }
+
+      setSelectedBookingForExtension(booking);
+      setExistingRentalFormId(existingRentalForm.id);
+      setExtensionDays(1);
+      setShowExtensionModal(true);
+    } catch (error) {
+      toast.error("Không thể mở modal gia hạn: " + error);
     }
   };
 
@@ -528,6 +593,12 @@ const BookingHistory: React.FC = () => {
                               className="bg-blue-500 text-white text-sm sm:text-base md:text-lg lg:text-xl font-semibold py-1 sm:py-2 px-3 sm:px-4 md:px-6 rounded-lg hover:bg-blue-600 transition"
                             >
                               Đánh giá
+                            </button>
+                            <button
+                              onClick={() => handleShowExtensionModal(booking)}
+                              className="bg-purple-500 text-white text-sm sm:text-base md:text-lg lg:text-xl font-semibold py-1 sm:py-2 px-3 sm:px-4 md:px-6 rounded-lg hover:bg-purple-600 transition"
+                            >
+                              Gia hạn
                             </button>
                             <button
                               onClick={() => handleShowQRModal(booking)}
@@ -777,33 +848,57 @@ const BookingHistory: React.FC = () => {
                 onClick={async () => {
                   if (!selectedBookingForQR) return;
                   try {
-                    // Tạo phiếu thuê (RentalForm)
-                    const rentalFormData = {
-                      roomId: selectedBookingForQR.roomId,
-                      staffId: 1,
-                      rentalDate: selectedBookingForQR.bookingDate,
-                      numberOfRentalDays: selectedBookingForQR.rentalDays,
-                    };
-                    const rentalForm = await createRentalForm(
-                      rentalFormData,
-                      1,
-                      "MANAGER"
+                    // Bước 1: Kiểm tra xem khách đã checkin chưa bằng cách tìm rental form
+                    const allRentalForms = await getAllRentalFormsNoPage();
+                    const guestRentalFormDetails =
+                      await getAllRentalFormDetailsByUserId(
+                        selectedBookingForQR.guestId
+                      );
+
+                    // Lấy danh sách rental form IDs của khách
+                    const guestRentalFormIds = guestRentalFormDetails.map(
+                      (detail: any) => detail.rentalFormId
                     );
-                    // Tạo rental form detail
-                    const rentalFormDetailData = {
-                      rentalFormId: rentalForm.id,
-                      guestId: selectedBookingForQR.guestId,
-                    };
-                    await createRentalFormDetail(
-                      rentalFormDetailData,
-                      1,
-                      "MANAGER"
+
+                    // Tìm rental form có roomId và rentalDate trùng với booking
+                    const existingRentalForm = allRentalForms.find(
+                      (rental: any) =>
+                        guestRentalFormIds.includes(rental.id) &&
+                        rental.roomId === selectedBookingForQR.roomId &&
+                        rental.rentalDate === selectedBookingForQR.bookingDate
                     );
-                    // Tạo hóa đơn (invoice)
+
+                    if (!existingRentalForm) {
+                      toast.error(
+                        "Bạn phải checkin tại khách sạn trước rồi mới được checkout!"
+                      );
+                      setShowQRModal(false);
+                      setQrCodeUrl("");
+                      setQrPrice(0);
+                      setSelectedBookingForQR(null);
+                      return;
+                    }
+
+                    // Bước 2: Tạo hóa đơn (invoice) cho rental form đã tồn tại
                     const totalCost =
                       (selectedBookingForQR.rentalDays || 1) * qrPrice;
+
+                    // Cộng thêm chi phí gia hạn nếu có
+                    const extensionForms =
+                      await getRentalExtensionFormsByRentalFormId(
+                        existingRentalForm.id
+                      );
+                    const extensionCost = extensionForms.reduce(
+                      (
+                        total: number,
+                        ext: import("../types").ResponseRentalExtensionFormDTO
+                      ) => total + ext.numberOfRentalDays * qrPrice,
+                      0
+                    );
+                    const finalTotalCost = totalCost + extensionCost;
+
                     const invoiceData = {
-                      totalReservationCost: totalCost,
+                      totalReservationCost: finalTotalCost,
                       payingGuestId: selectedBookingForQR.guestId,
                       staffId: 1,
                     };
@@ -812,15 +907,17 @@ const BookingHistory: React.FC = () => {
                       1,
                       "STAFF"
                     );
-                    // Tạo invoice detail
+
+                    // Bước 3: Tạo invoice detail
                     const invoiceDetailData = {
                       numberOfRentalDays: selectedBookingForQR.rentalDays,
                       invoiceId: invoice.id,
-                      reservationCost: totalCost,
-                      rentalFormId: rentalForm.id,
+                      reservationCost: finalTotalCost,
+                      rentalFormId: existingRentalForm.id,
                     };
                     await createInvoiceDetail(invoiceDetailData, 1, "STAFF");
-                    // Update trạng thái phòng thành BEING_CLEANED
+
+                    // Bước 4: Update trạng thái phòng thành BEING_CLEANED
                     const room = await getRoomById(selectedBookingForQR.roomId);
                     const updatedRoom = {
                       name: room.name,
@@ -831,12 +928,13 @@ const BookingHistory: React.FC = () => {
                       floorId: room.floorId,
                     };
                     await updateRoom(room.id, updatedRoom, 1, "MANAGER");
+
                     toast.success(
                       "Thanh toán thành công, Roomify xin cảm ơn và hẹn gặp lại quý khách!"
                     );
                     window.location.reload();
                   } catch (error) {
-                    toast.error("Lỗi khi tạo phiếu thuê/hóa đơn: " + error);
+                    toast.error("Lỗi khi tạo hóa đơn: " + error);
                   }
                   setShowQRModal(false);
                   setQrCodeUrl("");
@@ -893,6 +991,178 @@ const BookingHistory: React.FC = () => {
                     Xác nhận thanh toán
                   </span>
                 )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Gia hạn */}
+      {showExtensionModal && selectedBookingForExtension && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+          <div
+            className={`rounded-2xl shadow-2xl max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl w-full p-4 sm:p-6 relative transition-all duration-300 ${
+              theme === "light" ? "bg-white" : "bg-gray-800"
+            }`}
+          >
+            <button
+              onClick={() => {
+                setShowExtensionModal(false);
+                setSelectedBookingForExtension(null);
+                setExistingRentalFormId(null);
+                setExtensionDays(1);
+              }}
+              className={`absolute top-2 sm:top-4 right-2 sm:right-4 transition-all duration-300 ${
+                theme === "light"
+                  ? "text-gray-500 hover:text-gray-700"
+                  : "text-gray-400 hover:text-gray-200"
+              }`}
+            >
+              <svg
+                className="h-5 w-5 sm:h-6 sm:w-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+
+            <h3
+              className={`text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 md:mb-8 text-center transition-all duration-300 ${
+                theme === "light" ? "text-gray-800" : "text-gray-200"
+              }`}
+            >
+              Gia hạn thêm ngày
+            </h3>
+
+            <div
+              className={`mb-4 sm:mb-6 md:mb-8 text-center text-sm sm:text-base md:text-lg lg:text-2xl space-y-2 sm:space-y-3 ${
+                theme === "light" ? "text-gray-800" : "text-gray-200"
+              }`}
+            >
+              <div>
+                Mã phiếu: <b>{selectedBookingForExtension.id}</b>
+              </div>
+              <div>
+                Phòng: <b>{selectedBookingForExtension.roomName}</b>
+              </div>
+              <div>
+                Loại phòng: <b>{selectedBookingForExtension.roomTypeName}</b>
+              </div>
+              <div>
+                Ngày nhận phòng:{" "}
+                <b>
+                  {new Date(
+                    selectedBookingForExtension.bookingDate
+                  ).toLocaleDateString("vi-VN")}
+                </b>
+              </div>
+              <div>
+                Số ngày thuê hiện tại:{" "}
+                <b>{selectedBookingForExtension.rentalDays}</b>
+              </div>
+            </div>
+
+            <div className="mb-4 sm:mb-6 md:mb-8">
+              <label
+                className={`block text-sm sm:text-base md:text-lg lg:text-xl font-medium mb-2 ${
+                  theme === "light" ? "text-gray-700" : "text-gray-300"
+                }`}
+              >
+                Số ngày gia hạn thêm:
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="30"
+                value={extensionDays}
+                onChange={(e) =>
+                  setExtensionDays(parseInt(e.target.value) || 1)
+                }
+                className={`w-full p-2 border rounded-lg text-sm sm:text-base md:text-lg lg:text-xl transition-all duration-300 ${
+                  theme === "light"
+                    ? "border-gray-300 text-gray-900 bg-white"
+                    : "border-gray-600 text-gray-100 bg-gray-800"
+                }`}
+              />
+            </div>
+
+            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 mt-4 sm:mt-6 md:mt-8">
+              <button
+                onClick={() => {
+                  setShowExtensionModal(false);
+                  setSelectedBookingForExtension(null);
+                  setExistingRentalFormId(null);
+                  setExtensionDays(1);
+                }}
+                className={`px-4 sm:px-6 py-2 rounded-lg transition-all duration-300 ${
+                  theme === "light"
+                    ? "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                    : "bg-gray-700 text-gray-200 hover:bg-gray-600"
+                }`}
+              >
+                Hủy
+              </button>
+              <button
+                onClick={async () => {
+                  if (!selectedBookingForExtension || !existingRentalFormId)
+                    return;
+                  try {
+                    // Tạo phiếu gia hạn
+                    const extensionData = {
+                      rentalFormId: existingRentalFormId,
+                      numberOfRentalDays: extensionDays,
+                      staffId: 1,
+                    };
+
+                    // TODO: Gọi API createRentalExtensionForm khi có import
+                    // const extensionForm = await createRentalExtensionForm(
+                    //   extensionData,
+                    //   1,
+                    //   "MANAGER"
+                    // );
+
+                    toast.success(
+                      `Gia hạn thành công thêm ${extensionDays} ngày!`
+                    );
+                    setShowExtensionModal(false);
+                    setSelectedBookingForExtension(null);
+                    setExistingRentalFormId(null);
+                    setExtensionDays(1);
+                    window.location.reload();
+                  } catch (error) {
+                    toast.error("Lỗi khi tạo phiếu gia hạn: " + error);
+                  }
+                }}
+                className={`px-4 sm:px-6 py-2 rounded-lg text-white transition-all duration-300 flex items-center justify-center ${
+                  theme === "light"
+                    ? "bg-purple-600 hover:bg-purple-700"
+                    : "bg-purple-600 hover:bg-purple-700"
+                }`}
+              >
+                <span className="flex items-center text-sm sm:text-base">
+                  <svg
+                    className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                    />
+                  </svg>
+                  Xác nhận gia hạn
+                </span>
               </button>
             </div>
           </div>

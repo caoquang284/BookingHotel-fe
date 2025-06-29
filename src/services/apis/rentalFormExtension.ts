@@ -1,5 +1,4 @@
 import type { RentalExtensionFormDTO, ResponseRentalExtensionFormDTO } from '../../types';
-import { PageDTO} from '../../types'; // Giả sử bạn có type Pageable và Page
 
 const BASE_URL = 'http://localhost:8081/api/rental-extension-form';
 
