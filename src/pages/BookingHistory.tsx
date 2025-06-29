@@ -26,7 +26,7 @@ import {
   createRentalFormDetail,
   getAllRentalFormDetailsByUserId,
 } from "../services/apis/rentalFormDetail";
-import { createInvoice } from "../services/apis/invoice";
+import { createInvoice, sendEmailToGuests } from "../services/apis/invoice";
 import { createInvoiceDetail } from "../services/apis/invoicedetail";
 import {
   createRentalExtensionForm,
@@ -308,7 +308,7 @@ const BookingHistory: React.FC = () => {
     setQrCodeUrl("");
     setQrPrice(0);
     setExtensionInfo(null);
-
+    console.log(extensionInfo);
     // Lấy thông tin phòng từ API
     try {
       const room = await getRoomById(booking.roomId);
@@ -386,6 +386,8 @@ const BookingHistory: React.FC = () => {
           rental.roomId === booking.roomId &&
           rental.numberOfRentalDays === booking.rentalDays
       );
+
+      console.log(booking.rentalDays);
 
       if (!existingRentalForm) {
         toast.error(
@@ -534,9 +536,8 @@ const BookingHistory: React.FC = () => {
               );
             });
 
-            console.log(rentalForm);
             const isPaid = rentalForm && rentalForm.isPaidAt;
-            console.log(new Date(isPaid));
+
             return (
               <div
                 key={booking.id}
@@ -961,6 +962,8 @@ const BookingHistory: React.FC = () => {
                     const totalCost =
                       (selectedBookingForQR.rentalDays || 1) * qrPrice;
 
+                    console.log(extensionInfo);
+
                     // Sử dụng thông tin gia hạn đã tính toán
                     const finalTotalCost = extensionInfo
                       ? extensionInfo.totalDays * qrPrice
@@ -974,7 +977,7 @@ const BookingHistory: React.FC = () => {
                     const invoice = await createInvoice(
                       invoiceData,
                       1,
-                      "STAFF"
+                      "MANAGER"
                     );
 
                     // Bước 3: Tạo invoice detail
@@ -988,7 +991,15 @@ const BookingHistory: React.FC = () => {
                     };
                     await createInvoiceDetail(invoiceDetailData, 1, "STAFF");
 
-                    // Bước 4: Update trạng thái phòng thành BEING_CLEANED
+                    // Bước 4: Gửi email cho khách hàng
+                    try {
+                      await sendEmailToGuests(invoice.id, 1, "MANAGER");
+                    } catch (emailError) {
+                      console.error("Lỗi khi gửi email:", emailError);
+                      // Không dừng quá trình nếu gửi email thất bại
+                    }
+
+                    // Bước 5: Update trạng thái phòng thành BEING_CLEANED
                     const room = await getRoomById(selectedBookingForQR.roomId);
                     const updatedRoom = {
                       name: room.name,
