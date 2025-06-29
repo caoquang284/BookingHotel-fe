@@ -6,10 +6,10 @@ import logo from "../../assets/Image/logo.png";
 import ThemeToggle from "./ThemeToggle";
 
 interface NavItem {
-  path?: string; // path không bắt buộc vì dropdown không cần path trực tiếp
+  path?: string;
   label: string;
   className?: string;
-  dropdown?: NavItem[]; // Thêm thuộc tính dropdown cho các mục con
+  dropdown?: NavItem[];
 }
 
 interface AuthItemLink {
@@ -32,7 +32,7 @@ const Navbar: React.FC = () => {
   const { theme } = useTheme();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Trạng thái dropdown
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -112,16 +112,16 @@ const Navbar: React.FC = () => {
             alt="Roomify Logo"
             className="h-8 sm:h-10 md:h-12 w-auto mt-1 sm:mt-2"
           />
-          <div className="text-lg sm:text-xl md:text-3xl lg:text-5xl font-bold font-playfair ml-1 sm:ml-2 text-[var(--foreground)]">
+          <div className="text-lg sm:text-xl md:text-3xl lg:text-5xl font-bold font-playfair ml-1 sm:ml-2 text-[var(--foreground)] transition-colors duration-300">
             Roomify
           </div>
         </div>
         <div className="hidden md:flex flex-1 justify-center gap-3 sm:gap-4 md:gap-6 font-medium">
           {navItems.map((item, index) =>
             item.dropdown ? (
-              <div key={index} className="relative group">
+              <div key={index} className="relative">
                 <button
-                  className="py-1 sm:py-2 px-2 sm:px-3 md:px-4 text-sm sm:text-base md:text-lg lg:text-2xl xl:text-3xl font-medium rounded-md transition-all duration-300 text-[var(--primary)]"
+                  className="py-1 sm:py-2 px-2 sm:px-3 md:px-4 text-sm sm:text-base md:text-lg lg:text-2xl xl:text-3xl font-medium rounded-md transition-colors duration-300 text-[var(--primary)]"
                   onClick={toggleDropdown}
                 >
                   <span className="relative">
@@ -129,27 +129,32 @@ const Navbar: React.FC = () => {
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full bg-[var(--primary)]"></span>
                   </span>
                 </button>
-                <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-[var(--card)] text-[var(--card-foreground)] hidden group-hover:block">
-                  {item.dropdown.map((subItem) => (
-                    <Link
-                      key={subItem.path}
-                      to={subItem.path!}
-                      className={`block py-2 px-4 text-sm ${
-                        location.pathname === subItem.path
-                          ? "font-bold text-[var(--primary)]"
-                          : "text-[var(--card-foreground)] hover:bg-[var(--secondary)]"
-                      }`}
-                    >
-                      {subItem.label}
-                    </Link>
-                  ))}
-                </div>
+                {isDropdownOpen && (
+                  <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-[var(--card)] text-[var(--card-foreground)] transition-colors duration-300">
+                    {item.dropdown.map((subItem) => (
+                      <Link
+                        key={subItem.path}
+                        to={subItem.path!}
+                        onClick={() => {
+                          setIsDropdownOpen(false);
+                        }}
+                        className={`block py-2 px-4 text-sm ${
+                          location.pathname === subItem.path
+                            ? "font-bold text-[var(--primary)]"
+                            : "text-[var(--card-foreground)] hover:bg-[var(--secondary)]"
+                        } transition-colors duration-300`}
+                      >
+                        {subItem.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
             ) : item.path ? (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`py-1 sm:py-2 px-2 sm:px-3 md:px-4 text-sm sm:text-base md:text-lg lg:text-2xl xl:text-3xl font-medium rounded-md transition-all duration-300 group ${
+                className={`py-1 sm:py-2 px-2 sm:px-3 md:px-4 text-sm sm:text-base md:text-lg lg:text-2xl xl:text-3xl font-medium rounded-md transition-colors duration-300 group ${
                   location.pathname === item.path
                     ? "font-bold text-[var(--primary)]"
                     : "text-[var(--primary)]"
@@ -176,22 +181,22 @@ const Navbar: React.FC = () => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`py-1 sm:py-2 px-2 sm:px-3 md:px-4 text-sm sm:text-base md:text-lg lg:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${item.className} text-white relative`}
+                  className={`py-1 sm:py-2 px-2 sm:px-3 md:px-4 text-sm sm:text-base md:text-lg lg:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${item.className} text-[var(--primary-foreground)] relative group`}
                 >
                   <span className="relative">
                     {item.label}
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full bg-white"></span>
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full bg-[var(--primary-foreground)]"></span>
                   </span>
                 </Link>
               ) : (
                 <button
                   key={item.label}
                   onClick={item.action}
-                  className={`py-1 sm:py-2 px-2 sm:px-3 md:px-4 text-sm sm:text-base md:text-lg lg:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${item.className} text-white relative`}
+                  className={`py-1 sm:py-2 px-2 sm:px-3 md:px-4 text-sm sm:text-base md:text-lg lg:text-xl font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${item.className} text-[var(--primary-foreground)] relative group`}
                 >
                   <span className="relative">
                     {item.label}
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full bg-white"></span>
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full bg-[var(--primary-foreground)]"></span>
                   </span>
                 </button>
               )
@@ -202,7 +207,7 @@ const Navbar: React.FC = () => {
         <div className="md:hidden">
           <button
             onClick={toggleMobileMenu}
-            className="p-1 sm:p-2 transition-all duration-300 text-[var(--foreground)] hover:text-[var(--primary)] focus:outline-none"
+            className="p-1 sm:p-2 transition-colors duration-300 text-[var(--foreground)] hover:text-[var(--primary)] focus:outline-none"
           >
             <svg
               className="w-5 h-5 sm:w-6 sm:h-6"
@@ -227,14 +232,14 @@ const Navbar: React.FC = () => {
       </div>
 
       {isMobileMenuOpen && (
-        <div className="md:hidden mt-2 rounded-lg transition-all duration-300 bg-[var(--card)] text-[var(--card-foreground)]">
+        <div className="md:hidden mt-2 rounded-lg transition-colors duration-300 bg-[var(--card)] text-[var(--card-foreground)]">
           <div className="flex flex-col px-3 sm:px-4 py-2">
             {navItems.map((item, index) =>
               item.dropdown ? (
                 <div key={index} className="relative">
                   <button
                     onClick={toggleDropdown}
-                    className="py-2 sm:py-3 px-3 sm:px-4 text-base sm:text-lg font-medium rounded-md transition-all duration-300 w-full text-left text-[var(--card-foreground)]"
+                    className="py-2 sm:py-3 px-3 sm:px-4 text-base sm:text-lg font-medium rounded-md transition-colors duration-300 w-full text-left text-[var(--primary)]"
                   >
                     {item.label}
                     <span className="ml-2 inline-block">
@@ -255,7 +260,7 @@ const Navbar: React.FC = () => {
                             location.pathname === subItem.path
                               ? "font-bold text-[var(--primary)]"
                               : "text-[var(--card-foreground)] hover:bg-[var(--secondary)]"
-                          }`}
+                          } transition-colors duration-300`}
                         >
                           {subItem.label}
                         </Link>
@@ -267,7 +272,8 @@ const Navbar: React.FC = () => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`py-1 sm:py-2 px-2 sm:px-3 md:px-4 text-sm sm:text-base md:text-lg lg:text-2xl xl:text-3xl font-medium rounded-md transition-all duration-300 group ${
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`py-1 sm:py-2 px-2 sm:px-3 text-sm sm:text-base md:text-lg lg:text-2xl xl:text-3xl font-medium rounded-md transition-colors duration-300 group ${
                     location.pathname === item.path
                       ? "font-bold text-[var(--primary)]"
                       : "text-[var(--primary)]"
@@ -292,11 +298,11 @@ const Navbar: React.FC = () => {
                   key={item.path}
                   to={item.path}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`py-2 sm:py-3 px-3 sm:px-4 text-base sm:text-lg font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${item.className} text-white`}
+                  className={`py-2 sm:py-3 px-3 sm:px-4 text-base sm:text-lg font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${item.className} text-[var(--primary-foreground)]`}
                 >
                   <span className="relative">
                     {item.label}
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full bg-white"></span>
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full bg-[var(--primary-foreground)]"></span>
                   </span>
                 </Link>
               ) : (
@@ -306,11 +312,11 @@ const Navbar: React.FC = () => {
                     item.action();
                     setIsMobileMenuOpen(false);
                   }}
-                  className={`py-2 sm:py-3 px-3 sm:px-4 text-base sm:text-lg font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${item.className} text-white`}
+                  className={`py-2 sm:py-3 px-3 sm:px-4 text-base sm:text-lg font-medium rounded-md transition-all duration-300 bg-gradient-to-r ${item.className} text-[var(--primary-foreground)]`}
                 >
                   <span className="relative">
                     {item.label}
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full bg-white"></span>
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full bg-[var(--primary-foreground)]"></span>
                   </span>
                 </button>
               )
