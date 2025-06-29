@@ -9,6 +9,8 @@ import {
   buildRentalFormDetails
 } from './knowledgeSectionBuilder'
 
+import { hotelRulesSummary } from './commonRules'
+
 export async function loadKnowledgeSections(guestId: number): Promise<Record<string, string>> {
   const knowledge: Record<string, string> = {};
 
@@ -47,6 +49,22 @@ export function getRelevantSections(question: string, knowledge: Record<string, 
   if (q.includes('chi tiết') || q.includes('rental detail')) relevant += knowledge.rentalFormDetails || '';
   if (q.includes('loại phòng') || q.includes('room type')) relevant += knowledge.roomtypes || '';
   if (q.includes('tòa') || q.includes('block')) relevant += knowledge.blocks || '';
+
+  if (
+    q.includes('quy định') ||
+    q.includes('chính sách') ||
+    q.includes('checkin') ||
+    q.includes('check-in') ||
+    q.includes('trả phòng') ||
+    q.includes('thuê phòng') ||
+    q.includes('hút thuốc') ||
+    q.includes('trẻ em') ||
+    q.includes('thú cưng') ||
+    q.includes('giờ nhận phòng') ||
+    q.includes('giờ trả phòng')
+  ) {
+    relevant += '\n\n# Chính sách khách sạn\n' + hotelRulesSummary;
+  }
 
   if (!relevant) relevant += knowledge.rooms || '';
   return relevant;
