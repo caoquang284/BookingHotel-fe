@@ -13,6 +13,37 @@
   }
 }
 
+/* File: src/index.css hoặc src/App.css */
+.fade-slide-in {
+  opacity: 0;
+  transform: translateX(-50px); /* Trượt từ trái */
+  transition: opacity 0.5s ease, transform 0.75s ease;
+}
+
+.fade-slide-in-right {
+  opacity: 0;
+  transform: translateX(75px); /* Trượt từ phải */
+  transition: opacity 0.5s ease, transform 0.75s ease;
+}
+
+.fade-slide-in-left {
+  opacity: 0;
+  transform: translateX(-75px); /* Trượt từ trái */
+  transition: opacity 0.5s ease, transform 0.75s ease;
+}
+
+.fade-slide-in.visible,
+.fade-slide-in-right.visible,
+.fade-slide-in-left.visible {
+  opacity: 1;
+  transform: translateX(0); /* Trượt về vị trí ban đầu */
+}
+
+.fade-slide-out {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
 .font-playfair {
   font-family: "Playfair Display", serif;
 }

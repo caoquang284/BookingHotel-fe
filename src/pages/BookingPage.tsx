@@ -9,6 +9,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { createBookingConfirmationForm } from "../services/apis/bookingconfirm";
 import type { ResponseRoomDTO, BookingConfirmationFormDTO } from "../types";
+import { useScrollToTop } from "../hooks/useScrollToTop";
 
 const formatVND = (amount: number) =>
   amount.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
@@ -34,10 +35,12 @@ const BookingPage: React.FC = () => {
     phone: "",
   });
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "qr" | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "qr" | null>(
+    null
+  );
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [isGeneratingQR, setIsGeneratingQR] = useState(false);
-
+  useScrollToTop();
   useEffect(() => {
     const fetchData = async () => {
       if (!roomId) {
@@ -147,9 +150,10 @@ const BookingPage: React.FC = () => {
       toast.error("Vui lòng điền đầy đủ thông tin");
       return;
     }
-    setPaymentMethod("qr");
-    setShowPaymentModal(true);
-    await generateQRCode(Number(room?.roomTypePrice));
+    handleConfirmBooking();
+    // setPaymentMethod("qr");
+    // setShowPaymentModal(true);
+    // await generateQRCode(Number(room?.roomTypePrice));
   };
 
   const handleConfirmPayment = async () => {
@@ -183,6 +187,36 @@ const BookingPage: React.FC = () => {
       setShowPaymentModal(false);
       setPaymentMethod(null);
       setQrCodeUrl(null);
+    }
+  };
+
+  const handleConfirmBooking = async () => {
+    if (!user || !roomId || !checkIn || !checkOut) {
+      toast.error("Thông tin không đầy đủ để tạo phiếu đặt phòng");
+      return;
+    }
+
+    try {
+      const rentalDays = Math.ceil(
+        (new Date(checkOut).getTime() - new Date(checkIn).getTime()) /
+          (1000 * 3600 * 24)
+      );
+      const bookingData: BookingConfirmationFormDTO = {
+        bookingGuestId: customerInfo.id,
+        bookingState: "PENDING",
+        roomId: parseInt(roomId),
+        bookingDate: checkIn,
+        rentalDays: rentalDays > 0 ? rentalDays : 1,
+      };
+
+      const impactorId = user.id;
+      const impactor = "USER";
+      await createBookingConfirmationForm(bookingData, impactorId, impactor);
+      toast.success("Phiếu đặt phòng đã được tạo thành công!");
+      navigate("/");
+    } catch (error) {
+      console.error("Error creating booking confirmation:", error);
+      toast.error(`Lỗi khi tạo phiếu đặt phòng: ${error}`);
     }
   };
 
@@ -441,7 +475,9 @@ const BookingPage: React.FC = () => {
                 theme === "light" ? "text-gray-800" : "text-gray-200"
               }`}
             >
-              {paymentMethod === "cash" ? "Thanh toán tiền mặt" : "Thanh toán QR"}
+              {paymentMethod === "cash"
+                ? "Thanh toán tiền mặt"
+                : "Thanh toán QR"}
             </h3>
 
             <div className="space-y-6">
@@ -465,7 +501,9 @@ const BookingPage: React.FC = () => {
                   {isGeneratingQR ? (
                     <div
                       className={`animate-spin rounded-full h-12 w-12 border-t-4 transition-all duration-300 ${
-                        theme === "light" ? "border-blue-500" : "border-blue-400"
+                        theme === "light"
+                          ? "border-blue-500"
+                          : "border-blue-400"
                       }`}
                     ></div>
                   ) : qrCodeUrl ? (

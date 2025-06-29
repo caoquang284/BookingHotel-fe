@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { getRoomsByState } from "../services/apis/room";
+import {
+  getAllRooms,
+  getRoomById,
+  getRoomsByState,
+} from "../services/apis/room";
 import { getAllRoomTypes } from "../services/apis/roomType";
 import { getAllFloors } from "../services/apis/floor";
 import { getAllBookingConfirmationForms } from "../services/apis/bookingconfirm";
@@ -20,17 +24,19 @@ import type {
   ResponseBookingConfirmationFormDTO,
 } from "../types";
 import backgroundImage from "../assets/Image/bg.jpg";
+import backgroundImage1 from "../assets/Image/bg1.jpg";
 import starIcon from "../assets/Icon/starIconFilled.svg";
 import starIconEmpty from "../assets/Icon/starIconOutlined.svg";
 import totalBookingIcon from "../assets/Icon/totalBookingIcon.svg";
 import { getReviewsByRoomId } from "../services/apis/review";
 import { getGuestById } from "../services/apis/guest";
 import { toast } from "react-toastify";
-import Chatbot from "../components/chatBox"; // Import component Chatbot
+import Chatbot from "../components/chatBox";
+import { useScrollToTop } from "../hooks/useScrollToTop";
 
-// Placeholder ảnh mặc định
 const DEFAULT_IMAGE = "https://via.placeholder.com/400x300?text=No+Image";
-
+import CountUp from "react-countup";
+import { useInView } from "react-intersection-observer";
 interface PaginatedResponse {
   content: ResponseRoomDTO[];
   empty: boolean;
@@ -71,6 +77,22 @@ const BookingBox: React.FC<{
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+    if (
+      !checkIn ||
+      !checkOut ||
+      checkInDate < today ||
+      checkOutDate < today ||
+      checkOutDate <= checkInDate
+    ) {
+      toast.error(
+        "Ngày đến và ngày đi phải lớn hơn hôm nay và ngày đi phải lớn hơn ngày đến"
+      );
+      return;
+    }
     onSearch({ checkIn, checkOut, roomTypeId });
   };
 
@@ -226,7 +248,6 @@ const RoomCard: React.FC<{
       } catch (error) {
         console.error(`Failed to fetch reviews for room ${room.id}:`, error);
         setStarRating(0);
-        setStarRating(0);
       }
     };
     fetchReviews();
@@ -238,41 +259,41 @@ const RoomCard: React.FC<{
 
   return (
     <div
-      className={`rounded-lg shadow-md overflow-hidden w-full max-w-md mx-auto transition-all duration-300 ${
+      className={`rounded-lg shadow-md overflow-hidden w-full max-w-sm sm:max-w-md mx-auto transition-all duration-300 ${
         theme === "light" ? "bg-white" : "bg-gray-800"
       }`}
     >
       <img
         src={imageUrl}
         alt={room.name}
-        className="w-full h-52 object-cover"
+        className="w-full h-40 sm:h-48 md:h-52 object-cover"
         onError={() => setImageUrl(DEFAULT_IMAGE)}
       />
       <div className="p-4">
-        <div className="flex justify-between items-center mb-2">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2">
           <div>
             <p
-              className={`text-2xl font-semibold truncate ${
+              className={`text-lg sm:text-xl md:text-2xl font-semibold truncate ${
                 theme === "light" ? "text-gray-900" : "text-gray-100"
               }`}
             >
               Tên phòng: {room.name}
             </p>
             <p
-              className={`text-base ${
+              className={`text-sm sm:text-base ${
                 theme === "light" ? "text-gray-600" : "text-gray-300"
               }`}
             >
               Loại phòng: {room.roomTypeName}
             </p>
           </div>
-          <div className="flex items-center mb-6">
+          <div className="flex items-center mt-2 sm:mt-0">
             {[...Array(5)].map((_, i) => (
-              <span key={i} className="text-yellow-400 text-xl">
+              <span key={i} className="text-yellow-400 text-base sm:text-lg">
                 <img
                   src={i < starRating ? starIcon : starIconEmpty}
                   alt="star"
-                  className="w-4 h-4"
+                  className="w-3 h-3 sm:w-4 h-4"
                 />
               </span>
             ))}
@@ -287,26 +308,26 @@ const RoomCard: React.FC<{
             <img
               src={totalBookingIcon}
               alt="totalBooking"
-              className="w-4 h-4"
+              className="w-3 h-3 sm:w-4 h-4"
             />
           </span>
           <p
-            className={`text-base truncate ${
+            className={`text-sm sm:text-base truncate ${
               theme === "light" ? "text-gray-600" : "text-gray-300"
             }`}
           >
             {room.note || "Không có ghi chú"}
           </p>
         </div>
-        <div className="mt-4 flex justify-between items-center">
+        <div className="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center">
           <p
-            className={`text-2xl font-semibold ${
+            className={`text-lg sm:text-xl md:text-2xl font-semibold ${
               theme === "light" ? "text-gray-600" : "text-gray-300"
             }`}
           >
             {room.roomTypePrice?.toLocaleString("vi-VN")}VNĐ/
             <span
-              className={`text-base ${
+              className={`text-sm sm:text-base ${
                 theme === "light" ? "text-gray-600" : "text-gray-300"
               }`}
             >
@@ -315,10 +336,10 @@ const RoomCard: React.FC<{
           </p>
           <button
             onClick={handleBookingClick}
-            className={`text-base py-2 px-4 rounded-md border transition-all duration-200 ${
+            className={`mt-2 sm:mt-0 text-base sm:text-lg py-2 px-4 rounded-md border transition-all duration-200 ${
               theme === "light"
-                ? "bg-transparent border-transparent hover:border-gray-400"
-                : "bg-transparent border-transparent hover:border-gray-500"
+                ? "bg-transparent border-transparent hover:border-gray-400 text-black"
+                : "bg-transparent border-transparent hover:border-gray-500 text-white"
             }`}
           >
             Đặt phòng
@@ -338,15 +359,16 @@ const userimageLink = [
 const ReviewCard: React.FC<{
   review: ResponseReviewDto;
   guests: Record<number, ResponseGuestDTO>;
-  roomName: string;
-}> = ({ review, guests, roomName }) => {
+  roomId: number;
+  roomNames: Record<number, string>;
+}> = ({ review, guests, roomId, roomNames }) => {
   const { theme } = useTheme();
   const guest = guests[review.guestId] || { name: "Ẩn danh" };
   const guestName = guest.name || "Ẩn danh";
-
+  const roomName = roomNames[roomId] || "Phòng không xác định";
   return (
     <div
-      className={`rounded-lg shadow-md p-4 mb-4 transition-all duration-300 ${
+      className={`rounded-lg shadow-md p-4 transition-all duration-300 ${
         theme === "light" ? "bg-white" : "bg-gray-800"
       }`}
     >
@@ -354,36 +376,319 @@ const ReviewCard: React.FC<{
         <img
           src={userimageLink[Math.floor(Math.random() * userimageLink.length)]}
           alt="user"
-          className="w-16 h-16 rounded-full ml-4 mt-4"
+          className="w-12 h-12 sm:w-14 h-14 md:w-16 h-16 rounded-full ml-2 sm:ml-4 mt-2 sm:mt-4"
         />
         <h3
-          className={`text-2xl font-playfair font-semibold mb-2 ml-5 mt-5 ${
+          className={`text-lg sm:text-xl md:text-2xl font-playfair font-semibold mb-2 ml-3 sm:ml-5 mt-3 sm:mt-5 ${
             theme === "light" ? "text-gray-900" : "text-gray-100"
           }`}
         >
           {guestName}
         </h3>
       </div>
-      <p className="text-gray-600 text-lg mb-2 ml-4">
+      <p className="text-sm sm:text-base md:text-lg mb-2 ml-2 sm:ml-4 text-gray-600">
         Đánh giá cho phòng {roomName}
       </p>
-      <div className="flex items-center mb-2 ml-4">
+      <div className="flex items-center mb-2 ml-2 sm:ml-4">
         {[...Array(5)].map((_, i) => (
           <img
             key={i}
             src={i < review.rating ? starIcon : starIconEmpty}
             alt="star"
-            className="w-6 h-6 mr-1"
+            className="w-4 h-4 sm:w-5 h-5 md:w-6 h-6 mr-1"
           />
         ))}
       </div>
       <p
-        className={`text-lg italic ml-4 ${
+        className={`text-sm sm:text-base md:text-lg italic ml-2 sm:ml-4 ${
           theme === "light" ? "text-gray-600" : "text-gray-300"
         }`}
       >
         {review.comment || "Không có đánh giá"}
       </p>
+    </div>
+  );
+};
+
+// Thêm Skeleton components
+const SkeletonBox = ({ className = "" }) => (
+  <div
+    className={`animate-pulse bg-gray-200 dark:bg-gray-700 rounded-lg ${className}`}
+  ></div>
+);
+
+const SkeletonBookingBox = () => (
+  <div className="shadow-2xl rounded-2xl p-10 w-256 mx-auto -mt-24 relative z-10 animate-pulse bg-gray-200 dark:bg-gray-700 h-56" />
+);
+
+const SkeletonRoomCard = () => (
+  <div className="rounded-lg shadow-md overflow-hidden w-full max-w-md mx-auto animate-pulse bg-gray-200 dark:bg-gray-700">
+    <div className="w-full h-52 bg-gray-300 dark:bg-gray-600" />
+    <div className="p-4">
+      <div className="h-6 bg-gray-300 dark:bg-gray-600 rounded w-2/3 mb-2" />
+      <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/3 mb-6" />
+      <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/2 mb-2" />
+      <div className="h-8 bg-gray-300 dark:bg-gray-600 rounded w-1/2 mt-4" />
+    </div>
+  </div>
+);
+
+const SkeletonReviewCard = () => (
+  <div className="rounded-lg shadow-md p-4 mb-4 animate-pulse bg-gray-200 dark:bg-gray-700">
+    <div className="flex items-center mb-2">
+      <div className="w-16 h-16 rounded-full bg-gray-300 dark:bg-gray-600 ml-4 mt-4" />
+      <div className="h-6 bg-gray-300 dark:bg-gray-600 rounded w-32 ml-5 mt-5" />
+    </div>
+    <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/2 mb-2 ml-4" />
+    <div className="flex items-center mb-2 ml-4 space-x-2">
+      {[...Array(5)].map((_, i) => (
+        <div key={i} className="w-6 h-6 bg-gray-300 dark:bg-gray-600 rounded" />
+      ))}
+    </div>
+    <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-2/3 ml-4" />
+  </div>
+);
+
+// About component
+const About: React.FC<{
+  totalRooms: number;
+  totalBookings: number;
+  averageRating: number;
+  navigate: (path: string) => void;
+}> = ({ totalRooms, totalBookings, averageRating, navigate }) => {
+  const { theme } = useTheme();
+  const imageRefs = useRef<(HTMLImageElement | null)[]>([]);
+
+  const aboutItems = [
+    {
+      icon: "🏨",
+      count: totalRooms,
+      text: "Phòng sang trọng",
+      hasSuffix: true,
+    },
+    {
+      icon: "👥",
+      count: totalBookings,
+      text: "Đặt phòng thành công",
+      hasSuffix: true,
+    },
+    {
+      icon: "⭐",
+      count: averageRating,
+      text: "Đánh giá trung bình",
+      hasSuffix: false,
+    },
+  ];
+
+  const imageLinks = [
+    "https://static.independent.co.uk/2025/04/07/14/09/HS-MBH-Exterior-03.jpg",
+    "https://luxuryescapes.com/inspiration/wp-content/uploads/2023/06/nh999jb5bo61avqid5c-e1687143719181.webp",
+    "https://i0.wp.com/theluxurytravelexpert.com/wp-content/uploads/2019/11/best-luxury-and-most-exclusive-hotels-brands-in-the-world.jpg?fit=1300%2C731&ssl=1",
+    "https://www.signatureluxurytravel.com.au/wp-content/uploads/2000/02/CTS-RM-8888-A-TRRCE-FINAL-01A.jpg",
+  ];
+
+  // Intersection Observer cho hình ảnh
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const img = entry.target as HTMLImageElement;
+          if (entry.isIntersecting) {
+            img.classList.add("fade-slide-in", "visible");
+            img.classList.remove("fade-slide-out");
+          } else {
+            img.classList.remove("visible");
+            img.classList.add("fade-slide-out");
+          }
+        });
+      },
+      {
+        root: null,
+        threshold: 0.3,
+        rootMargin: "0px 0px -50px 0px",
+      }
+    );
+
+    imageRefs.current.forEach((img) => {
+      if (img) observer.observe(img);
+    });
+
+    return () => {
+      imageRefs.current.forEach((img) => {
+        if (img) observer.unobserve(img);
+      });
+    };
+  }, []);
+
+  useEffect(() => {
+    imageRefs.current = new Array(4).fill(null);
+  }, []);
+
+  return (
+    <div
+      className={`py-12 sm:py-20 md:py-24 lg:py-32 transition-all duration-300 ${
+        theme === "light" ? "bg-gray-200" : "bg-gray-900"
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
+          {/* Left side - Content */}
+          <div className="space-y-6 sm:space-y-8">
+            <div>
+              <span
+                className={`inline-block text-sm sm:text-base font-semibold px-4 py-2 rounded-full mb-4 ${
+                  theme === "light"
+                    ? "bg-blue-100 text-blue-600"
+                    : "bg-blue-900 text-blue-300"
+                }`}
+              >
+                Về chúng tôi
+              </span>
+              <h2
+                className={`text-3xl sm:text-4xl md:text-5xl font-playfair font-bold mb-4 sm:mb-6 ${
+                  theme === "light" ? "text-gray-900" : "text-gray-100"
+                }`}
+              >
+                Chào mừng đến với{" "}
+                <span
+                  className={`${
+                    theme === "light" ? "text-blue-600" : "text-blue-400"
+                  }`}
+                >
+                  Roomify
+                </span>
+              </h2>
+            </div>
+
+            <p
+              className={`text-base sm:text-lg md:text-xl leading-relaxed ${
+                theme === "light" ? "text-gray-600" : "text-gray-400"
+              }`}
+            >
+              Roomify là điểm đến lý tưởng cho những ai đang tìm kiếm trải
+              nghiệm lưu trú đẳng cấp và dịch vụ chuyên nghiệp. Với hệ thống
+              phòng hiện đại, tiện nghi sang trọng và đội ngũ nhân viên tận tâm,
+              chúng tôi cam kết mang đến cho quý khách những kỳ nghỉ hoàn hảo và
+              đáng nhớ nhất.
+            </p>
+
+            {/* Stats */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+              {aboutItems.map((item, index) => {
+                const { ref, inView } = useInView({
+                  triggerOnce: true,
+                  threshold: 0.3,
+                });
+                return (
+                  <div
+                    key={index}
+                    className={`p-4 sm:p-6 rounded-lg border transition-all duration-300 ${
+                      theme === "light"
+                        ? "bg-gray-50 border-gray-200 hover:border-blue-300"
+                        : "bg-gray-700 border-gray-600 hover:border-blue-500"
+                    }`}
+                  >
+                    <div className="text-center" ref={ref}>
+                      <div className="text-3xl sm:text-4xl mb-4">
+                        {item.icon}
+                      </div>
+                      <h3
+                        className={`text-2xl sm:text-5xl font-bold mb-4 ${
+                          theme === "light" ? "text-gray-900" : "text-gray-100"
+                        }`}
+                      >
+                        {inView ? (
+                          <CountUp
+                            start={0}
+                            end={
+                              typeof item.count === "number"
+                                ? item.count
+                                : parseFloat(item.count)
+                            }
+                            duration={2}
+                            decimals={
+                              item.text === "Đánh giá trung bình" ? 1 : 0
+                            }
+                            suffix={item.hasSuffix ? "+" : ""}
+                          />
+                        ) : (
+                          "0"
+                        )}
+                      </h3>
+                      <p
+                        className={`text-sm sm:text-base ${
+                          theme === "light" ? "text-gray-600" : "text-gray-300"
+                        }`}
+                      >
+                        {item.text}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() => navigate("/policy")}
+              className={`px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg transition-all duration-300 ${
+                theme === "light"
+                  ? "bg-blue-600 hover:bg-blue-700 text-white"
+                  : "bg-blue-600 hover:bg-blue-700 text-white"
+              }`}
+            >
+              Khám phá thêm
+            </button>
+          </div>
+
+          {/* Right side - Images */}
+          <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+            <div className="space-y-4 sm:space-y-6">
+              <div className="text-right">
+                <img
+                  ref={(el) => {
+                    if (el) imageRefs.current[0] = el;
+                  }}
+                  src={imageLinks[0]}
+                  alt="Luxury Hotel Exterior"
+                  className="ml-8 max-w-88 rounded-lg shadow-lg object-cover h-40 sm:h-48 md:h-64 lg:h-64 fade-slide-in-right"
+                />
+              </div>
+              <div className="text-left">
+                <img
+                  ref={(el) => {
+                    if (el) imageRefs.current[1] = el;
+                  }}
+                  src={imageLinks[1]}
+                  alt="Hotel Interior"
+                  className="w-full ml-28 rounded-lg shadow-lg object-cover h-40 sm:h-48 md:h-64 lg:h-64 fade-slide-in"
+                />
+              </div>
+            </div>
+            <div className="space-y-4 sm:space-y-6 pt-8 sm:pt-12 lg:pt-16">
+              <div className="text-right">
+                <img
+                  ref={(el) => {
+                    if (el) imageRefs.current[2] = el;
+                  }}
+                  src={imageLinks[2]}
+                  alt="Hotel Room"
+                  className="ml-26 rounded-lg shadow-lg object-cover h-40 sm:h-48 md:h-64 lg:h-64 fade-slide-in-right"
+                />
+              </div>
+              <div className="text-left">
+                <img
+                  ref={(el) => {
+                    if (el) imageRefs.current[3] = el;
+                  }}
+                  src={imageLinks[3]}
+                  alt="Hotel Amenities"
+                  className="max-w-88 ml-26 rounded-lg shadow-lg object-cover h-40 sm:h-48 md:h-64 lg:h-64 fade-slide-in"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
@@ -409,6 +714,11 @@ const Home: React.FC = () => {
     Record<number, ResponseReviewDto[]>
   >({});
   const [guests, setGuests] = useState<Record<number, ResponseGuestDTO>>({});
+  const [roomNames, setRoomNames] = useState<Record<number, string>>({});
+  const [allRoomNames, setAllRoomNames] = useState<Record<number, string>>({});
+  const [totalBookings, setTotalBookings] = useState<number>(0);
+  const [averageRating, setAverageRating] = useState<number>(0);
+  const [totalRooms, setTotalRooms] = useState<number>(0);
 
   const fetchData = async (
     checkInDate?: string,
@@ -425,7 +735,7 @@ const Home: React.FC = () => {
           getAllBookingConfirmationForms(),
         ]);
       const roomsData = (roomsResponse as unknown as PaginatedResponse).content;
-      console.log("Rooms fetched:", roomsData.length);
+
       const mappedRooms = roomsData.map((room) => {
         const roomType = roomTypesData.find((rt) => rt.id === room.roomTypeId);
         const floor = floorsData.find((f) => f.id === room.floorId);
@@ -440,7 +750,6 @@ const Home: React.FC = () => {
 
       const availableRooms = mappedRooms.filter((room) => {
         const currentDate = new Date();
-        currentDate.setHours(0, 0, 0, 0);
         currentDate.setHours(0, 0, 0, 0);
 
         const isCurrentlyBooked = bookingForms.some(
@@ -499,10 +808,17 @@ const Home: React.FC = () => {
       setLoading(false);
     }
   };
-
+  useScrollToTop();
   useEffect(() => {
     fetchData();
     getAllRoomTypes().then(setRoomTypes);
+    getAllRooms().then((allRooms) => {
+      const names: Record<number, string> = {};
+      allRooms.forEach((room) => {
+        names[room.id] = room.name;
+      });
+      setAllRoomNames(names);
+    });
   }, []);
 
   const handleSearch = (params: {
@@ -523,7 +839,8 @@ const Home: React.FC = () => {
     const fetchReviewsAndGuests = async () => {
       const reviewsMap: Record<number, ResponseReviewDto[]> = {};
       const guestsMap: Record<number, ResponseGuestDTO> = {};
-      for (const room of rooms) {
+      const allroom = await getAllRooms();
+      for (const room of allroom) {
         const reviews = await getReviewsByRoomId(room.id);
         reviewsMap[room.id] = reviews;
         for (const review of reviews) {
@@ -556,15 +873,22 @@ const Home: React.FC = () => {
         }
       }
       setReviewsByRoom(reviewsMap);
-      console.log("Reviews fetched:", reviewsMap);
       setGuests(guestsMap);
     };
     if (rooms.length > 0) fetchReviewsAndGuests();
   }, [rooms]);
 
+  useEffect(() => {
+    const roomNames: Record<number, string> = {};
+    rooms.forEach((room) => {
+      roomNames[room.id] = room.name;
+    });
+    setRoomNames(roomNames);
+  }, [rooms]);
+
   const sliderRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
-
+  const reviewCardRefs = useRef<(HTMLDivElement | null)[]>([]); // Thêm ref cho ReviewCard
   useEffect(() => {
     const slider = sliderRef.current;
     if (!slider) return;
@@ -574,10 +898,10 @@ const Home: React.FC = () => {
         entries.forEach((entry) => {
           const card = entry.target as HTMLDivElement;
           if (entry.isIntersecting) {
-            card.style.width = "320px";
+            card.style.width = "100%";
             card.style.transform = "scale(1)";
           } else {
-            card.style.width = "240px";
+            card.style.width = "75%";
             card.style.transform = "scale(0.75)";
           }
         });
@@ -602,6 +926,119 @@ const Home: React.FC = () => {
   useEffect(() => {
     cardRefs.current = new Array(rooms.length).fill(null);
   }, [rooms]);
+
+  // IntersectionObserver cho RoomCard
+  useEffect(() => {
+    const slider = sliderRef.current;
+    if (!slider) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const card = entry.target as HTMLDivElement;
+          if (entry.isIntersecting) {
+            card.classList.add("fade-slide-in", "visible");
+            card.classList.remove("fade-slide-out");
+            card.style.width = "100%";
+            card.style.transform = "scale(1)";
+          } else {
+            card.classList.remove("visible");
+            card.classList.add("fade-slide-out");
+            card.style.width = "75%";
+            card.style.transform = "scale(0.75)";
+          }
+        });
+      },
+      {
+        root: slider,
+        threshold: 0.5,
+      }
+    );
+
+    cardRefs.current.forEach((card) => {
+      if (card) observer.observe(card);
+    });
+
+    return () => {
+      cardRefs.current.forEach((card) => {
+        if (card) observer.unobserve(card);
+      });
+    };
+  }, [rooms]);
+
+  // IntersectionObserver cho ReviewCard
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const card = entry.target as HTMLDivElement;
+          if (entry.isIntersecting) {
+            card.classList.add("fade-slide-in", "visible");
+            card.classList.remove("fade-slide-out");
+          } else {
+            card.classList.remove("visible");
+            card.classList.add("fade-slide-out");
+          }
+        });
+      },
+      {
+        root: null, // Sử dụng viewport làm root
+        threshold: 0.1, // Kích hoạt khi 10% thẻ nằm trong viewport
+      }
+    );
+
+    reviewCardRefs.current.forEach((card) => {
+      if (card) observer.observe(card);
+    });
+
+    return () => {
+      reviewCardRefs.current.forEach((card) => {
+        if (card) observer.unobserve(card);
+      });
+    };
+  }, [reviewsByRoom]);
+
+  useEffect(() => {
+    cardRefs.current = new Array(rooms.length).fill(null);
+    reviewCardRefs.current = new Array(
+      Object.values(reviewsByRoom).flat().length
+    ).fill(null); // Khởi tạo refs cho ReviewCard
+  }, [rooms, reviewsByRoom]);
+
+  // Calculate total bookings and average rating
+  useEffect(() => {
+    const calculateStats = async () => {
+      try {
+        // Get all rooms
+        const allRooms = await getAllRooms();
+        setTotalRooms(allRooms.length);
+
+        // Get all booking confirmation forms
+        const allBookings = await getAllBookingConfirmationForms();
+        setTotalBookings(allBookings.length);
+
+        // Calculate average rating from all reviews
+        const allReviews = Object.values(reviewsByRoom).flat();
+        if (allReviews.length > 0) {
+          const totalRating = allReviews.reduce(
+            (sum, review) => sum + review.rating,
+            0
+          );
+          const avgRating = totalRating / allReviews.length;
+          setAverageRating(avgRating);
+        } else {
+          setAverageRating(0);
+        }
+      } catch (error) {
+        console.error("Error calculating stats:", error);
+        setTotalRooms(0);
+        setTotalBookings(0);
+        setAverageRating(0);
+      }
+    };
+
+    calculateStats();
+  }, [reviewsByRoom]);
 
   const scrollLeft = () => {
     if (sliderRef.current) {
@@ -644,78 +1081,120 @@ const Home: React.FC = () => {
       <div
         className="relative w-full flex flex-col bg-center"
         style={{
-          backgroundImage: `url(${backgroundImage})`,
+          backgroundImage: `url(${backgroundImage1})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
-          minHeight: "100vh",
+          minHeight: "80vh",
         }}
       >
-        <div className="relative z-10 text-left text-white px-4 py-10 pl-56 mt-52">
-          <span className="inline-block bg-green-200 bg-opacity-50 text-blue-800 text-2xl font-semibold px-6 py-2 rounded-full mb-6">
+        <div className="relative z-10 text-left px-1 py-10 pl-56 mt-52">
+          <span
+            className={`inline-block text-2xl font-semibold px-6 py-2 rounded-full mb-6 ${
+              theme === "light"
+                ? "bg-green-200 bg-opacity-50 text-blue-800"
+                : "bg-green-900 bg-opacity-50 text-blue-200"
+            }`}
+          >
             Trải nghiệm khách sạn đẳng cấp
           </span>
-          <h1
-            className={`text-5xl italic md:text-6xl font-bold mb-6 ${
-              theme === "light" ? "text-yellow-500" : "text-yellow-400"
-            }`}
-          >
-            Rong chơi bốn phương,
-            <br />
-            "giá" vẫn yêu thương
-          </h1>
-          <p
-            className={`text-xl md:text-xl mb-8 max-w-2xl font-semibold ${
-              theme === "light" ? "text-white" : "text-gray-200"
-            }`}
-          >
-            Sự sang trọng và tiện nghi vô song đang chờ đón bạn tại những khách
-            sạn đẳng cấp nhất thế giới. Hãy bắt đầu hành trình của bạn ngay hôm
-            nay.
-          </p>
+          <div className="flex justify-start">
+            <div className="relative rounded-lg overflow-hidden max-w-2xl w-full">
+              <div className="absolute inset-0 bg-black/50 z-0 rounded-lg"></div>
 
+              <div className="relative z-10 p-3 text-center">
+                <h1
+                  className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 font-playfair 
+                             leading-tight 
+                              ${theme === "light" ? "text-yellow-500" : "text-yellow-400"}`}
+                >
+                  Rong chơi bốn phương,
+                  <br />
+                  "giá" vẫn yêu thương
+                </h1>
+                <p
+                  className={`text-xl md:text-xl mb-1 max-w-2xl mx-auto font-semibold ${
+                    theme === "light" ? "text-white" : "text-gray-200"
+                  }`}
+                >
+                  Sự sang trọng và tiện nghi vô song đang chờ đón bạn tại những khách
+                  sạn đẳng cấp nhất thế giới. Hãy bắt đầu hành trình của bạn ngay hôm
+                  nay.
+                </p>
+              </div>
+            </div>
+          </div>
           <div className="mt-32 pr-256">
             <BookingBox onSearch={handleSearch} roomTypes={roomTypes} />
           </div>
         </div>
       </div>
+
+      {/* About Section */}
+      <About
+        totalRooms={totalRooms}
+        totalBookings={totalBookings}
+        averageRating={averageRating}
+        navigate={navigate}
+      />
+
       <div
-        className={`max-w-8xl mx-auto py-32 px-48 transition-all duration-300 ${
-          theme === "light" ? "bg-gray-100" : "bg-gray-900"
+        className={`flex justify-center ${
+          theme === "light" ? "bg-gray-200" : "bg-gray-900"
+        }`}
+      >
+        <div
+          className={`h-0.5 w-full max-w-6xl mx-auto transition-all duration-300 ${
+            theme === "light" ? "bg-gray-600" : "bg-gray-300"
+          }`}
+        ></div>
+      </div>
+
+      <div
+        className={`max-w-full mx-auto py-12 sm:py-20 md:py-24 lg:py-32 px-4 sm:px-6 md:px-8 lg:px-12 transition-all duration-300 ${
+          theme === "light" ? "bg-gray-200" : "bg-gray-900"
         }`}
       >
         <h2
-          className={`text-5xl font-playfair mb-8 text-center ${
+          className={`text-3xl sm:text-4xl md:text-5xl font-playfair mb-6 sm:mb-8 text-center ${
             theme === "light" ? "text-gray-900" : "text-gray-100"
           }`}
         >
           Các phòng đang có sẵn
         </h2>
         <h2
-          className={`text-2xl italic text-center ${
+          className={`text-lg sm:text-xl md:text-2xl italic text-center ${
             theme === "light" ? "text-gray-600" : "text-gray-300"
           }`}
         >
           Tận hưởng kỳ nghỉ hoàn hảo với những căn phòng đẳng cấp
         </h2>
         <h2
-          className={`text-2xl italic text-center mb-12 ${
+          className={`text-lg sm:text-xl md:text-2xl italic text-center mb-8 sm:mb-12 ${
             theme === "light" ? "text-gray-600" : "text-gray-300"
           }`}
         >
           sang trọng, tinh tế và đầy ấn tượng.
         </h2>
         {loading && (
-          <p
-            className={`text-center ${
-              theme === "light" ? "text-gray-600" : "text-gray-300"
-            }`}
-          >
-            Đang tải...
-          </p>
+          <>
+            <SkeletonBookingBox />
+            <div className="flex gap-8 py-2 overflow-x-auto no-scrollbar mt-12">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="flex-shrink-0" style={{ width: 320 }}>
+                  <SkeletonRoomCard />
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-3 gap-6 mt-20">
+              {[...Array(3)].map((_, i) => (
+                <SkeletonReviewCard key={i} />
+              ))}
+            </div>
+          </>
         )}
         {error && (
           <p
-            className={`text-center ${
+            className={`text-center text-base sm:text-lg ${
               theme === "light" ? "text-red-600" : "text-red-400"
             }`}
           >
@@ -724,7 +1203,7 @@ const Home: React.FC = () => {
         )}
         {!loading && !error && rooms.length === 0 && (
           <p
-            className={`text-center ${
+            className={`text-center text-base sm:text-lg ${
               theme === "light" ? "text-gray-600" : "text-gray-300"
             }`}
           >
@@ -734,7 +1213,7 @@ const Home: React.FC = () => {
         <div className="relative">
           <button
             onClick={scrollLeft}
-            className={`absolute -left-16 top-1/2 -translate-y-1/2 z-10 shadow rounded-full p-2 transition-all duration-200 w-12 h-12 ${
+            className={`hidden sm:block absolute -left-4 sm:-left-8 md:-left-12 lg:-left-8 top-1/2 -translate-y-1/2 z-10 shadow rounded-full p-2 transition-all duration-200 w-10 h-10 sm:w-12 h-12 ${
               theme === "light"
                 ? "bg-white hover:bg-gray-200"
                 : "bg-gray-800 hover:bg-gray-700"
@@ -745,14 +1224,13 @@ const Home: React.FC = () => {
           </button>
           <div
             ref={sliderRef}
-            className="flex gap-8 py-2 overflow-x-auto no-scrollbar"
+            className="flex gap-4 sm:gap-6 md:gap-8 py-2 overflow-x-auto no-scrollbar snap-x snap-mandatory"
             style={{ scrollBehavior: "smooth" }}
           >
             {rooms.map((room, index) => (
               <div
                 key={room.id}
-                className="flex-shrink-0 transition-all duration-500"
-                style={{ width: 320 }}
+                className="flex-shrink-0 transition-all duration-500 w-full sm:w-64 md:w-72 lg:w-80 xl:w-96 max-w-[400px] snap-center"
                 ref={(el) => {
                   if (el) cardRefs.current[index] = el;
                 }}
@@ -773,7 +1251,7 @@ const Home: React.FC = () => {
           </div>
           <button
             onClick={scrollRight}
-            className={`absolute -right-16 top-1/2 -translate-y-1/2 z-10 shadow rounded-full p-2 transition-all duration-200 w-12 h-12 ${
+            className={`hidden sm:block absolute -right-4 sm:-right-8 md:-right-12 lg:-right-8 top-1/2 -translate-y-1/2 z-10 shadow rounded-full p-2 transition-all duration-200 w-10 h-10 sm:w-12 h-12 ${
               theme === "light"
                 ? "bg-white hover:bg-gray-200"
                 : "bg-gray-800 hover:bg-gray-700"
@@ -784,14 +1262,14 @@ const Home: React.FC = () => {
           </button>
         </div>
         <h2
-          className={`text-5xl font-playfair mb-8 text-center mt-20 ${
+          className={`text-3xl sm:text-4xl md:text-5xl font-playfair mb-6 sm:mb-8 text-center mt-12 sm:mt-16 md:mt-20 ${
             theme === "light" ? "text-gray-900" : "text-gray-100"
           }`}
         >
           Đánh giá từ khách hàng
         </h2>
         <h2
-          className={`text-2xl italic text-center mb-12 ${
+          className={`text-lg sm:text-xl md:text-2xl italic text-center mb-8 sm:mb-12 ${
             theme === "light" ? "text-gray-600" : "text-gray-300"
           }`}
         >
@@ -799,30 +1277,34 @@ const Home: React.FC = () => {
           <br />
           cho các chỗ ở sang trọng và đẳng cấp.
         </h2>
-        <div className="grid grid-cols-3 gap-6 max-h-[800px] overflow-hidden">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {Object.values(reviewsByRoom)
             .flat()
-            .slice(0, 6)
-            .slice(0, 6)
-            .map((review) => (
-              <ReviewCard
+            .map((review, index) => (
+              <div
                 key={review.id}
-                review={review}
-                guests={guests}
-                roomName={
-                  rooms.find((room) => room.id === review.roomId)?.name ||
-                  "Phòng không xác định"
-                }
-              />
+                className="fade-slide-in"
+                ref={(el) => {
+                  if (el) reviewCardRefs.current[index] = el;
+                }}
+              >
+                <ReviewCard
+                  review={review}
+                  guests={guests}
+                  roomId={review.roomId}
+                  roomNames={allRoomNames}
+                />
+              </div>
             ))}
           {Object.values(reviewsByRoom).every((reviews) => !reviews.length) && (
             <div
-              className={`rounded-lg shadow-md p-4 text-center col-span-3 transition-all duration-300 ${
-                theme === "light" ? "bg-white" : "bg-gray-800"
-              }`}
+              className={`rounded-lg shadow-md p-4 text-center col-span-full transition-all duration-300 fade-slide-in`}
+              ref={(el) => {
+                if (el) reviewCardRefs.current[0] = el;
+              }}
             >
               <p
-                className={`${
+                className={`text-base sm:text-lg ${
                   theme === "light" ? "text-gray-600" : "text-gray-300"
                 }`}
               >
@@ -839,12 +1321,12 @@ const Home: React.FC = () => {
           }`}
         >
           <div
-            className={`rounded-lg shadow-lg p-8 w-full max-w-lg relative transition-all duration-300 ${
+            className={`rounded-lg shadow-lg p-4 sm:p-6 md:p-8 w-full max-w-md sm:max-w-lg relative transition-all duration-300 ${
               theme === "light" ? "bg-white" : "bg-gray-800"
             }`}
           >
             <button
-              className={`absolute top-4 right-4 text-2xl font-bold w-10 h-10 flex items-center justify-center rounded-full transition-all duration-200 ${
+              className={`absolute top-2 sm:top-4 right-2 sm:right-4 text-xl sm:text-2xl font-bold w-8 sm:w-10 h-8 sm:h-10 flex items-center justify-center rounded-full transition-all duration-200 ${
                 theme === "light"
                   ? "text-gray-500 hover:text-black hover:bg-gray-100"
                   : "text-gray-300 hover:text-white hover:bg-gray-700"
@@ -854,16 +1336,16 @@ const Home: React.FC = () => {
               ×
             </button>
             <h3
-              className={`text-2xl font-bold mb-6 text-center ${
+              className={`text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center ${
                 theme === "light" ? "text-gray-900" : "text-gray-100"
               }`}
             >
               Chọn ngày nhận và trả phòng
             </h3>
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div>
                 <label
-                  className={`block text-xl font-semibold mb-2 ${
+                  className={`block text-base sm:text-lg md:text-xl font-semibold mb-2 ${
                     theme === "light" ? "text-gray-700" : "text-gray-200"
                   }`}
                 >
@@ -873,7 +1355,7 @@ const Home: React.FC = () => {
                   type="date"
                   value={modalCheckIn}
                   onChange={(e) => setModalCheckIn(e.target.value)}
-                  className={`w-full text-xl border rounded px-3 py-2 transition-all duration-300 ${
+                  className={`w-full text-base sm:text-lg md:text-xl border rounded px-3 py-2 transition-all duration-300 ${
                     theme === "light"
                       ? "text-black border-gray-300"
                       : "text-gray-100 border-gray-600 bg-gray-700"
@@ -882,7 +1364,7 @@ const Home: React.FC = () => {
               </div>
               <div>
                 <label
-                  className={`block text-xl font-semibold mb-2 ${
+                  className={`block text-base sm:text-lg md:text-xl font-semibold mb-2 ${
                     theme === "light" ? "text-gray-700" : "text-gray-200"
                   }`}
                 >
@@ -892,7 +1374,7 @@ const Home: React.FC = () => {
                   type="date"
                   value={modalCheckOut}
                   onChange={(e) => setModalCheckOut(e.target.value)}
-                  className={`w-full text-xl border rounded px-3 py-2 transition-all duration-300 ${
+                  className={`w-full text-base sm:text-lg md:text-xl border rounded px-3 py-2 transition-all duration-300 ${
                     theme === "light"
                       ? "text-black border-gray-300"
                       : "text-gray-100 border-gray-600 bg-gray-700"
@@ -900,7 +1382,7 @@ const Home: React.FC = () => {
                 />
               </div>
               <button
-                className={`w-full text-white py-3 rounded transition-all duration-200 ${
+                className={`w-full text-white py-2 sm:py-3 rounded transition-all duration-200 text-base sm:text-lg ${
                   theme === "light"
                     ? "bg-green-600 hover:bg-green-700"
                     : "bg-green-700 hover:bg-green-800"
@@ -923,7 +1405,7 @@ const Home: React.FC = () => {
           </div>
         </div>
       )}
-      <Chatbot /> {/* Thêm component Chatbot */}
+      <Chatbot />
     </div>
   );
 };

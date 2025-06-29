@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { forgotPassword } from "../services/apis/auth";
 import { useTheme } from "../contexts/ThemeContext";
 import type { ForgotPasswordDTO } from "../types";
+import { useScrollToTop } from "../hooks/useScrollToTop";
 
 function ForgotPassword() {
   const { theme } = useTheme();
@@ -13,7 +14,9 @@ function ForgotPassword() {
   const navigate = useNavigate();
 
   const validateEmail = (email: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? null : "Email không hợp lệ!";
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+      ? null
+      : "Email không hợp lệ!";
   };
 
   const validateUsername = (username: string) => {
@@ -40,10 +43,14 @@ function ForgotPassword() {
 
     try {
       await forgotPassword({ username, email });
-      setSuccess("Mật khẩu mới đã được gửi đến email của bạn! Vui lòng kiểm tra hộp thư.");
+      setSuccess(
+        "Mật khẩu mới đã được gửi đến email của bạn! Vui lòng kiểm tra hộp thư."
+      );
       setTimeout(() => navigate("/login"), 3000);
     } catch (error: any) {
-      setError(error.message || "Không thể gửi mật khẩu mới. Vui lòng thử lại!");
+      setError(
+        error.message || "Không thể gửi mật khẩu mới. Vui lòng thử lại!"
+      );
     }
   };
 
@@ -118,7 +125,12 @@ function ForgotPassword() {
                   theme === "light" ? "text-gray-400" : "text-gray-500"
                 }`}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -156,7 +168,12 @@ function ForgotPassword() {
                   theme === "light" ? "text-gray-400" : "text-gray-500"
                 }`}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"

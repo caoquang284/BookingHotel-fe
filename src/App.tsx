@@ -12,7 +12,8 @@ import { AuthProvider } from "./contexts/AuthContext";
 import RoomDetail from "./pages/RoomDetail";
 import ForgotPassword from "./pages/ForgotPassword";
 import Profile from "./pages/Profile";
-
+import RentalHistory from "./pages/RentalHistory";
+import Policy from "./pages/Policy";
 const router = createBrowserRouter([
   {
     element: <AppLayout />,
@@ -29,6 +30,8 @@ const router = createBrowserRouter([
       { path: "/register", element: <Register /> },
       { path: "/forgot-password", element: <ForgotPassword /> },
       { path: "/profile", element: <Profile /> },
+      { path: "/rental-history", element: <RentalHistory /> },
+      { path: "/policy", element: <Policy /> },
     ],
   },
 ]);
