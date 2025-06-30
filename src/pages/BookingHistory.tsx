@@ -12,7 +12,10 @@ import { deleteBookingConfirmationForm } from "../services/apis/bookingconfirm";
 import { createReview } from "../services/apis/review"; // Thêm API tạo đánh giá
 import { getImagesByRoomId } from "../services/apis/image"; // Thêm API lấy hình ảnh
 import type { ResponseGuestDTO } from "../types/index.ts";
-import type { ResponseBookingConfirmationFormDTO } from "../types";
+import type {
+  ResponseBookingConfirmationFormDTO,
+  ResponseRentalFormDetailDTO,
+} from "../types";
 import { getRoomTypeById } from "../services/apis/roomType";
 import starIconFilled from "../assets/Icon/starIconFilled.svg";
 import starIconOutlined from "../assets/Icon/starIconOutlined.svg";
@@ -55,6 +58,9 @@ const BookingHistory: React.FC = () => {
     useState<ResponseBookingConfirmationFormDTO | null>(null);
   const [qrPrice, setQrPrice] = useState<number>(0);
   const [rentalForms, setRentalForms] = useState<any[]>([]);
+  const [rentalFormDetails, setRentalFormDetails] = useState<
+    ResponseRentalFormDetailDTO[]
+  >([]);
   const [roomImages, setRoomImages] = useState<{ [roomId: number]: string }>(
     {}
   ); // State lưu hình ảnh phòng
@@ -140,6 +146,13 @@ const BookingHistory: React.FC = () => {
         // Lấy toàn bộ rental form
         const allRentalForms = await getAllRentalFormsNoPage();
         setRentalForms(allRentalForms);
+
+        // Lấy toàn bộ rental form details
+        const allRentalFormDetails = await getAllRentalFormDetailsByUserId(
+          guestData.id
+        );
+        setRentalFormDetails(allRentalFormDetails);
+
         setLoading(false);
       } catch (err) {
         console.error("Error fetching booking history:", err);
@@ -323,7 +336,7 @@ const BookingHistory: React.FC = () => {
       );
 
       const guestRentalFormIds = guestRentalFormDetails.map(
-        (detail: any) => detail.rentalFormId
+        (detail: ResponseRentalFormDetailDTO) => detail.rentalFormId
       );
 
       const existingRentalForm = allRentalForms.find(
@@ -377,7 +390,7 @@ const BookingHistory: React.FC = () => {
       );
 
       const guestRentalFormIds = guestRentalFormDetails.map(
-        (detail: any) => detail.rentalFormId
+        (detail: ResponseRentalFormDetailDTO) => detail.rentalFormId
       );
 
       const existingRentalForm = allRentalForms.find(
@@ -523,14 +536,21 @@ const BookingHistory: React.FC = () => {
         </h2>
         <div className="grid gap-4 sm:gap-6">
           {bookings.map((booking) => {
-            // Tìm rental form khớp với booking
-            const rentalForm = rentalForms.find((rf) => {
-              // Kiểm tra xem rental form có thuộc về guest này không bằng cách kiểm tra guestId
-              const hasGuestDetail =
-                rf.rentalFormDetailIds && rf.rentalFormDetailIds.length > 0;
+            // Lấy danh sách rental form details có guestId trùng với guest hiện tại
+            const guestRentalFormDetails = rentalFormDetails.filter(
+              (detail: ResponseRentalFormDetailDTO) =>
+                detail.guestId === booking.guestId
+            );
 
+            // Lấy danh sách rentalFormId từ rental form details
+            const guestRentalFormIds = guestRentalFormDetails.map(
+              (detail: ResponseRentalFormDetailDTO) => detail.rentalFormId
+            );
+
+            // Tìm rental form khớp với booking từ danh sách rentalFormId của guest
+            const rentalForm = rentalForms.find((rf) => {
               return (
-                hasGuestDetail &&
+                guestRentalFormIds.includes(rf.id) &&
                 rf.roomId === booking.roomId &&
                 rf.numberOfRentalDays === booking.rentalDays
               );
@@ -935,7 +955,8 @@ const BookingHistory: React.FC = () => {
 
                     // Lấy danh sách rental form IDs của khách
                     const guestRentalFormIds = guestRentalFormDetails.map(
-                      (detail: any) => detail.rentalFormId
+                      (detail: ResponseRentalFormDetailDTO) =>
+                        detail.rentalFormId
                     );
 
                     // Tìm rental form có roomId và rentalDate trùng với booking
@@ -960,13 +981,22 @@ const BookingHistory: React.FC = () => {
 
                     // Bước 2: Tạo hóa đơn (invoice) cho rental form đã tồn tại
                     const totalCost =
-                      (selectedBookingForQR.rentalDays || 1) * qrPrice;
+                      Number(Number(selectedBookingForQR.rentalDays) || 1) *
+                      qrPrice;
 
-                    console.log(extensionInfo);
+                    const extensionForms =
+                      await getRentalExtensionFormsByRentalFormId(
+                        existingRentalForm.id
+                      );
 
-                    // Sử dụng thông tin gia hạn đã tính toán
-                    const finalTotalCost = extensionInfo
-                      ? extensionInfo.totalDays * qrPrice
+                    // Sử dụng bản ghi đầu tiên từ danh sách extensionForms
+                    const firstExtensionForm =
+                      extensionForms && extensionForms.length > 0
+                        ? extensionForms[0]
+                        : null;
+
+                    const finalTotalCost = firstExtensionForm
+                      ? Number(firstExtensionForm.numberOfRentalDays) * qrPrice
                       : totalCost;
 
                     const invoiceData = {
@@ -979,16 +1009,20 @@ const BookingHistory: React.FC = () => {
                       1,
                       "MANAGER"
                     );
-
+                    console.log(invoice);
+                    console.log(firstExtensionForm);
+                    console.log(finalTotalCost);
                     // Bước 3: Tạo invoice detail
                     const invoiceDetailData = {
-                      numberOfRentalDays: extensionInfo
-                        ? extensionInfo.totalDays
+                      numberOfRentalDays: firstExtensionForm
+                        ? firstExtensionForm.numberOfRentalDays
                         : selectedBookingForQR.rentalDays,
                       invoiceId: invoice.id,
                       reservationCost: finalTotalCost,
                       rentalFormId: existingRentalForm.id,
                     };
+
+                    console.log(invoiceDetailData);
                     await createInvoiceDetail(invoiceDetailData, 1, "STAFF");
 
                     // Bước 4: Gửi email cho khách hàng
