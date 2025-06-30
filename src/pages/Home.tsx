@@ -98,17 +98,17 @@ const BookingBox: React.FC<{
 
   return (
     <div
-      className={`shadow-2xl rounded-2xl p-10 w-256 mx-auto -mt-24 relative z-10 transition-all duration-300 ${
-        theme === "light" ? "bg-white" : "bg-gray-800"
+      className={`shadow-2xl rounded-2xl p-4 sm:p-6 md:p-8 lg:p-10 w-full max-w-5xl mx-auto -mt-16 sm:-mt-20 md:-mt-24 relative z-10 transition-all duration-300 ${
+        theme === "light" ? "bg-gray-200" : "bg-gray-800"
       }`}
     >
       <form
         onSubmit={handleSubmit}
-        className="grid grid-cols-1 md:grid-cols-4 gap-24"
+        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8"
       >
         <div>
           <label
-            className={`block text-2xl font-semibold mb-2 ${
+            className={`block text-lg sm:text-xl md:text-2xl font-semibold mb-2 ${
               theme === "light" ? "text-gray-700" : "text-gray-200"
             }`}
           >
@@ -118,7 +118,7 @@ const BookingBox: React.FC<{
             type="date"
             value={checkIn}
             onChange={(e) => setCheckIn(e.target.value)}
-            className={`mt-1 block w-56 rounded-lg border shadow-md focus:outline-none focus:ring-2 text-2xl py-3 px-4 transition-all duration-300 ${
+            className={`mt-1 block w-full rounded-lg border shadow-md focus:outline-none focus:ring-2 text-base sm:text-lg md:text-xl py-2 px-3 transition-all duration-300 ${
               theme === "light"
                 ? "border-gray-300 text-black focus:border-indigo-500 focus:ring-indigo-500"
                 : "border-gray-600 text-gray-100 bg-gray-700 focus:border-indigo-400 focus:ring-indigo-400"
@@ -128,7 +128,7 @@ const BookingBox: React.FC<{
         </div>
         <div>
           <label
-            className={`block text-2xl font-semibold mb-2 ${
+            className={`block text-lg sm:text-xl md:text-2xl font-semibold mb-2 ${
               theme === "light" ? "text-gray-700" : "text-gray-200"
             }`}
           >
@@ -138,7 +138,7 @@ const BookingBox: React.FC<{
             type="date"
             value={checkOut}
             onChange={(e) => setCheckOut(e.target.value)}
-            className={`mt-1 block w-56 rounded-lg border shadow-md focus:outline-none focus:ring-2 text-2xl py-3 px-4 transition-all duration-300 ${
+            className={`mt-1 block w-full rounded-lg border shadow-md focus:outline-none focus:ring-2 text-base sm:text-lg md:text-xl py-2 px-3 transition-all duration-300 ${
               theme === "light"
                 ? "border-gray-300 text-black focus:border-indigo-500 focus:ring-indigo-500"
                 : "border-gray-600 text-gray-100 bg-gray-700 focus:border-indigo-400 focus:ring-indigo-400"
@@ -148,7 +148,7 @@ const BookingBox: React.FC<{
         </div>
         <div>
           <label
-            className={`block text-2xl font-semibold mb-2 ${
+            className={`block text-lg sm:text-xl md:text-2xl font-semibold mb-2 ${
               theme === "light" ? "text-gray-700" : "text-gray-200"
             }`}
           >
@@ -157,9 +157,9 @@ const BookingBox: React.FC<{
           <select
             value={roomTypeId}
             onChange={(e) => setRoomTypeId(Number(e.target.value))}
-            className={`mt-1 block w-56 rounded-lg border shadow-md focus:outline-none focus:ring-2 text-2xl py-4 px-4 transition-all duration-300 ${
+            className={`mt-1 block w-full rounded-lg border shadow-md focus:outline-none focus:ring-2 text-base sm:text-lg md:text-xl py-2 px-3 transition-all duration-300 ${
               theme === "light"
-                ? "border-gray-300 text-black focus:border-indigo-500 focus:ring-indigo-500"
+                ? "border-gray-300 text-black focus:border-indigo-500 focus:ring-indigo Liang-500"
                 : "border-gray-600 text-gray-100 bg-gray-700 focus:border-indigo-400 focus:ring-indigo-400"
             }`}
             required
@@ -174,11 +174,11 @@ const BookingBox: React.FC<{
         <div className="flex items-end">
           <button
             type="submit"
-            className={`w-full text-white text-2xl font-bold py-3 px-6 rounded-lg shadow-lg transition-all duration-200 ${
+            className={`w-full text-lg sm:text-xl md:text-2xl font-bold py-2 px-4 rounded-lg shadow-lg transition-all duration-200 ${
               theme === "light"
-                ? "bg-indigo-600 hover:bg-indigo-700"
-                : "bg-indigo-700 hover:bg-indigo-800"
-            }`}
+                ? "bg-blue-600 hover:bg-blue-700"
+                : "bg-blue-700 hover:bg-blue-800"
+            } text-white`}
           >
             Tìm phòng
           </button>
@@ -1084,46 +1084,32 @@ const Home: React.FC = () => {
           backgroundImage: `url(${backgroundImage1})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
-          minHeight: "80vh",
+          minHeight: "80vh sm:min-h-screen",
         }}
       >
-        <div className="relative z-10 text-left px-1 py-10 pl-56 mt-52">
-          <span
-            className={`inline-block text-2xl font-semibold px-6 py-2 rounded-full mb-6 ${
-              theme === "light"
-                ? "bg-green-200 bg-opacity-50 text-blue-800"
-                : "bg-green-900 bg-opacity-50 text-blue-200"
-            }`}
-          >
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="relative z-10 text-left text-white mb-24 px-8 sm:pl-12 md:pl-16 lg:pl-58 py-8 sm:py-10 mt-20 sm:mt-32 md:mt-40 lg:mt-52">
+          <span className="inline-block bg-blue-600/30 text-blue-200 text-lg sm:text-xl md:text-2xl font-semibold px-4 sm:px-6 py-2 rounded-full mb-4 sm:mb-6">
             Trải nghiệm khách sạn đẳng cấp
           </span>
-          <div className="flex justify-start">
-            <div className="relative rounded-lg overflow-hidden max-w-2xl w-full">
-              <div className="absolute inset-0 bg-black/50 z-0 rounded-lg"></div>
-
-              <div className="relative z-10 p-3 text-center">
-                <h1
-                  className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 font-playfair 
-                             leading-tight 
-                              ${theme === "light" ? "text-yellow-500" : "text-yellow-400"}`}
-                >
-                  Rong chơi bốn phương,
-                  <br />
-                  "giá" vẫn yêu thương
-                </h1>
-                <p
-                  className={`text-xl md:text-xl mb-1 max-w-2xl mx-auto font-semibold ${
-                    theme === "light" ? "text-white" : "text-gray-200"
-                  }`}
-                >
-                  Sự sang trọng và tiện nghi vô song đang chờ đón bạn tại những khách
-                  sạn đẳng cấp nhất thế giới. Hãy bắt đầu hành trình của bạn ngay hôm
-                  nay.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="mt-32 pr-256">
+          {/* <div className="bg-black/40 w-160 rounded-lg py-4 mb-4"> */}
+          <h1 className="text-3xl sm:text-4xl md:text-5xl italic lg:text-6xl font-bold font-playfair text-blue-200 mb-6">
+            <span>Rong chơi bốn phương,</span>
+            <span className="block mt-2 sm:mt-4 md:mt-6">
+              "giá" vẫn yêu thương
+            </span>
+          </h1>
+          {/* </div> */}
+          <p
+            className={`text-base sm:text-lg md:text-xl max-w-xl md:max-w-2xl text-blue-200 ${
+              theme === "light" ? "text-white" : "text-gray-200"
+            }`}
+          >
+            Sự sang trọng và tiện nghi vô song đang chờ đón bạn tại những khách
+            sạn đẳng cấp nhất thế giới. Hãy bắt đầu hành trình của bạn ngay hôm
+            nay.
+          </p>
+          <div className="mt-14 sm:mt-24 md:mt-32 pr-0 sm:pr-2 md:pr-192">
             <BookingBox onSearch={handleSearch} roomTypes={roomTypes} />
           </div>
         </div>
