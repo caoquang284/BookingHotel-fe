@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { registerGuest } from "../services/apis/register";
 import { useTheme } from "../contexts/ThemeContext";
 import { type GuestDTO, type AccountDTO, type Sex } from "../types";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function Register() {
   const navigate = useNavigate();
@@ -53,6 +55,13 @@ function Register() {
     }
 
     setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      toast.error("Vui lòng kiểm tra lại thông tin!", {
+        position: "top-right",
+        autoClose: 3000,
+        theme: theme === "light" ? "light" : "dark",
+      });
+    }
     return Object.keys(newErrors).length === 0;
   };
 
@@ -67,6 +76,13 @@ function Register() {
     }
 
     setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      toast.error("Vui lòng kiểm tra lại thông tin tài khoản!", {
+        position: "top-right",
+        autoClose: 3000,
+        theme: theme === "light" ? "light" : "dark",
+      });
+    }
     return Object.keys(newErrors).length === 0;
   };
 
@@ -124,6 +140,11 @@ function Register() {
     e.preventDefault();
     if (validateGuestInfo()) {
       setStep(2);
+      toast.info("Chuyển sang bước tạo tài khoản", {
+        position: "top-right",
+        autoClose: 2000,
+        theme: theme === "light" ? "light" : "dark",
+      });
     }
   };
 
@@ -132,23 +153,38 @@ function Register() {
     if (!validateAccountInfo()) return;
 
     try {
-      await registerGuest({
-        guest: guestInfo,
-        account: accountInfo,
-      });
-      alert("Đăng ký thành công!");
-      navigate("/login");
-    } catch (err: any) {
+  await registerGuest({
+    guest: guestInfo,
+    account: accountInfo,
+  });
+  toast.success("Đăng ký thành công!", {
+    position: "top-right",
+    autoClose: 3000,
+    theme: theme === "light" ? "light" : "dark",
+  });
+  setTimeout(() => {
+    navigate("/login");
+  }, 1000); // Delay 1 giây để toast hiển thị
+} catch (err: any) {
       const newErrors = { ...errors };
 
       if (err.field) {
         newErrors[err.field as keyof typeof newErrors] = err.message || "Thông tin không hợp lệ!";
         if (["identificationNumber", "phoneNumber", "email", "name", "age", "sex"].includes(err.field)) {
           setStep(1);
+          toast.warn("Vui lòng kiểm tra lại thông tin cá nhân!", {
+            position: "top-right",
+            autoClose: 3000,
+            theme: theme === "light" ? "light" : "dark",
+          });
         }
         setErrors(newErrors);
       } else {
-        alert(err.message || "Đăng ký thất bại!");
+        toast.error(err.message || "Đăng ký thất bại!", {
+          position: "top-right",
+          autoClose: 3000,
+          theme: theme === "light" ? "light" : "dark",
+        });
       }
     }
   };
@@ -161,6 +197,18 @@ function Register() {
           : "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700"
       } overflow-hidden`}
     >
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme={theme === "light" ? "light" : "dark"}
+      />
       <div className="absolute inset-0 -z-10">
         <div
           className={`absolute w-64 h-64 opacity-20 rounded-full blur-3xl animate-pulse top-20 left-20 ${
