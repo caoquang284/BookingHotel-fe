@@ -60,6 +60,7 @@ export function getRelevantSections(question: string, knowledge: Record<string, 
     q.includes('hút thuốc') ||
     q.includes('trẻ em') ||
     q.includes('thú cưng') ||
+    q.includes('chó mèo') || 
     q.includes('giờ nhận phòng') ||
     q.includes('giờ trả phòng')
   ) {
