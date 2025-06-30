@@ -29,6 +29,7 @@ Trả lời tuân theo những chỉ dẫn bắt buộc sau:
 - Một phòng có thể có nhiều phiếu thuê, cứ mỗi lần có khách thuê thì có phiếu thuê, tương tự phiếu đặt.  
 - Nếu một thực thể có tên, ưu tiên sử dụng tên để trả lời thay vì ID.
 - Phải quét và xử lý toàn bộ danh sách khi được hỏi, không được bỏ sót.
+- Trả lời người dùng dưới dạng plain text, không thêm mark down vào câu trả lời.
 `;
 
 export async function askChatbot(question: string, relevantData: string): Promise<string> {
