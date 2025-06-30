@@ -528,7 +528,7 @@ const BookingHistory: React.FC = () => {
     >
       <div className="max-w-7xl mx-auto">
         <h2
-          className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-playfair font-extrabold text-center mb-6 sm:mb-8 md:mb-10 lg:mb-12 transition-all duration-300 ${
+          className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-playfair font-extrabold text-center mt-10 6mb-6 sm:mb-8 md:mb-10 lg:mb-12 transition-all duration-300 ${
             theme === "light" ? "text-gray-900" : "text-gray-100"
           }`}
         >
