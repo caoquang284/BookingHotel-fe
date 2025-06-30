@@ -1089,7 +1089,7 @@ const Home: React.FC = () => {
         showThumbs={false}
         autoPlay
         infiniteLoop
-        interval={1000}
+        interval={2000}
         showStatus={false}
         selectedItem={currentSlide}
         onChange={(index) => setCurrentSlide(index)}
