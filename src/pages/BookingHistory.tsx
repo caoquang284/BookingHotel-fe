@@ -1009,7 +1009,7 @@ const BookingHistory: React.FC = () => {
                       1,
                       "MANAGER"
                     );
-
+                    console.log(invoice);
                     console.log(firstExtensionForm);
                     console.log(finalTotalCost);
                     // Bước 3: Tạo invoice detail
