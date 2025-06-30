@@ -25,6 +25,7 @@ import type {
 } from "../types";
 import backgroundImage from "../assets/Image/bg.jpg";
 import backgroundImage1 from "../assets/Image/bg1.jpg";
+import backgroundImage2 from "../assets/Image/bg2.jpg";
 import starIcon from "../assets/Icon/starIconFilled.svg";
 import starIconEmpty from "../assets/Icon/starIconOutlined.svg";
 import totalBookingIcon from "../assets/Icon/totalBookingIcon.svg";
@@ -33,6 +34,8 @@ import { getGuestById } from "../services/apis/guest";
 import { toast } from "react-toastify";
 import Chatbot from "../components/chatBox";
 import { useScrollToTop } from "../hooks/useScrollToTop";
+import { Carousel } from "react-responsive-carousel";
+import "react-responsive-carousel/lib/styles/carousel.min.css";
 
 const DEFAULT_IMAGE = "https://via.placeholder.com/400x300?text=No+Image";
 import CountUp from "react-countup";
@@ -356,6 +359,8 @@ const userimageLink = [
   "https://images.unsplash.com/photo-1701615004837-40d8573b6652?q=80&w=200",
 ];
 
+const hotelImages = [backgroundImage, backgroundImage1, backgroundImage2];
+
 const ReviewCard: React.FC<{
   review: ResponseReviewDto;
   guests: Record<number, ResponseGuestDTO>;
@@ -629,7 +634,7 @@ const About: React.FC<{
             </div>
 
             <button
-              onClick={() => navigate("/policy")}
+              onClick={() => navigate("/hotel-detail")}
               className={`px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg transition-all duration-300 ${
                 theme === "light"
                   ? "bg-blue-600 hover:bg-blue-700 text-white"
@@ -641,48 +646,49 @@ const About: React.FC<{
           </div>
 
           {/* Right side - Images */}
-          <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
             <div className="space-y-4 sm:space-y-6">
-              <div className="text-right">
+              <div className="text-center sm:text-right">
                 <img
-                  ref={(el) => {
+                  ref={(el: HTMLImageElement | null) => {
                     if (el) imageRefs.current[0] = el;
                   }}
                   src={imageLinks[0]}
                   alt="Luxury Hotel Exterior"
-                  className="ml-8 max-w-88 rounded-lg shadow-lg object-cover h-40 sm:h-48 md:h-64 lg:h-64 fade-slide-in-right"
+                  className="w-full max-w-full rounded-lg shadow-lg object-cover h-40 sm:h-48 md:h-64 lg:h-64 fade-slide-in-right"
                 />
               </div>
-              <div className="text-left">
+              <div className="text-center sm:text-left">
                 <img
-                  ref={(el) => {
+                  ref={(el: HTMLImageElement | null) => {
                     if (el) imageRefs.current[1] = el;
                   }}
                   src={imageLinks[1]}
                   alt="Hotel Interior"
-                  className="w-full ml-28 rounded-lg shadow-lg object-cover h-40 sm:h-48 md:h-64 lg:h-64 fade-slide-in"
+                  className="w-full max-w-full rounded-lg shadow-lg object-cover h-40 sm:h-48 md:h-64 lg:h-64 fade-slide-in"
                 />
               </div>
             </div>
-            <div className="space-y-4 sm:space-y-6 pt-8 sm:pt-12 lg:pt-16">
-              <div className="text-right">
+
+            <div className="space-y-4 sm:space-y-6 pt-0 sm:pt-12 lg:pt-16">
+              <div className="text-center sm:text-right">
                 <img
-                  ref={(el) => {
+                  ref={(el: HTMLImageElement | null) => {
                     if (el) imageRefs.current[2] = el;
                   }}
                   src={imageLinks[2]}
                   alt="Hotel Room"
-                  className="ml-26 rounded-lg shadow-lg object-cover h-40 sm:h-48 md:h-64 lg:h-64 fade-slide-in-right"
+                  className="w-full max-w-full rounded-lg shadow-lg object-cover h-40 sm:h-48 md:h-64 lg:h-64 fade-slide-in-right"
                 />
               </div>
-              <div className="text-left">
+              <div className="text-center sm:text-left">
                 <img
-                  ref={(el) => {
+                  ref={(el: HTMLImageElement | null) => {
                     if (el) imageRefs.current[3] = el;
                   }}
                   src={imageLinks[3]}
                   alt="Hotel Amenities"
-                  className="max-w-88 ml-26 rounded-lg shadow-lg object-cover h-40 sm:h-48 md:h-64 lg:h-64 fade-slide-in"
+                  className="w-full max-w-full rounded-lg shadow-lg object-cover h-40 sm:h-48 md:h-64 lg:h-64 fade-slide-in"
                 />
               </div>
             </div>
@@ -1071,6 +1077,7 @@ const Home: React.FC = () => {
       }
     }
   };
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   return (
     <div
@@ -1078,42 +1085,56 @@ const Home: React.FC = () => {
         theme === "light" ? "bg-gray-100" : "bg-gray-900"
       }`}
     >
-      <div
-        className="relative w-full flex flex-col bg-center"
-        style={{
-          backgroundImage: `url(${backgroundImage1})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          minHeight: "80vh sm:min-h-screen",
-        }}
+      <Carousel
+        showThumbs={false}
+        autoPlay
+        infiniteLoop
+        interval={1000}
+        showStatus={false}
+        selectedItem={currentSlide}
+        onChange={(index) => setCurrentSlide(index)}
+        className="w-full"
       >
-        <div className="absolute inset-0 bg-black/10"></div>
-        <div className="relative z-10 text-left text-white mb-24 px-8 sm:pl-12 md:pl-16 lg:pl-58 py-8 sm:py-10 mt-20 sm:mt-32 md:mt-40 lg:mt-52">
-          <span className="inline-block bg-blue-600/30 text-blue-200 text-lg sm:text-xl md:text-2xl font-semibold px-4 sm:px-6 py-2 rounded-full mb-4 sm:mb-6">
-            Trải nghiệm khách sạn đẳng cấp
-          </span>
-          {/* <div className="bg-black/40 w-160 rounded-lg py-4 mb-4"> */}
-          <h1 className="text-3xl sm:text-4xl md:text-5xl italic lg:text-6xl font-bold font-playfair text-blue-200 mb-6">
-            <span>Rong chơi bốn phương,</span>
-            <span className="block mt-2 sm:mt-4 md:mt-6">
-              "giá" vẫn yêu thương
-            </span>
-          </h1>
-          {/* </div> */}
-          <p
-            className={`text-base sm:text-lg md:text-xl max-w-xl md:max-w-2xl text-blue-200 ${
-              theme === "light" ? "text-white" : "text-gray-200"
-            }`}
+        {hotelImages.map((image, index) => (
+          <div
+            key={index}
+            className="relative w-full flex flex-col bg-center"
+            style={{
+              backgroundImage: `url(${image})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              minHeight: "80vh",
+            }}
           >
-            Sự sang trọng và tiện nghi vô song đang chờ đón bạn tại những khách
-            sạn đẳng cấp nhất thế giới. Hãy bắt đầu hành trình của bạn ngay hôm
-            nay.
-          </p>
-          <div className="mt-14 sm:mt-24 md:mt-32 pr-0 sm:pr-2 md:pr-192">
-            <BookingBox onSearch={handleSearch} roomTypes={roomTypes} />
+            <div className="absolute inset-0 bg-black/40"></div>
+            <div className="relative z-10 text-left text-white mb-24 px-8 sm:pl-12 md:pl-16 lg:pl-58 py-8 sm:py-10 mt-20 sm:mt-32 md:mt-40 lg:mt-52">
+              <span className="inline-block bg-blue-600/30 text-blue-200 text-lg sm:text-xl md:text-2xl font-semibold px-4 sm:px-6 py-2 rounded-full mb-4 sm:mb-6">
+                Trải nghiệm khách sạn đẳng cấp
+              </span>
+              {/* <div className="bg-black/40 w-160 rounded-lg py-4 mb-4"> */}
+              <h1 className="text-3xl sm:text-4xl md:text-5xl italic lg:text-6xl font-bold font-playfair text-blue-200 mb-6">
+                <span>Rong chơi bốn phương,</span>
+                <span className="block mt-2 sm:mt-4 md:mt-6">
+                  "giá" vẫn yêu thương
+                </span>
+              </h1>
+              {/* </div> */}
+              <p
+                className={`text-base sm:text-lg md:text-xl max-w-xl md:max-w-2xl text-blue-200 ${
+                  theme === "light" ? "text-white" : "text-gray-200"
+                }`}
+              >
+                Sự sang trọng và tiện nghi vô song đang chờ đón bạn tại những
+                khách sạn đẳng cấp nhất thế giới. Hãy bắt đầu hành trình của bạn
+                ngay hôm nay.
+              </p>
+              <div className="mt-28 sm:mt-32 md:mt-42 pr-0 sm:pr-2 md:pr-192">
+                <BookingBox onSearch={handleSearch} roomTypes={roomTypes} />
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        ))}
+      </Carousel>
 
       {/* About Section */}
       <About
