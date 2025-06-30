@@ -86,7 +86,7 @@ export async function buildRoomTypes(): Promise<string> {
 export async function buildInvoices(userId: number): Promise<string> {
   const list: ResponseInvoiceDTO[] = await getAllInvoicesByUserId(userId);
   const total = list.reduce((sum, i) => sum + (i.totalReservationCost || 0), 0);
-  let kb = `# Hóa đơn\n- Số lượng hóa đơn: ${list.length}, Tổng tiền: ${total.toLocaleString('vi-VN')} VND\n`;
+  let kb = `# Hóa đơn của người dùng hiện tại\n- Số lượng hóa đơn: ${list.length}, Tổng tiền: ${total.toLocaleString('vi-VN')} VND\n`;
   for (const i of list) {
     kb += `  * ID: ${i.id}, Tổng tiền: ${i.totalReservationCost.toLocaleString('vi-VN')} VND, Khách: ${i.payingGuestName}, Ngày tạo: ${i.createdAt}\n`;
   }
@@ -95,7 +95,7 @@ export async function buildInvoices(userId: number): Promise<string> {
 
 export async function buildBookingConfirmationForms(userId: number): Promise<string> {
   const list: ResponseBookingConfirmationFormDTO[] = await getBookingConfirmationFormsByUserId(userId);
-  let kb = `# Phiếu xác nhận đặt phòng\n- Tổng phiếu: ${list.length}\n`;
+  let kb = `# Phiếu xác nhận đặt phòng của người dùng hiện tại\n- Tổng phiếu: ${list.length}\n`;
   for (const dto of list) {
     kb += `  * ID: ${dto.id}, Trạng thái: ${dto.bookingState}, Ngày tạo: ${dto.createdAt}, Ngày đặt: ${dto.bookingDate}, Số ngày thuê: ${dto.rentalDays}\n`;
     kb += `    Khách: ${dto.guestName} (ID: ${dto.guestId}), Email: ${dto.guestEmail}, SĐT: ${dto.guestPhoneNumber}, CCCD: ${dto.guestIdentificationNumber}\n`;
@@ -106,7 +106,7 @@ export async function buildBookingConfirmationForms(userId: number): Promise<str
 
 export async function buildRentalFormDetails(userId: number): Promise<string> {
   const list: ResponseRentalFormDetailDTO[] = await getAllRentalFormDetailsByUserId(userId);
-  let kb = `# Phiếu thuê phòng\n- Số lượng phiếu: ${list.length}\n`;
+  let kb = `# Phiếu thuê phòng của người dùng hiện tại\n- Số lượng phiếu: ${list.length}\n`;
   for (const dto of list) {
     kb += `  * ID: ${dto.id}\n`;
   }
