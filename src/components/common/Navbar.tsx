@@ -57,11 +57,12 @@ const Navbar: React.FC = () => {
 
   const navItems: NavItem[] = [
     { path: "/", label: "Trang chủ" },
+    { path: "/hotel-detail", label: "Về chúng tôi" },
+    { path: "/policy", label: "Chính sách" },
     ...(user
       ? [
           { path: "/profile", label: "Hồ sơ" },
-          { path: "/policy", label: "Chính sách" },
-          { path: "/hotel-detail", label: "Về chúng tôi" },
+
           {
             label: "Lịch sử",
             dropdown: [
@@ -69,7 +70,6 @@ const Navbar: React.FC = () => {
               { path: "/rental-history", label: "Lịch sử thuê phòng" },
             ],
           },
-          { path: "/rooms", label: "Phòng"}
         ]
       : []),
   ];

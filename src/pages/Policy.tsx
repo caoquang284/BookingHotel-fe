@@ -1,9 +1,9 @@
 import React from "react";
 import { useTheme } from "../contexts/ThemeContext";
-
+import { useScrollToTop } from "../hooks/useScrollToTop";
 const HotelPolicy: React.FC = () => {
   const { theme } = useTheme();
-
+  useScrollToTop();
   return (
     <div
       className={`min-h-screen px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16 lg:py-42 transition-all duration-300 ${

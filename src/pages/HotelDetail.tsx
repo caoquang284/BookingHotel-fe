@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import { Link } from "react-router-dom";
 import { Carousel } from "react-responsive-carousel";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
@@ -6,7 +6,7 @@ import { useTheme } from "../contexts/ThemeContext";
 import bg from "../assets/Image/bg.jpg";
 import bg1 from "../assets/Image/bg1.jpg";
 import bg2 from "../assets/Image/bg2.jpg";
-
+import { useScrollToTop } from "../hooks/useScrollToTop";
 const hotelImages = [
   "https://static.independent.co.uk/2025/04/07/14/09/HS-MBH-Exterior-03.jpg",
   bg,
@@ -17,7 +17,7 @@ const hotelImages = [
 const HotelDetail: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const { theme } = useTheme();
-
+  useScrollToTop();
   return (
     <div
       className={`min-h-screen px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16 lg:py-42 transition-all duration-300 ${
