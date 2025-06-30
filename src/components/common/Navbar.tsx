@@ -202,34 +202,36 @@ const Navbar: React.FC = () => {
                 </button>
               )
             )}
+                      <ThemeToggle />
           </div>
-          <ThemeToggle />
         </div>
-        <div className="md:hidden">
-          <button
-            onClick={toggleMobileMenu}
-            className="p-1 sm:p-2 transition-colors duration-300 text-[var(--foreground)] hover:text-[var(--primary)] focus:outline-none"
-          >
-            <svg
-              className="w-5 h-5 sm:w-6 sm:h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d={
-                  isMobileMenuOpen
-                    ? "M6 18L18 6M6 6l12 12"
-                    : "M4 6h16M4 12h16M4 18h16"
-                }
-              />
-            </svg>
-          </button>
-        </div>
+        {/* Hamburger + ThemeToggle trên mobile */}
+<div className="md:hidden flex items-center gap-2">
+  <ThemeToggle /> {/* Thu nhỏ hơn */}
+  <button
+    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+    className="p-2"
+  >
+    <svg
+      className="w-6 h-6"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d={
+          isMobileMenuOpen
+            ? "M6 18L18 6M6 6l12 12"
+            : "M4 6h16M4 12h16M4 18h16"
+        }
+      />
+    </svg>
+  </button>
+</div>
+
       </div>
 
       {isMobileMenuOpen && (

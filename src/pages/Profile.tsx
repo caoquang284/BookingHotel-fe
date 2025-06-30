@@ -6,6 +6,8 @@ import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import type { GuestDTO, Sex } from "../types";
 import { useScrollToTop } from "../hooks/useScrollToTop";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface GuestFormData {
   id?: number;
@@ -85,7 +87,11 @@ const Profile: React.FC = () => {
         });
       } catch (error) {
         console.error("Error fetching guest data:", error);
-        alert("Không thể tải thông tin hồ sơ: " + (error as Error).message);
+        toast.error("Không thể tải thông tin hồ sơ: " + (error as Error).message, {
+          position: "top-right",
+          autoClose: 3000,
+          theme: theme === "light" ? "light" : "dark",
+        });
         navigate("/login");
       } finally {
         setLoading(false);
@@ -199,9 +205,11 @@ const Profile: React.FC = () => {
   const handleGuestInfoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateGuestInfo() || !user?.id || !accessToken || !guest.id) {
-      alert(
-        "Vui lòng kiểm tra thông tin hoặc tải lại trang để lấy thông tin khách hàng."
-      );
+      toast.warn("Vui lòng kiểm tra thông tin hoặc tải lại trang để lấy thông tin khách hàng.", {
+        position: "top-right",
+        autoClose: 3000,
+        theme: theme === "light" ? "light" : "dark",
+      });
       return;
     }
     try {
@@ -230,10 +238,18 @@ const Profile: React.FC = () => {
         const errorText = await response.text();
         throw new Error(errorText || "Cập nhật thông tin thất bại");
       }
-      alert("Cập nhật thông tin thành công!");
+      toast.success("Cập nhật thông tin thành công!", {
+        position: "top-right",
+        autoClose: 3000,
+        theme: theme === "light" ? "light" : "dark",
+      });
     } catch (error) {
       console.error("Error updating guest:", error);
-      alert("Cập nhật thông tin thất bại: " + (error as Error).message);
+      toast.error("Cập nhật thông tin thất bại: " + (error as Error).message, {
+        position: "top-right",
+        autoClose: 3000,
+        theme: theme === "light" ? "light" : "dark",
+      });
     } finally {
       setLoading(false);
     }
@@ -242,20 +258,32 @@ const Profile: React.FC = () => {
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validatePasswordInfo() || !accessToken) {
-      alert("Vui lòng kiểm tra thông tin.");
+      toast.warn("Vui lòng kiểm tra thông tin.", {
+        position: "top-right",
+        autoClose: 3000,
+        theme: theme === "light" ? "light" : "dark",
+      });
       return;
     }
     try {
       setLoading(true);
       await changePassword(passwordData, accessToken);
-      alert("Thay đổi mật khẩu thành công!");
+      toast.success("Thay đổi mật khẩu thành công!", {
+        position: "top-right",
+        autoClose: 3000,
+        theme: theme === "light" ? "light" : "dark",
+      });
       setPasswordData({
         oldPassword: "",
         newPassword: "",
         confirmPassword: "",
       });
     } catch (error) {
-      alert((error as Error).message);
+      toast.error((error as Error).message, {
+        position: "top-right",
+        autoClose: 3000,
+        theme: theme === "light" ? "light" : "dark",
+      });
     } finally {
       setLoading(false);
     }
@@ -289,6 +317,7 @@ const Profile: React.FC = () => {
           : "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700"
       } overflow-hidden`}
     >
+      <ToastContainer position="top-right" autoClose={3000} theme={theme === "light" ? "light" : "dark"} />
       <div className="absolute inset-0 -z-10">
         <div
           className={`absolute w-64 h-64 opacity-20 rounded-full blur-3xl animate-pulse top-20 left-20 ${
