@@ -5,11 +5,13 @@ import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { type ResponseLoginDTO } from "../types";
 import { type User } from "../contexts/AuthContext";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function Login() {
   const [tenDangNhap, setTenDangNhap] = useState("");
   const [matKhau, setMatKhau] = useState("");
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
   const { setUser, setAccessToken, setRefreshToken } = useAuth();
   const { theme } = useTheme();
@@ -31,10 +33,20 @@ function Login() {
         role: payload.role || "Guest",
       };
       setUser(userInfo);
+      toast.success("Đăng nhập thành công!", {
+        position: "top-right",
+        autoClose: 3000,
+        theme: theme === "light" ? "light" : "dark",
+      });
       navigate("/");
     } catch (error: any) {
       const errorMessage = error.response?.data?.error || "Đăng nhập thất bại!";
       setError(errorMessage);
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 3000,
+        theme: theme === "light" ? "light" : "dark",
+      });
       console.error("Lỗi đăng nhập:", error);
     }
   };
@@ -47,8 +59,10 @@ function Login() {
           : "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700"
       } overflow-hidden`}
     >
+      <ToastContainer />
       <div className="absolute inset-0 -z-10">
-        <div className={`absolute w-64 h-64 opacity-20 rounded-full blur-3xl animate-pulse top-20 left-20 ${
+        <div
+          className={`absolute w-64 h-64 opacity-20 rounded-full blur-3xl animate-pulse top-20 left-20 ${
             theme === "light" ? "bg-indigo-200" : "bg-indigo-900"
           }`}
         ></div>
@@ -93,7 +107,7 @@ function Login() {
               <span
                 className={`absolute left-3 ${theme === "light" ? "text-gray-400" : "text-gray-300"}`}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 present">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -134,7 +148,7 @@ function Login() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth="2"
-                    d="M12 11c1.10457-0 2-0.89543 2-2 0-1.10457-0.89543-2-2-2-1.10457 0-2 0.89543-2 2 0 1.10457 0.89543 2 2 2zM12 17c-2.76142 0-5 2.23858-5 5h10c0-2.76142-2.23858-5-5-5z"
+                    d="M12 11c1.10457 0 2-0.89543 2-2 0-1.10457-0.89543-2-2-2-1.10457 0-2 0.89543-2 2 0 1.10457 0.89543 2 2 2zM12 17c-2.76142 0-5 2.23858-5 5h10c0-2.76142-2.23858-5-5-5z"
                   />
                 </svg>
               </span>

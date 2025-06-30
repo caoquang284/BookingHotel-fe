@@ -47,7 +47,7 @@ export const hotelRulesSummary = `
 ## 6. Chính sách thú cưng
 
 1. Không nhận chó mèo hoặc bất kỳ vật nuôi nào (trừ dịch vụ chuyên biệt “Pet-friendly”).
-2. Khách có phòng Pet-friendly liên hệ lễ tân để biết điều kiện và phụ phí.
+2. Khách có phòng Pet friendly liên hệ lễ tân để biết điều kiện và phụ phí.
 
 ## 7. Chính sách hút thuốc
 
