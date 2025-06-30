@@ -1199,7 +1199,7 @@ const BookingHistory: React.FC = () => {
                 max="30"
                 value={extensionDays}
                 onChange={(e) =>
-                  setExtensionDays(parseInt(e.target.value) || 1)
+                  setExtensionDays(parseInt(e.target.value))
                 }
                 className={`w-full p-2 border rounded-lg text-sm sm:text-base md:text-lg lg:text-xl transition-all duration-300 ${
                   theme === "light"
