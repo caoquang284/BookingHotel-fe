@@ -981,7 +981,8 @@ const BookingHistory: React.FC = () => {
 
                     // Bước 2: Tạo hóa đơn (invoice) cho rental form đã tồn tại
                     const totalCost =
-                      (selectedBookingForQR.rentalDays || 1) * qrPrice;
+                      Number(Number(selectedBookingForQR.rentalDays) || 1) *
+                      qrPrice;
 
                     const extensionForms =
                       await getRentalExtensionFormsByRentalFormId(
@@ -995,7 +996,7 @@ const BookingHistory: React.FC = () => {
                         : null;
 
                     const finalTotalCost = firstExtensionForm
-                      ? firstExtensionForm.numberOfRentalDays * qrPrice
+                      ? Number(firstExtensionForm.numberOfRentalDays) * qrPrice
                       : totalCost;
 
                     const invoiceData = {
@@ -1010,6 +1011,7 @@ const BookingHistory: React.FC = () => {
                     );
 
                     console.log(firstExtensionForm);
+                    console.log(finalTotalCost);
                     // Bước 3: Tạo invoice detail
                     const invoiceDetailData = {
                       numberOfRentalDays: firstExtensionForm
@@ -1019,6 +1021,8 @@ const BookingHistory: React.FC = () => {
                       reservationCost: finalTotalCost,
                       rentalFormId: existingRentalForm.id,
                     };
+
+                    console.log(invoiceDetailData);
                     await createInvoiceDetail(invoiceDetailData, 1, "STAFF");
 
                     // Bước 4: Gửi email cho khách hàng
